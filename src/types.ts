@@ -20,6 +20,23 @@ export interface PortfolioItem {
   category: string; // 'Studio' | 'Classes' | 'Workshops'
 }
 
+export interface TestimonialItem {
+  id: string;
+  clientName: string;
+  quote: string;
+  rating: number; // e.g., 1-5
+  source: string; // e.g., '1-on-1 Client', 'Workshop Cohort'
+}
+
+export interface BlogPostItem {
+  id: string;
+  title: string;
+  excerpt: string;
+  content: string; // Main post body
+  featuredImage: string; // Vercel Blob URL or empty
+  date: string;
+}
+
 export interface YogaContent {
   heroTitle: string;
   heroSubtitle: string;
@@ -29,4 +46,6 @@ export interface YogaContent {
   aboutImageUrl?: string;
   offerings: OfferingItem[];
   portfolio: PortfolioItem[];
+  testimonials: TestimonialItem[];
+  blogPosts: BlogPostItem[];
 }

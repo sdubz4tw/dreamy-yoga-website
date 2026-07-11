@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { YogaContent, OfferingItem, PortfolioItem } from "@/types";
+import { YogaContent, OfferingItem, PortfolioItem, TestimonialItem, BlogPostItem } from "@/types";
 
 export default function Home() {
   const [content, setContent] = useState<YogaContent | null>(null);
@@ -10,7 +10,7 @@ export default function Home() {
 
   // Admin panel open state
   const [isAdminOpen, setIsAdminOpen] = useState(false);
-  const [adminTab, setAdminTab] = useState<"general" | "offerings" | "portfolio">("general");
+  const [adminTab, setAdminTab] = useState<"general" | "offerings" | "portfolio" | "testimonials" | "blog">("general");
   const [editForm, setEditForm] = useState<YogaContent | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [saveStatus, setSaveStatus] = useState<{ type: "success" | "error" | null; msg: string }>({
@@ -18,24 +18,43 @@ export default function Home() {
     msg: "",
   });
 
+  // Client Blog Post reader modal state
+  const [activePost, setActivePost] = useState<BlogPostItem | null>(null);
+
   // Admin file upload states
   const [heroFile, setHeroFile] = useState<File | null>(null);
   const [aboutFile, setAboutFile] = useState<File | null>(null);
   const [heroPreview, setHeroPreview] = useState<string>("");
   const [aboutPreview, setAboutPreview] = useState<string>("");
 
-  // Dynamic lists file states: maps itemId -> File object
+  // Dynamic list files states
   const [offeringFiles, setOfferingFiles] = useState<Record<string, File>>({});
   const [offeringPreviews, setOfferingPreviews] = useState<Record<string, string>>({});
 
   const [portfolioFiles, setPortfolioFiles] = useState<Record<string, File>>({});
   const [portfolioPreviews, setPortfolioPreviews] = useState<Record<string, string>>({});
 
+  const [blogFiles, setBlogFiles] = useState<Record<string, File>>({});
+  const [blogPreviews, setBlogPreviews] = useState<Record<string, string>>({});
+
   // New portfolio item input form state
   const [newPortTitle, setNewPortTitle] = useState("");
   const [newPortCategory, setNewPortCategory] = useState("Classes");
   const [newPortFile, setNewPortFile] = useState<File | null>(null);
   const [newPortPreview, setNewPortPreview] = useState("");
+
+  // New testimonial form state
+  const [newTestName, setNewTestName] = useState("");
+  const [newTestQuote, setNewTestQuote] = useState("");
+  const [newTestRating, setNewTestRating] = useState(5);
+  const [newTestSource, setNewTestSource] = useState("");
+
+  // New blog post form state
+  const [newBlogTitle, setNewBlogTitle] = useState("");
+  const [newBlogExcerpt, setNewBlogExcerpt] = useState("");
+  const [newBlogContent, setNewBlogContent] = useState("");
+  const [newBlogFile, setNewBlogFile] = useState<File | null>(null);
+  const [newBlogPreview, setNewBlogPreview] = useState("");
 
   // Portfolio client filter state
   const [activePortfolioFilter, setActivePortfolioFilter] = useState("All");
@@ -79,25 +98,19 @@ export default function Home() {
     setInquirySubmitted(false);
   };
 
-  // Admin image file handlers
+  // Admin banner change handlers
   const handleHeroFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0] || null;
     setHeroFile(file);
-    if (file) {
-      setHeroPreview(URL.createObjectURL(file));
-    } else {
-      setHeroPreview("");
-    }
+    if (file) setHeroPreview(URL.createObjectURL(file));
+    else setHeroPreview("");
   };
 
   const handleAboutFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0] || null;
     setAboutFile(file);
-    if (file) {
-      setAboutPreview(URL.createObjectURL(file));
-    } else {
-      setAboutPreview("");
-    }
+    if (file) setAboutPreview(URL.createObjectURL(file));
+    else setAboutPreview("");
   };
 
   // General tab change handler
@@ -164,11 +177,8 @@ export default function Home() {
   const handleNewPortFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0] || null;
     setNewPortFile(file);
-    if (file) {
-      setNewPortPreview(URL.createObjectURL(file));
-    } else {
-      setNewPortPreview("");
-    }
+    if (file) setNewPortPreview(URL.createObjectURL(file));
+    else setNewPortPreview("");
   };
 
   const handleAddPortfolioItem = () => {
@@ -179,10 +189,9 @@ export default function Home() {
       id: newId,
       title: newPortTitle,
       category: newPortCategory,
-      image: "", // Uploaded in submit pipeline
+      image: "",
     };
 
-    // Save File state locally
     setPortfolioFiles((prev) => ({ ...prev, [newId]: newPortFile }));
     setPortfolioPreviews((prev) => ({ ...prev, [newId]: newPortPreview }));
 
@@ -191,7 +200,6 @@ export default function Home() {
       portfolio: [...editForm.portfolio, newItem],
     });
 
-    // Reset inputs
     setNewPortTitle("");
     setNewPortFile(null);
     setNewPortPreview("");
@@ -203,7 +211,6 @@ export default function Home() {
       ...editForm,
       portfolio: editForm.portfolio.filter((p) => p.id !== id),
     });
-    // Clean files if queued
     if (portfolioFiles[id]) {
       const updatedFiles = { ...portfolioFiles };
       delete updatedFiles[id];
@@ -211,7 +218,96 @@ export default function Home() {
     }
   };
 
-  // Submit FormData payload
+  // Testimonials CRUD functions
+  const handleAddTestimonial = () => {
+    if (!editForm || !newTestName || !newTestQuote) return;
+
+    const newId = `test-${Date.now()}`;
+    const newTest: TestimonialItem = {
+      id: newId,
+      clientName: newTestName,
+      quote: newTestQuote,
+      rating: newTestRating,
+      source: newTestSource || "Client Review",
+    };
+
+    setEditForm({
+      ...editForm,
+      testimonials: [...editForm.testimonials, newTest],
+    });
+
+    setNewTestName("");
+    setNewTestQuote("");
+    setNewTestRating(5);
+    setNewTestSource("");
+  };
+
+  const handleDeleteTestimonial = (id: string) => {
+    if (!editForm) return;
+    setEditForm({
+      ...editForm,
+      testimonials: editForm.testimonials.filter((t) => t.id !== id),
+    });
+  };
+
+  // Blog CRUD functions
+  const handleNewBlogFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0] || null;
+    setNewBlogFile(file);
+    if (file) setNewBlogPreview(URL.createObjectURL(file));
+    else setNewBlogPreview("");
+  };
+
+  const handleAddBlogPost = () => {
+    if (!editForm || !newBlogTitle || !newBlogContent) return;
+
+    const newId = `blog-${Date.now()}`;
+    const formattedDate = new Date().toLocaleDateString("en-US", {
+      month: "long",
+      day: "numeric",
+      year: "numeric",
+    });
+
+    const newPost: BlogPostItem = {
+      id: newId,
+      title: newBlogTitle,
+      excerpt: newBlogExcerpt || newBlogContent.substring(0, 120) + "...",
+      content: newBlogContent,
+      featuredImage: "",
+      date: formattedDate,
+    };
+
+    if (newBlogFile) {
+      setBlogFiles((prev) => ({ ...prev, [newId]: newBlogFile }));
+      setBlogPreviews((prev) => ({ ...prev, [newId]: newBlogPreview }));
+    }
+
+    setEditForm({
+      ...editForm,
+      blogPosts: [...editForm.blogPosts, newPost],
+    });
+
+    setNewBlogTitle("");
+    setNewBlogExcerpt("");
+    setNewBlogContent("");
+    setNewBlogFile(null);
+    setNewBlogPreview("");
+  };
+
+  const handleDeleteBlogPost = (id: string) => {
+    if (!editForm) return;
+    setEditForm({
+      ...editForm,
+      blogPosts: editForm.blogPosts.filter((b) => b.id !== id),
+    });
+    if (blogFiles[id]) {
+      const updatedFiles = { ...blogFiles };
+      delete updatedFiles[id];
+      setBlogFiles(updatedFiles);
+    }
+  };
+
+  // Submit all FormData edits to backend serverless function
   const handleAdminSave = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!editForm) return;
@@ -236,6 +332,11 @@ export default function Home() {
         dataPayload.append("portfolioImage_" + id, file);
       });
 
+      // Append dynamic blog files
+      Object.entries(blogFiles).forEach(([id, file]) => {
+        dataPayload.append("blogImage_" + id, file);
+      });
+
       const response = await fetch("/api/content", {
         method: "POST",
         body: dataPayload,
@@ -248,7 +349,7 @@ export default function Home() {
         setEditForm(result.content);
         setSaveStatus({
           type: "success",
-          msg: "Sanctuary configuration saved and synced with Vercel Blob successfully!",
+          msg: "Changes committed successfully! Main JSON file and uploaded images synced in Vercel Blob.",
         });
 
         // Revoke temporary previews
@@ -256,8 +357,9 @@ export default function Home() {
         if (aboutPreview) URL.revokeObjectURL(aboutPreview);
         Object.values(offeringPreviews).forEach(URL.revokeObjectURL);
         Object.values(portfolioPreviews).forEach(URL.revokeObjectURL);
+        Object.values(blogPreviews).forEach(URL.revokeObjectURL);
 
-        // Clear local inputs
+        // Reset file inputs
         setHeroFile(null);
         setAboutFile(null);
         setHeroPreview("");
@@ -266,6 +368,8 @@ export default function Home() {
         setOfferingPreviews({});
         setPortfolioFiles({});
         setPortfolioPreviews({});
+        setBlogFiles({});
+        setBlogPreviews({});
       } else {
         setSaveStatus({
           type: "error",
@@ -307,7 +411,6 @@ export default function Home() {
     );
   }
 
-  // Portfolio items filter matching category
   const filteredPortfolio = currentContent.portfolio.filter((item) => {
     return activePortfolioFilter === "All" || item.category === activePortfolioFilter;
   });
@@ -330,6 +433,12 @@ export default function Home() {
             </a>
             <a href="#portfolio" className="text-xs font-semibold uppercase tracking-widest text-brand-text/80 hover:text-brand-text transition-colors">
               Portfolio
+            </a>
+            <a href="#testimonials" className="text-xs font-semibold uppercase tracking-widest text-brand-text/80 hover:text-brand-text transition-colors">
+              Reviews
+            </a>
+            <a href="#journal" className="text-xs font-semibold uppercase tracking-widest text-brand-text/80 hover:text-brand-text transition-colors">
+              Journal
             </a>
             <a href="#contact" className="text-xs font-semibold uppercase tracking-widest text-brand-text/80 hover:text-brand-text transition-colors">
               Contact
@@ -481,7 +590,6 @@ export default function Home() {
               key={offering.id}
               className="border border-brand-sage/15 hover:border-brand-sage/30 bg-white/20 hover:bg-white/40 rounded-3xl overflow-hidden flex flex-col justify-between transition-all duration-300 group shadow-xs min-h-[380px]"
             >
-              {/* Offering Cover Photo (with fallback gradient if empty) */}
               <div
                 className="h-44 w-full bg-brand-sage-light shrink-0 relative overflow-hidden"
                 style={{
@@ -498,7 +606,6 @@ export default function Home() {
                 </div>
               </div>
 
-              {/* Text detail */}
               <div className="p-6 md:p-8 flex-1 flex flex-col justify-between gap-6">
                 <div className="flex flex-col gap-3">
                   <h3 className="text-xl md:text-2xl font-serif text-brand-text tracking-wide group-hover:text-brand-sage transition-colors">
@@ -527,7 +634,7 @@ export default function Home() {
         <div className="w-full h-px bg-brand-sage/10" />
       </div>
 
-      {/* 5. Portfolio Gallery Section (NEW) */}
+      {/* 5. Portfolio Gallery Section */}
       <section id="portfolio" className="py-20 md:py-32 px-6 md:px-12 max-w-6xl mx-auto w-full">
         <div className="text-center flex flex-col items-center gap-4 mb-12">
           <span className="text-[10px] uppercase tracking-widest text-brand-sage font-bold">
@@ -541,7 +648,6 @@ export default function Home() {
           </p>
         </div>
 
-        {/* Filter Navigation */}
         <div className="flex justify-center gap-2 mb-10 overflow-x-auto pb-2 scrollbar-none">
           {["All", "Studio", "Classes", "Workshops"].map((filter) => {
             const active = activePortfolioFilter === filter;
@@ -561,7 +667,6 @@ export default function Home() {
           })}
         </div>
 
-        {/* Masonry-Style Responsive Gallery Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
           {filteredPortfolio.length === 0 ? (
             <div className="col-span-full py-16 text-center text-brand-text/50 italic text-sm border border-dashed border-brand-sage/20 rounded-3xl">
@@ -573,7 +678,6 @@ export default function Home() {
                 key={item.id}
                 className="group relative aspect-square rounded-3xl overflow-hidden border border-brand-sage/10 bg-brand-sage-light shadow-xs transition-all duration-500 hover:-translate-y-1 hover:shadow-md cursor-pointer"
               >
-                {/* Photo (with default leaf line-art fallback) */}
                 {item.image ? (
                   <img
                     src={item.image}
@@ -589,7 +693,6 @@ export default function Home() {
                   </div>
                 )}
 
-                {/* Soft Text Overlay */}
                 <div className="absolute inset-0 bg-[#2B2625]/60 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-6 text-left">
                   <span className="text-[9px] uppercase tracking-widest text-[#F4F1EA]/80 font-bold mb-1">
                     {item.category}
@@ -609,7 +712,129 @@ export default function Home() {
         <div className="w-full h-px bg-brand-sage/10" />
       </div>
 
-      {/* 6. Minimal Contact Form Section */}
+      {/* 6. Testimonials Section (NEW) */}
+      <section id="testimonials" className="py-20 md:py-32 px-6 md:px-12 max-w-6xl mx-auto w-full">
+        <div className="text-center flex flex-col items-center gap-4 mb-16">
+          <span className="text-[10px] uppercase tracking-widest text-brand-sage font-bold">
+            Resonance
+          </span>
+          <h2 className="text-3xl md:text-4xl font-serif text-brand-text tracking-wide font-normal">
+            Client Testimonials
+          </h2>
+          <p className="text-xs md:text-sm text-brand-text/65 leading-relaxed max-w-md">
+            Words of gratitude and somatic experiences shared by students practicing within our spaces.
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-12">
+          {currentContent.testimonials.map((test) => (
+            <div
+              key={test.id}
+              className="border border-brand-sage/10 bg-white/20 p-8 rounded-3xl flex flex-col justify-between gap-6 shadow-xs border-t-4 border-t-brand-sage"
+            >
+              <div className="flex flex-col gap-4">
+                {/* Visual Star Rating */}
+                <div className="flex gap-1 text-brand-sage text-sm font-bold">
+                  {Array.from({ length: test.rating }).map((_, i) => (
+                    <span key={i}>★</span>
+                  ))}
+                </div>
+                <p className="text-sm italic text-brand-text/80 leading-relaxed font-normal">
+                  &ldquo;{test.quote}&rdquo;
+                </p>
+              </div>
+
+              <div className="flex justify-between items-center pt-2 border-t border-brand-sage/5">
+                <span className="text-xs font-serif font-bold text-brand-text">
+                  {test.clientName}
+                </span>
+                <span className="text-[9px] uppercase tracking-wider text-brand-sage font-bold">
+                  {test.source}
+                </span>
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* Divider */}
+      <div className="max-w-6xl mx-auto w-full px-6 md:px-12">
+        <div className="w-full h-px bg-brand-sage/10" />
+      </div>
+
+      {/* 7. Blog / Journal Section (NEW) */}
+      <section id="journal" className="py-20 md:py-32 px-6 md:px-12 max-w-6xl mx-auto w-full">
+        <div className="text-center flex flex-col items-center gap-4 mb-16">
+          <span className="text-[10px] uppercase tracking-widest text-brand-sage font-bold">
+            Insights
+          </span>
+          <h2 className="text-3xl md:text-4xl font-serif text-brand-text tracking-wide font-normal">
+            The Philosophy Journal
+          </h2>
+          <p className="text-xs md:text-sm text-brand-text/65 leading-relaxed max-w-md">
+            Essays, research notes, and reflections on somatic anatomy and mindful living.
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-12">
+          {currentContent.blogPosts.length === 0 ? (
+            <div className="col-span-full py-16 text-center text-brand-text/50 italic text-sm">
+              No journal articles published yet.
+            </div>
+          ) : (
+            currentContent.blogPosts.map((post) => (
+              <div
+                key={post.id}
+                className="border border-brand-sage/15 hover:border-brand-sage/30 bg-white/20 hover:bg-white/40 rounded-3xl overflow-hidden flex flex-col md:flex-row transition-all duration-300 group shadow-xs min-h-[260px]"
+              >
+                {/* Featured Cover Photo */}
+                <div
+                  className="h-48 md:h-auto md:w-44 bg-brand-sage-light shrink-0 relative overflow-hidden"
+                  style={{
+                    backgroundImage: post.featuredImage ? `url(${post.featuredImage})` : "none",
+                    backgroundSize: "cover",
+                    backgroundPosition: "center",
+                  }}
+                >
+                  {!post.featuredImage && (
+                    <div className="absolute inset-0 bg-gradient-to-tr from-brand-sage/10 to-brand-sage-light" />
+                  )}
+                </div>
+
+                {/* Article summary details */}
+                <div className="p-6 md:p-8 flex-1 flex flex-col justify-between gap-4">
+                  <div className="flex flex-col gap-2.5">
+                    <span className="text-[9px] uppercase tracking-wider text-brand-sage font-bold font-mono">
+                      {post.date}
+                    </span>
+                    <h3 className="text-lg md:text-xl font-serif text-brand-text tracking-wide group-hover:text-brand-sage transition-colors leading-snug">
+                      {post.title}
+                    </h3>
+                    <p className="text-xs text-brand-text/75 leading-relaxed font-normal line-clamp-2">
+                      {post.excerpt}
+                    </p>
+                  </div>
+                  <div>
+                    <button
+                      onClick={() => setActivePost(post)}
+                      className="text-xs font-bold uppercase tracking-widest text-brand-text hover:text-brand-sage transition-colors border-b border-brand-text pb-0.5 hover:border-brand-sage cursor-pointer"
+                    >
+                      Read Post
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+      </section>
+
+      {/* Divider */}
+      <div className="max-w-6xl mx-auto w-full px-6 md:px-12">
+        <div className="w-full h-px bg-brand-sage/10" />
+      </div>
+
+      {/* 8. Minimal Contact Form Section */}
       <section id="contact" className="py-20 md:py-32 px-6 md:px-12 max-w-md mx-auto w-full">
         <div className="text-center flex flex-col items-center gap-4 mb-10">
           <span className="text-[10px] uppercase tracking-widest text-brand-sage font-bold">
@@ -686,7 +911,7 @@ export default function Home() {
         )}
       </section>
 
-      {/* 7. Collapsible Admin Panel Modal */}
+      {/* 9. Collapsible Admin Panel Modal */}
       {isAdminOpen && editForm && (
         <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
           <div className="bg-[#F4F1EA] border border-brand-sage/20 rounded-3xl max-w-2xl w-full h-[85vh] flex flex-col relative overflow-hidden shadow-2xl">
@@ -709,17 +934,19 @@ export default function Home() {
             </div>
 
             {/* Inner Dashboard Navigation tabs */}
-            <div className="flex border-b border-brand-sage/10 bg-brand-sage-light/35 shrink-0 px-6 gap-2">
+            <div className="flex overflow-x-auto border-b border-brand-sage/10 bg-brand-sage-light/35 shrink-0 px-6 gap-2 scrollbar-none">
               {[
-                { id: "general", label: "General & Copy" },
+                { id: "general", label: "Copy & Banners" },
                 { id: "offerings", label: "Yoga Classes" },
-                { id: "portfolio", label: "Portfolio Gallery" },
+                { id: "portfolio", label: "Portfolio" },
+                { id: "testimonials", label: "Testimonials" },
+                { id: "blog", label: "Blog Editor" },
               ].map((tab) => (
                 <button
                   key={tab.id}
                   type="button"
                   onClick={() => setAdminTab(tab.id as any)}
-                  className={`py-3.5 px-4 text-xs font-semibold uppercase tracking-wider border-b-2 transition-all cursor-pointer ${
+                  className={`py-3.5 px-4 text-xs font-semibold uppercase tracking-wider border-b-2 transition-all cursor-pointer shrink-0 ${
                     adminTab === tab.id
                       ? "border-brand-sage text-brand-text font-bold"
                       : "border-transparent text-brand-text/50 hover:text-brand-text"
@@ -733,7 +960,7 @@ export default function Home() {
             {/* Scrollable Form Body */}
             <form onSubmit={handleAdminSave} className="flex-1 overflow-y-auto p-6 flex flex-col gap-6">
               
-              {/* Tab 1: General Copy and Hero */}
+              {/* Tab 1: General Copy */}
               {adminTab === "general" && (
                 <div className="flex flex-col gap-5">
                   <div className="flex flex-col gap-1.5">
@@ -769,10 +996,8 @@ export default function Home() {
                     />
                   </div>
 
-                  {/* General Image Uploads */}
                   <div className="border-t border-brand-sage/15 pt-5 flex flex-col gap-4">
-                    <span className="text-[10px] uppercase tracking-widest font-bold text-brand-sage">Homepage Banner Images</span>
-                    
+                    <span className="text-[10px] uppercase tracking-widest font-bold text-brand-sage">Homepage Banners</span>
                     <div className="flex flex-col gap-2">
                       <label className="text-[10px] uppercase tracking-widest font-semibold text-brand-text/70">Hero Background</label>
                       <div className="flex items-center gap-4">
@@ -810,7 +1035,7 @@ export default function Home() {
                 </div>
               )}
 
-              {/* Tab 2: Yoga Classes / Offerings Editor */}
+              {/* Tab 2: Offerings CRUD */}
               {adminTab === "offerings" && (
                 <div className="flex flex-col gap-6">
                   <div className="flex justify-between items-center">
@@ -871,7 +1096,6 @@ export default function Home() {
                             />
                           </div>
 
-                          {/* Image upload for Class Card */}
                           <div className="flex flex-col gap-1 pt-2">
                             <span className="text-[9px] uppercase font-bold text-brand-text/50">Class Card Photo</span>
                             <div className="flex items-center gap-4">
@@ -883,11 +1107,7 @@ export default function Home() {
                               />
                               {(hasLocalPreview || offering.image) && (
                                 <div className="w-10 h-10 rounded-lg border border-brand-sage/10 overflow-hidden shrink-0">
-                                  <img
-                                    src={hasLocalPreview || offering.image}
-                                    alt="Preview"
-                                    className="w-full h-full object-cover"
-                                  />
+                                  <img src={hasLocalPreview || offering.image} alt="Preview" className="w-full h-full object-cover" />
                                 </div>
                               )}
                             </div>
@@ -899,13 +1119,11 @@ export default function Home() {
                 </div>
               )}
 
-              {/* Tab 3: Portfolio Gallery CRUD */}
+              {/* Tab 3: Portfolio CRUD */}
               {adminTab === "portfolio" && (
                 <div className="flex flex-col gap-6">
-                  {/* Form to insert a new portfolio item */}
                   <div className="border border-brand-sage/20 rounded-2xl p-5 bg-[#E5E1D5]/20 flex flex-col gap-4">
                     <span className="text-[10px] uppercase tracking-widest font-bold text-brand-sage">Add Photo to Gallery</span>
-                    
                     <div className="grid grid-cols-2 gap-4">
                       <div className="flex flex-col gap-1">
                         <label className="text-[9px] uppercase font-bold text-brand-text/60">Photo Title</label>
@@ -913,13 +1131,13 @@ export default function Home() {
                           type="text"
                           value={newPortTitle}
                           onChange={(e) => setNewPortTitle(e.target.value)}
-                          placeholder="e.g. Lotus Sunset Alignment"
+                          placeholder="e.g. Studio Sunrise"
                           className="px-3 py-2 bg-[#F4F1EA] border border-brand-sage/10 rounded-lg text-xs text-brand-text"
                         />
                       </div>
 
                       <div className="flex flex-col gap-1">
-                        <label className="text-[9px] uppercase font-bold text-brand-text/60">Gallery Tag Category</label>
+                        <label className="text-[9px] uppercase font-bold text-brand-text/60">Tag Category</label>
                         <select
                           value={newPortCategory}
                           onChange={(e) => setNewPortCategory(e.target.value)}
@@ -959,10 +1177,8 @@ export default function Home() {
                     </button>
                   </div>
 
-                  {/* List of current portfolio images with delete buttons */}
                   <div className="flex flex-col gap-4">
-                    <span className="text-[10px] uppercase tracking-widest font-bold text-brand-sage">Existing Gallery Photos</span>
-                    
+                    <span className="text-[10px] uppercase tracking-widest font-bold text-brand-sage">Existing Photos</span>
                     <div className="grid grid-cols-2 gap-4">
                       {editForm.portfolio.map((item) => {
                         const localPreview = portfolioPreviews[item.id];
@@ -971,11 +1187,7 @@ export default function Home() {
                             <div className="flex items-center gap-3 min-w-0">
                               <div className="w-12 h-12 rounded-lg border border-brand-sage/10 overflow-hidden shrink-0 bg-brand-sage-light">
                                 {(localPreview || item.image) ? (
-                                  <img
-                                    src={localPreview || item.image}
-                                    alt="Thumb"
-                                    className="w-full h-full object-cover"
-                                  />
+                                  <img src={localPreview || item.image} alt="Thumb" className="w-full h-full object-cover" />
                                 ) : (
                                   <div className="w-full h-full flex items-center justify-center text-[10px] opacity-40">Art</div>
                                 )}
@@ -985,10 +1197,197 @@ export default function Home() {
                                 <span className="text-[8px] uppercase tracking-wider font-bold text-brand-sage block mt-0.5">{item.category}</span>
                               </div>
                             </div>
-
                             <button
                               type="button"
                               onClick={() => handleDeletePortfolioItem(item.id)}
+                              className="text-[10px] font-bold text-rose-600 hover:text-rose-800 uppercase shrink-0 cursor-pointer"
+                            >
+                              Delete
+                            </button>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Tab 4: Testimonials CRUD (NEW) */}
+              {adminTab === "testimonials" && (
+                <div className="flex flex-col gap-6">
+                  <div className="border border-brand-sage/20 rounded-2xl p-5 bg-[#E5E1D5]/20 flex flex-col gap-4">
+                    <span className="text-[10px] uppercase tracking-widest font-bold text-brand-sage">Add Client Review</span>
+                    
+                    <div className="grid grid-cols-3 gap-4">
+                      <div className="col-span-2 flex flex-col gap-1">
+                        <label className="text-[9px] uppercase font-bold text-brand-text/60">Client Name</label>
+                        <input
+                          type="text"
+                          value={newTestName}
+                          onChange={(e) => setNewTestName(e.target.value)}
+                          placeholder="e.g. Jane Foster"
+                          className="px-3 py-2 bg-[#F4F1EA] border border-brand-sage/10 rounded-lg text-xs text-brand-text"
+                        />
+                      </div>
+                      <div className="flex flex-col gap-1">
+                        <label className="text-[9px] uppercase font-bold text-brand-text/60">Rating (Stars)</label>
+                        <select
+                          value={newTestRating}
+                          onChange={(e) => setNewTestRating(parseInt(e.target.value) || 5)}
+                          className="px-3 py-2 bg-[#F4F1EA] border border-brand-sage/10 rounded-lg text-xs text-brand-text"
+                        >
+                          <option value="5">5 Stars</option>
+                          <option value="4">4 Stars</option>
+                          <option value="3">3 Stars</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    <div className="flex flex-col gap-1">
+                      <label className="text-[9px] uppercase font-bold text-brand-text/60">Client Quote</label>
+                      <textarea
+                        value={newTestQuote}
+                        onChange={(e) => setNewTestQuote(e.target.value)}
+                        placeholder="Type review quote..."
+                        rows={3}
+                        className="px-3 py-2 bg-[#F4F1EA] border border-brand-sage/10 rounded-lg text-xs text-brand-text resize-none"
+                      />
+                    </div>
+
+                    <div className="flex flex-col gap-1">
+                      <label className="text-[9px] uppercase font-bold text-brand-text/60">Inquiry Context / Source</label>
+                      <input
+                        type="text"
+                        value={newTestSource}
+                        onChange={(e) => setNewTestSource(e.target.value)}
+                        placeholder="e.g. Private Alignment Client"
+                        className="px-3 py-2 bg-[#F4F1EA] border border-brand-sage/10 rounded-lg text-xs text-brand-text"
+                      />
+                    </div>
+
+                    <button
+                      type="button"
+                      disabled={!newTestName || !newTestQuote}
+                      onClick={handleAddTestimonial}
+                      className="mt-2 py-3 bg-brand-sage hover:bg-brand-sage-hover text-[#F4F1EA] text-[10px] font-bold uppercase tracking-wider rounded-xl cursor-pointer disabled:opacity-40"
+                    >
+                      Queue Review Addition
+                    </button>
+                  </div>
+
+                  <div className="flex flex-col gap-4">
+                    <span className="text-[10px] uppercase tracking-widest font-bold text-brand-sage">Existing Testimonials</span>
+                    <div className="flex flex-col gap-3">
+                      {editForm.testimonials.map((test) => (
+                        <div key={test.id} className="border border-brand-sage/10 rounded-xl p-4 bg-[#F4F1EA] flex justify-between items-start gap-4">
+                          <div className="flex-1 text-xs">
+                            <span className="font-semibold block text-brand-text">{test.clientName} ({test.rating}★)</span>
+                            <span className="text-[9px] text-brand-sage block font-bold mt-0.5">{test.source}</span>
+                            <p className="text-[11px] text-brand-text/70 italic mt-1.5 leading-relaxed">&ldquo;{test.quote}&rdquo;</p>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => handleDeleteTestimonial(test.id)}
+                            className="text-[10px] font-bold text-rose-600 hover:text-rose-800 uppercase shrink-0 cursor-pointer"
+                          >
+                            Delete
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Tab 5: Blog Posts CRUD (NEW) */}
+              {adminTab === "blog" && (
+                <div className="flex flex-col gap-6">
+                  <div className="border border-brand-sage/20 rounded-2xl p-5 bg-[#E5E1D5]/20 flex flex-col gap-4">
+                    <span className="text-[10px] uppercase tracking-widest font-bold text-brand-sage">Publish Blog Post</span>
+                    
+                    <div className="flex flex-col gap-1">
+                      <label className="text-[9px] uppercase font-bold text-brand-text/60">Article Title</label>
+                      <input
+                        type="text"
+                        value={newBlogTitle}
+                        onChange={(e) => setNewBlogTitle(e.target.value)}
+                        placeholder="e.g. Diaphragm Control & Nervous Systems"
+                        className="px-3 py-2 bg-[#F4F1EA] border border-brand-sage/10 rounded-lg text-xs text-brand-text"
+                      />
+                    </div>
+
+                    <div className="flex flex-col gap-1">
+                      <label className="text-[9px] uppercase font-bold text-[#2B2625]/80">Article Excerpt</label>
+                      <input
+                        type="text"
+                        value={newBlogExcerpt}
+                        onChange={(e) => setNewBlogExcerpt(e.target.value)}
+                        placeholder="Brief summary of the article..."
+                        className="px-3 py-2 bg-[#F4F1EA] border border-brand-sage/10 rounded-lg text-xs text-brand-text"
+                      />
+                    </div>
+
+                    <div className="flex flex-col gap-1">
+                      <label className="text-[9px] uppercase font-bold text-brand-text/60">Full Body Content</label>
+                      <textarea
+                        value={newBlogContent}
+                        onChange={(e) => setNewBlogContent(e.target.value)}
+                        placeholder="Write article details here..."
+                        rows={6}
+                        className="px-3 py-2 bg-[#F4F1EA] border border-brand-sage/10 rounded-lg text-xs text-brand-text resize-none"
+                      />
+                    </div>
+
+                    <div className="flex flex-col gap-1.5 pt-2">
+                      <label className="text-[9px] uppercase font-bold text-brand-text/60">Featured Cover Image</label>
+                      <div className="flex items-center gap-4">
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={handleNewBlogFileChange}
+                          className="text-[10px] text-brand-text/60 file:mr-3 file:py-1 file:px-3 file:rounded-full file:border-0 file:text-[9px] file:font-semibold file:bg-brand-sage file:text-[#F4F1EA]"
+                        />
+                        {newBlogPreview && (
+                          <div className="w-10 h-10 rounded-lg border border-brand-sage/10 overflow-hidden shrink-0">
+                            <img src={newBlogPreview} alt="Preview" className="w-full h-full object-cover" />
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    <button
+                      type="button"
+                      disabled={!newBlogTitle || !newBlogContent}
+                      onClick={handleAddBlogPost}
+                      className="mt-2 py-3 bg-brand-sage hover:bg-brand-sage-hover text-[#F4F1EA] text-[10px] font-bold uppercase tracking-wider rounded-xl cursor-pointer disabled:opacity-40"
+                    >
+                      Queue Article Publication
+                    </button>
+                  </div>
+
+                  <div className="flex flex-col gap-4">
+                    <span className="text-[10px] uppercase tracking-widest font-bold text-brand-sage">Published Articles</span>
+                    <div className="grid grid-cols-2 gap-4">
+                      {editForm.blogPosts.map((post) => {
+                        const localPreview = blogPreviews[post.id];
+                        return (
+                          <div key={post.id} className="border border-brand-sage/10 rounded-xl p-3 bg-[#F4F1EA] flex items-center justify-between gap-3 shadow-2xs">
+                            <div className="flex items-center gap-3 min-w-0">
+                              <div className="w-12 h-12 rounded-lg border border-brand-sage/10 overflow-hidden shrink-0 bg-brand-sage-light">
+                                {(localPreview || post.featuredImage) ? (
+                                  <img src={localPreview || post.featuredImage} alt="Thumb" className="w-full h-full object-cover" />
+                                ) : (
+                                  <div className="w-full h-full flex items-center justify-center text-[10px] opacity-40">Cover</div>
+                                )}
+                              </div>
+                              <div className="min-w-0">
+                                <h5 className="text-xs font-semibold text-brand-text truncate leading-tight">{post.title}</h5>
+                                <span className="text-[8px] text-brand-sage block mt-0.5 font-mono">{post.date}</span>
+                              </div>
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => handleDeleteBlogPost(post.id)}
                               className="text-[10px] font-bold text-rose-600 hover:text-rose-800 uppercase shrink-0 cursor-pointer"
                             >
                               Delete
@@ -1031,7 +1430,50 @@ export default function Home() {
         </div>
       )}
 
-      {/* Minimal Footer */}
+      {/* 10. Client Blog Post Reader Modal (NEW) */}
+      {activePost && (
+        <div className="fixed inset-0 bg-black/45 backdrop-blur-xs z-50 flex items-center justify-center p-4">
+          <div className="bg-[#F4F1EA] border border-brand-sage/20 rounded-3xl max-w-2xl w-full h-[80vh] flex flex-col relative overflow-hidden shadow-2xl">
+            {/* Header controls */}
+            <div className="p-5 border-b border-brand-sage/10 flex justify-between items-center shrink-0 bg-[#E5E1D5]/20">
+              <span className="text-[10px] uppercase font-bold tracking-widest text-brand-sage font-mono">{activePost.date}</span>
+              <button
+                onClick={() => setActivePost(null)}
+                className="w-8 h-8 rounded-full bg-brand-sage/10 text-brand-text hover:bg-brand-sage hover:text-[#F4F1EA] flex items-center justify-center text-xs transition-colors cursor-pointer"
+              >
+                ✕
+              </button>
+            </div>
+
+            {/* Content body */}
+            <div className="flex-1 overflow-y-auto p-6 md:p-10 text-left">
+              <h1 className="text-3xl font-serif text-brand-text leading-snug tracking-wide mb-6">
+                {activePost.title}
+              </h1>
+
+              {/* Cover Banner */}
+              {activePost.featuredImage && (
+                <div className="w-full h-64 rounded-2xl overflow-hidden border border-brand-sage/10 mb-8 shrink-0">
+                  <img src={activePost.featuredImage} alt="Cover" className="w-full h-full object-cover" />
+                </div>
+              )}
+
+              {/* Article text body */}
+              <div className="text-sm md:text-base text-brand-text/80 leading-relaxed font-normal whitespace-pre-line flex flex-col gap-4">
+                {activePost.content}
+              </div>
+
+              <div className="flex items-center justify-center gap-2.5 my-12 text-brand-sage/35">
+                <div className="w-8 h-px bg-brand-sage/20" />
+                <span className="text-xs">✦</span>
+                <div className="w-8 h-px bg-brand-sage/20" />
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Footer */}
       <footer className="border-t border-brand-sage/10 py-10 mt-auto text-center text-[10px] text-brand-text/50 uppercase tracking-widest bg-transparent">
         <div className="max-w-6xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-4">
           <span>© {new Date().getFullYear()} Elena Yoga. All rights reserved.</span>
