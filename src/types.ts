@@ -11,7 +11,6 @@ export interface OfferingItem {
   price: number;
   description: string;
   image: string;
-  isHourly?: boolean; // Toggle for hourly rate
 }
 
 export interface PortfolioItem {
@@ -68,4 +67,11 @@ export interface YogaContent {
   authorBio?: string; // WordPress Global Author bio
   contactEmail?: string; // Email to route leads/inquiries
   leads?: LeadItem[]; // Lead submissions database
+  studioName?: string; // Custom Studio name (default 'Elena Yoga')
+  hideHero?: boolean; // Toggle for Hero section visibility
+  hideAbout?: boolean; // Toggle for About section visibility
+  hideOfferings?: boolean; // Toggle for Offerings section visibility
+  hidePortfolio?: boolean; // Toggle for Portfolio section visibility
+  hideTestimonials?: boolean; // Toggle for Testimonials section visibility
+  hideBlog?: boolean; // Toggle for Blog section visibility
 }

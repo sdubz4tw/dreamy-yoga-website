@@ -42,5 +42,6 @@ next-env.d.ts
 
 # local test assets
 /public/data/homepage.json
+/public/data/email_logs.txt
 /public/uploads/
 

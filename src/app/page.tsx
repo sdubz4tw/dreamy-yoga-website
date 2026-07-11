@@ -167,31 +167,43 @@ export default function Home() {
     return 0;
   });
 
+  const studioBranding = currentContent.studioName || "Elena Yoga";
+
   return (
     <div className="flex-1 flex flex-col font-sans bg-transparent">
       {/* 1. Navigation Bar */}
       <header className="w-full border-b border-brand-sage-light/20 py-7 px-8 md:px-16 bg-[#0B0807]/80 backdrop-blur-md sticky top-0 z-30">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           <a href="#" className="font-serif text-xl md:text-2xl tracking-[0.25em] text-brand-text font-semibold uppercase">
-            Elena Yoga
+            {studioBranding}
           </a>
 
           <nav className="hidden md:flex items-center gap-12">
-            <a href="#about" className="text-[11px] font-bold uppercase tracking-[0.2em] text-brand-text/70 hover:text-brand-text transition-colors">
-              About
-            </a>
-            <a href="#services" className="text-[11px] font-bold uppercase tracking-[0.2em] text-brand-text/70 hover:text-brand-text transition-colors">
-              Offerings
-            </a>
-            <a href="#portfolio" className="text-[11px] font-bold uppercase tracking-[0.2em] text-brand-text/70 hover:text-brand-text transition-colors">
-              Portfolio
-            </a>
-            <a href="#testimonials" className="text-[11px] font-bold uppercase tracking-[0.2em] text-brand-text/70 hover:text-brand-text transition-colors">
-              Reviews
-            </a>
-            <a href="#journal" className="text-[11px] font-bold uppercase tracking-[0.2em] text-brand-text/70 hover:text-brand-text transition-colors">
-              Journal
-            </a>
+            {!currentContent.hideAbout && (
+              <a href="#about" className="text-[11px] font-bold uppercase tracking-[0.2em] text-brand-text/70 hover:text-brand-text transition-colors">
+                About
+              </a>
+            )}
+            {!currentContent.hideOfferings && (
+              <a href="#services" className="text-[11px] font-bold uppercase tracking-[0.2em] text-brand-text/70 hover:text-brand-text transition-colors">
+                Offerings
+              </a>
+            )}
+            {!currentContent.hidePortfolio && (
+              <a href="#portfolio" className="text-[11px] font-bold uppercase tracking-[0.2em] text-brand-text/70 hover:text-brand-text transition-colors">
+                Portfolio
+              </a>
+            )}
+            {!currentContent.hideTestimonials && (
+              <a href="#testimonials" className="text-[11px] font-bold uppercase tracking-[0.2em] text-brand-text/70 hover:text-brand-text transition-colors">
+                Reviews
+              </a>
+            )}
+            {!currentContent.hideBlog && (
+              <a href="#journal" className="text-[11px] font-bold uppercase tracking-[0.2em] text-brand-text/70 hover:text-brand-text transition-colors">
+                Journal
+              </a>
+            )}
             <a href="#contact" className="text-[11px] font-bold uppercase tracking-[0.2em] text-brand-text/70 hover:text-brand-text transition-colors">
               Contact
             </a>
@@ -209,431 +221,455 @@ export default function Home() {
       </header>
 
       {/* 2. Cinematic Hero Section */}
-      <section
-        className="relative py-36 md:py-52 px-8 md:px-16 flex flex-col items-center text-center justify-center overflow-hidden min-h-[70vh]"
-        style={{
-          backgroundImage: currentContent.heroImageUrl ? `url(${currentContent.heroImageUrl})` : "none",
-          backgroundSize: "cover",
-          backgroundPosition: "center",
-        }}
-      >
-        {currentContent.heroImageUrl && (
-          <div className="absolute inset-0 bg-[#0B0807]/85 -z-10" />
-        )}
+      {!currentContent.hideHero && (
+        <>
+          <section
+            className="relative py-36 md:py-52 px-8 md:px-16 flex flex-col items-center text-center justify-center overflow-hidden min-h-[70vh]"
+            style={{
+              backgroundImage: currentContent.heroImageUrl ? `url(${currentContent.heroImageUrl})` : "none",
+              backgroundSize: "cover",
+              backgroundPosition: "center",
+            }}
+          >
+            {currentContent.heroImageUrl && (
+              <div className="absolute inset-0 bg-[#0B0807]/85 -z-10" />
+            )}
 
-        {!currentContent.heroImageUrl && (
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[700px] rounded-full bg-brand-sage-light/5 blur-3xl -z-10 pointer-events-none" />
-        )}
+            {!currentContent.heroImageUrl && (
+              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[700px] rounded-full bg-brand-sage-light/5 blur-3xl -z-10 pointer-events-none" />
+            )}
 
-        <div className="max-w-4xl flex flex-col items-center gap-8 md:gap-10 z-10">
-          <span className="text-xs uppercase tracking-[0.35em] text-brand-sage font-bold">
-            ✦ Mindful Movement & Somatic Alignment
-          </span>
-          <h1 className="text-4xl md:text-6xl lg:text-7xl font-serif text-brand-text tracking-wider leading-[1.2] font-normal">
-            {currentContent.heroTitle}
-          </h1>
-          <p className="text-sm md:text-base text-brand-text/70 leading-relaxed max-w-2xl tracking-wide">
-            {currentContent.heroSubtitle}
-          </p>
-          <div className="mt-6">
-            <a
-              href="#contact"
-              className="inline-block px-10 py-5 bg-brand-sage text-[#111112] hover:bg-brand-sage-hover text-xs font-bold uppercase tracking-[0.2em] transition-colors duration-300 rounded-full shadow-sm"
-            >
-              Book a Session
-            </a>
+            <div className="max-w-4xl flex flex-col items-center gap-8 md:gap-10 z-10">
+              <span className="text-xs uppercase tracking-[0.35em] text-brand-sage font-bold">
+                ✦ Mindful Movement & Somatic Alignment
+              </span>
+              <h1 className="text-4xl md:text-6xl lg:text-7xl font-serif text-brand-text tracking-wider leading-[1.2] font-normal">
+                {currentContent.heroTitle}
+              </h1>
+              <p className="text-sm md:text-base text-brand-text/70 leading-relaxed max-w-2xl tracking-wide">
+                {currentContent.heroSubtitle}
+              </p>
+              <div className="mt-6">
+                <a
+                  href="#contact"
+                  className="inline-block px-10 py-5 bg-brand-sage text-[#111112] hover:bg-brand-sage-hover text-xs font-bold uppercase tracking-[0.2em] transition-colors duration-300 rounded-full shadow-sm"
+                >
+                  Book a Session
+                </a>
+              </div>
+            </div>
+          </section>
+
+          {/* Divider */}
+          <div className="max-w-7xl mx-auto w-full px-8 md:px-16">
+            <div className="w-full h-px bg-brand-sage-light/20" />
           </div>
-        </div>
-      </section>
-
-      {/* Divider */}
-      <div className="max-w-7xl mx-auto w-full px-8 md:px-16">
-        <div className="w-full h-px bg-brand-sage-light/20" />
-      </div>
+        </>
+      )}
 
       {/* 3. Side-by-Side About Me Section */}
-      <section id="about" className="py-24 md:py-36 px-8 md:px-16 max-w-7xl mx-auto w-full">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-16 lg:gap-20 items-center">
-          <div className="lg:col-span-5 flex justify-center">
-            <div className="w-full max-w-[380px] aspect-[4/5] rounded-3xl bg-brand-sage-light/10 flex flex-col items-center justify-center relative overflow-hidden shadow-md border border-brand-sage-light/20">
-              {currentContent.aboutImageUrl ? (
-                <img
-                  src={currentContent.aboutImageUrl}
-                  alt="Elena Yoga Instructor Profile"
-                  className="w-full h-full object-cover rounded-3xl"
-                />
-              ) : (
-                <div className="w-full h-full p-10 flex flex-col items-center justify-center">
-                  <svg
-                    viewBox="0 0 100 120"
-                    fill="none"
-                    xmlns="http://www.w3.org/2000/svg"
-                    className="w-full h-full opacity-40 text-brand-sage/80 stroke-1.5"
-                  >
-                    <circle cx="50" cy="40" r="16" className="stroke-brand-sage/20 fill-brand-sage/5" />
-                    <path
-                      d="M50 105C50 75 50 45 50 35M50 85C45 80 32 78 35 70C38 62 48 68 50 68M50 72C55 67 68 65 65 57C62 49 52 55 50 55M50 55C46 50 35 48 37 42C39 36 48 40 50 40"
-                      stroke="currentColor"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
+      {!currentContent.hideAbout && (
+        <>
+          <section id="about" className="py-24 md:py-36 px-8 md:px-16 max-w-7xl mx-auto w-full">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-16 lg:gap-20 items-center">
+              <div className="lg:col-span-5 flex justify-center">
+                <div className="w-full max-w-[380px] aspect-[4/5] rounded-3xl bg-brand-sage-light/10 flex flex-col items-center justify-center relative overflow-hidden shadow-md border border-brand-sage-light/20">
+                  {currentContent.aboutImageUrl ? (
+                    <img
+                      src={currentContent.aboutImageUrl}
+                      alt="Elena Yoga Instructor Profile"
+                      className="w-full h-full object-cover rounded-3xl"
                     />
-                  </svg>
-                </div>
-              )}
+                  ) : (
+                    <div className="w-full h-full p-10 flex flex-col items-center justify-center">
+                      <svg
+                        viewBox="0 0 100 120"
+                        fill="none"
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="w-full h-full opacity-40 text-brand-sage/80 stroke-1.5"
+                      >
+                        <circle cx="50" cy="40" r="16" className="stroke-brand-sage/20 fill-brand-sage/5" />
+                        <path
+                          d="M50 105C50 75 50 45 50 35M50 85C45 80 32 78 35 70C38 62 48 68 50 68M50 72C55 67 68 65 65 57C62 49 52 55 50 55M50 55C46 50 35 48 37 42C39 36 48 40 50 40"
+                          stroke="currentColor"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
+                      </svg>
+                    </div>
+                  )}
 
-              <div className="absolute bottom-6 inset-x-6 text-center z-10 bg-[#0B0807]/60 backdrop-blur-xs py-2 rounded-full border border-brand-sage-light/20">
-                <span className="text-[10px] uppercase font-bold tracking-[0.2em] text-brand-text">
-                  Elena • Founder of Elena Yoga
+                  <div className="absolute bottom-6 inset-x-6 text-center z-10 bg-[#0B0807]/60 backdrop-blur-xs py-2 rounded-full border border-brand-sage-light/20">
+                    <span className="text-[10px] uppercase font-bold tracking-[0.2em] text-brand-text">
+                      Elena • Founder of Elena Yoga
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="lg:col-span-7 flex flex-col items-start gap-6">
+                <span className="text-[10px] uppercase tracking-[0.25em] text-brand-sage font-bold">
+                  The Instructor
                 </span>
-              </div>
-            </div>
-          </div>
-
-          <div className="lg:col-span-7 flex flex-col items-start gap-6">
-            <span className="text-[10px] uppercase tracking-[0.25em] text-brand-sage font-bold">
-              The Instructor
-            </span>
-            <h2 className="text-3xl md:text-5xl font-serif text-brand-text tracking-wide font-normal">
-              Hi, I am Elena
-            </h2>
-            <div className="flex flex-col gap-5 text-sm text-brand-text/75 leading-relaxed max-w-2xl font-normal whitespace-pre-line tracking-wide">
-              {currentContent.aboutBioText}
-            </div>
-            <div className="mt-4">
-              <a
-                href="#services"
-                className="text-xs font-bold uppercase tracking-[0.2em] text-brand-text hover:text-brand-sage transition-colors border-b border-brand-text pb-1 hover:border-brand-sage"
-              >
-                Explore Offerings
-              </a>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Divider */}
-      <div className="max-w-7xl mx-auto w-full px-8 md:px-16">
-        <div className="w-full h-px bg-brand-sage-light/20" />
-      </div>
-
-      {/* 4. Offerings Grid Section */}
-      <section id="services" className="py-24 md:py-36 px-8 md:px-16 max-w-7xl mx-auto w-full">
-        <div className="text-center flex flex-col items-center gap-4 mb-20">
-          <span className="text-[10px] uppercase tracking-[0.25em] text-brand-sage font-bold">
-            Curated Programs
-          </span>
-          <h2 className="text-3xl md:text-5xl font-serif text-brand-text tracking-wide font-normal">
-            Bespoke Offerings
-          </h2>
-          <p className="text-xs md:text-sm text-brand-text/60 leading-relaxed max-w-lg tracking-wide">
-            Quiet spaces and custom sequences created to align physical posture, mental pacing, and sensory stillness.
-          </p>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-10 lg:gap-16">
-          {currentContent.offerings.map((offering) => (
-            <div
-              key={offering.id}
-              className="border border-brand-sage-light/35 bg-[#161210] hover:bg-[#161210]/80 rounded-3xl overflow-hidden flex flex-col justify-between transition-all duration-300 group shadow-md min-h-[420px]"
-            >
-              <div
-                className="h-56 w-full bg-[#161210]/50 shrink-0 relative overflow-hidden"
-                style={{
-                  backgroundImage: offering.image ? `url(${offering.image})` : "none",
-                  backgroundSize: "cover",
-                  backgroundPosition: "center",
-                }}
-              >
-                {!offering.image && (
-                  <div className="absolute inset-0 bg-gradient-to-tr from-brand-sage/5 to-brand-sage-light/20" />
-                )}
-                {/* Dynamically format flat/hourly rates */}
-                <div className="absolute top-4 right-4 bg-[#0B0807] border border-brand-sage-light/30 px-4 py-2 rounded-full text-xs font-bold text-brand-sage shadow-sm font-mono tracking-wider">
-                  ${offering.price} {offering.isHourly ? "/ hr" : "flat"}
+                <h2 className="text-3xl md:text-5xl font-serif text-brand-text tracking-wide font-normal">
+                  Hi, I am Elena
+                </h2>
+                <div className="flex flex-col gap-5 text-sm text-brand-text/75 leading-relaxed max-w-2xl font-normal whitespace-pre-line tracking-wide">
+                  {currentContent.aboutBioText}
                 </div>
-              </div>
-
-              <div className="p-8 md:p-10 flex-1 flex flex-col justify-between gap-8">
-                <div className="flex flex-col gap-4">
-                  <h3 className="text-xl md:text-3xl font-serif text-brand-text tracking-wide group-hover:text-brand-sage transition-colors leading-snug font-normal">
-                    {offering.title}
-                  </h3>
-                  <p className="text-xs md:text-sm text-brand-text/70 leading-relaxed font-normal tracking-wide">
-                    {offering.description}
-                  </p>
-                </div>
-                <div>
+                <div className="mt-4">
                   <a
-                    href="#contact"
-                    className="inline-block text-xs font-bold uppercase tracking-[0.2em] border-b border-brand-text group-hover:border-brand-sage group-hover:text-brand-sage pb-1 transition-colors"
+                    href="#services"
+                    className="text-xs font-bold uppercase tracking-[0.2em] text-brand-text hover:text-brand-sage transition-colors border-b border-brand-text pb-1 hover:border-brand-sage"
                   >
-                    Inquire Space
+                    Explore Offerings
                   </a>
                 </div>
               </div>
             </div>
-          ))}
-        </div>
-      </section>
+          </section>
 
-      {/* Divider */}
-      <div className="max-w-7xl mx-auto w-full px-8 md:px-16">
-        <div className="w-full h-px bg-brand-sage-light/20" />
-      </div>
+          {/* Divider */}
+          <div className="max-w-7xl mx-auto w-full px-8 md:px-16">
+            <div className="w-full h-px bg-brand-sage-light/20" />
+          </div>
+        </>
+      )}
 
-      {/* 5. Portfolio Gallery Section */}
-      <section id="portfolio" className="py-24 md:py-36 px-8 md:px-16 max-w-7xl mx-auto w-full">
-        <div className="text-center flex flex-col items-center gap-4 mb-16">
-          <span className="text-[10px] uppercase tracking-[0.25em] text-brand-sage font-bold">
-            Visual Sanctuary
-          </span>
-          <h2 className="text-3xl md:text-5xl font-serif text-brand-text tracking-wide font-normal">
-            Portfolio Gallery
-          </h2>
-          <p className="text-xs md:text-sm text-brand-text/60 leading-relaxed max-w-lg tracking-wide">
-            Glimpses into our physical studio environments, class alignments, and workshop gatherings.
-          </p>
-        </div>
-
-        <div className="flex justify-center gap-3 mb-12 overflow-x-auto pb-2 scrollbar-none">
-          {["All", "Studio", "Classes", "Workshops"].map((filter) => {
-            const active = activePortfolioFilter === filter;
-            return (
-              <button
-                key={filter}
-                onClick={() => setActivePortfolioFilter(filter)}
-                className={`px-6 py-3 rounded-full text-xs font-bold uppercase tracking-[0.2em] transition-colors duration-300 cursor-pointer ${
-                  active
-                    ? "bg-brand-sage text-[#111112]"
-                    : "bg-brand-sage-light/20 hover:bg-brand-sage-light/35 text-brand-text/70"
-                }`}
-              >
-                {filter}
-              </button>
-            );
-          })}
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-          {filteredPortfolio.length === 0 ? (
-            <div className="col-span-full py-20 text-center text-brand-text/40 italic text-sm border border-dashed border-brand-sage-light/25 rounded-3xl">
-              No photos loaded under this category yet.
+      {/* 4. Offerings Grid Section */}
+      {!currentContent.hideOfferings && (
+        <>
+          <section id="services" className="py-24 md:py-36 px-8 md:px-16 max-w-7xl mx-auto w-full">
+            <div className="text-center flex flex-col items-center gap-4 mb-20">
+              <span className="text-[10px] uppercase tracking-[0.25em] text-brand-sage font-bold">
+                Curated Programs
+              </span>
+              <h2 className="text-3xl md:text-5xl font-serif text-brand-text tracking-wide font-normal">
+                Bespoke Offerings
+              </h2>
+              <p className="text-xs md:text-sm text-brand-text/60 leading-relaxed max-w-lg tracking-wide">
+                Quiet spaces and custom sequences created to align physical posture, mental pacing, and sensory stillness.
+              </p>
             </div>
-          ) : (
-            filteredPortfolio.map((item) => (
-              <div
-                key={item.id}
-                className="group relative aspect-square rounded-3xl overflow-hidden border border-brand-sage-light/20 bg-brand-sage-light/15 shadow-sm transition-all duration-500 hover:-translate-y-1.5 hover:shadow-lg cursor-pointer"
-              >
-                {item.image ? (
-                  <img
-                    src={item.image}
-                    alt={item.title}
-                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-                  />
-                ) : (
-                  <div className="w-full h-full p-14 flex items-center justify-center opacity-30 text-brand-sage bg-gradient-to-tr from-brand-sage-light/20 to-transparent">
-                    <svg viewBox="0 0 100 120" fill="none" className="w-full h-full stroke-1.5">
-                      <circle cx="50" cy="40" r="12" className="stroke-brand-sage/20" />
-                      <path d="M50 100C50 70 50 45 50 35M50 85C45 80 32 78 35 70C38 62 48 68 50 68" stroke="currentColor" strokeLinecap="round" />
-                    </svg>
-                  </div>
-                )}
 
-                <div className="absolute inset-0 bg-[#111112]/70 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-8 text-left">
-                  <span className="text-[10px] uppercase tracking-[0.25em] text-[#E5E0D8]/80 font-bold mb-1.5">
-                    {item.category}
-                  </span>
-                  <h4 className="text-xl font-serif text-[#E5E0D8] tracking-wide leading-tight font-normal">
-                    {item.title}
-                  </h4>
-                </div>
-              </div>
-            ))
-          )}
-        </div>
-      </section>
-
-      {/* Divider */}
-      <div className="max-w-7xl mx-auto w-full px-8 md:px-16">
-        <div className="w-full h-px bg-brand-sage-light/20" />
-      </div>
-
-      {/* 6. Testimonials Section */}
-      <section id="testimonials" className="py-24 md:py-36 px-8 md:px-16 max-w-7xl mx-auto w-full">
-        <div className="text-center flex flex-col items-center gap-4 mb-20">
-          <span className="text-[10px] uppercase tracking-[0.25em] text-brand-sage font-bold">
-            Resonance
-          </span>
-          <h2 className="text-3xl md:text-5xl font-serif text-brand-text tracking-wide font-normal">
-            Client Testimonials
-          </h2>
-          <p className="text-xs md:text-sm text-brand-text/60 leading-relaxed max-w-lg tracking-wide">
-            Words of gratitude and somatic experiences shared by students practicing within our spaces.
-          </p>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-10 lg:gap-16">
-          {currentContent.testimonials.map((test) => (
-            <div
-              key={test.id}
-              className="border border-[#26201C] bg-[#161210] p-10 rounded-3xl flex flex-col justify-between gap-8 shadow-sm border-t-4 border-t-brand-sage"
-            >
-              <div className="flex flex-col gap-5">
-                <div className="flex gap-1 text-brand-sage text-sm font-bold tracking-widest">
-                  {Array.from({ length: test.rating }).map((_, i) => (
-                    <span key={i}>★</span>
-                  ))}
-                </div>
-                <p className="text-sm italic text-brand-text/80 leading-relaxed font-normal tracking-wide">
-                  &ldquo;{test.quote}&rdquo;
-                </p>
-              </div>
-
-              <div className="flex justify-between items-center pt-4 border-t border-brand-sage-light/10">
-                <span className="text-xs font-serif font-bold text-brand-text tracking-wide">
-                  {test.clientName}
-                </span>
-                <span className="text-[9px] uppercase tracking-[0.2em] text-brand-sage font-bold">
-                  {test.source}
-                </span>
-              </div>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* Divider */}
-      <div className="max-w-7xl mx-auto w-full px-8 md:px-16">
-        <div className="w-full h-px bg-brand-sage-light/20" />
-      </div>
-
-      {/* 7. Blog / Journal Section (Editorial Stacked Rows) */}
-      <section id="journal" className="py-24 md:py-36 px-8 md:px-16 max-w-7xl mx-auto w-full">
-        <div className="text-center flex flex-col items-center gap-4 mb-20">
-          <span className="text-[10px] uppercase tracking-[0.25em] text-brand-sage font-bold">
-            Insights
-          </span>
-          <h2 className="text-3xl md:text-5xl font-serif text-brand-text tracking-wide font-normal">
-            The Philosophy Journal
-          </h2>
-          <p className="text-xs md:text-sm text-brand-text/60 leading-relaxed max-w-lg tracking-wide">
-            Essays, research notes, and reflections on somatic anatomy and mindful living.
-          </p>
-        </div>
-
-        {/* Spacious Rounded card panel wrapping the blog layout */}
-        <div className="bg-[#110D0B]/85 border border-[#26201C] p-6 md:p-12 lg:p-16 rounded-3xl flex flex-col gap-10">
-          {sortedPosts.length === 0 ? (
-            <div className="py-20 text-center text-[#8E847C] italic text-sm">
-              No journal articles published yet.
-            </div>
-          ) : (
-            sortedPosts.map((post) => {
-              const activeLikes = postLikes[post.id] !== undefined ? postLikes[post.id] : (post.likes || 0);
-              const hasLiked = !!likedPosts[post.id];
-
-              return (
-                /* Full-width Stacked Row card */
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-10 lg:gap-16">
+              {currentContent.offerings.map((offering) => (
                 <div
-                  key={post.id}
-                  className={`bg-[#161210] border p-8 md:p-10 rounded-3xl flex flex-col lg:flex-row gap-8 lg:gap-12 transition-all duration-350 hover:border-brand-sage/40 group shadow-sm items-stretch relative ${
-                    post.isFeatured ? "border-brand-sage/40 ring-1 ring-brand-sage/20" : "border-[#26201C]"
-                  }`}
+                  key={offering.id}
+                  className="border border-brand-sage-light/35 bg-[#161210] hover:bg-[#161210]/80 rounded-3xl overflow-hidden flex flex-col justify-between transition-all duration-300 group shadow-md min-h-[420px]"
                 >
-                  {/* Left Column: Featured Cover Photo */}
                   <div
-                    className="w-full lg:w-80 h-52 lg:h-auto rounded-2xl overflow-hidden shrink-0 relative bg-brand-sage-light/10"
+                    className="h-56 w-full bg-[#161210]/50 shrink-0 relative overflow-hidden"
                     style={{
-                      backgroundImage: post.featuredImage ? `url(${post.featuredImage})` : "none",
+                      backgroundImage: offering.image ? `url(${offering.image})` : "none",
                       backgroundSize: "cover",
                       backgroundPosition: "center",
                     }}
                   >
-                    {!post.featuredImage && (
+                    {!offering.image && (
                       <div className="absolute inset-0 bg-gradient-to-tr from-brand-sage/5 to-brand-sage-light/20" />
                     )}
+                    {/* Flat rate layout */}
+                    <div className="absolute top-4 right-4 bg-[#0B0807] border border-brand-sage-light/30 px-4 py-2 rounded-full text-xs font-bold text-brand-sage shadow-sm font-mono tracking-wider">
+                      ${offering.price}
+                    </div>
                   </div>
 
-                  {/* Right Column: Article Details */}
-                  <div className="flex-1 flex flex-col justify-between gap-6 relative text-left">
-                    <div className="flex flex-col gap-3.5">
-                      {/* Metadata row (Taupe Color #8E847C with Featured tags) */}
-                      <div className="flex flex-wrap items-center gap-2.5 text-[9px] uppercase tracking-[0.25em] text-[#8E847C] font-semibold font-mono">
-                        <span>{post.category || "Philosophy"}</span>
-                        <span>•</span>
-                        <span>{post.date}</span>
-                        <span>•</span>
-                        <span>{post.readTime || "5 min read"}</span>
-                        {post.isFeatured && (
-                          <>
-                            <span>•</span>
-                            <span className="text-brand-sage font-bold">Featured Pin</span>
-                          </>
-                        )}
-                      </div>
-
-                      {/* Post Title (Striking Serif Off-White #F3EFEA) */}
-                      <h3 className="text-2xl md:text-3xl font-serif text-[#F3EFEA] tracking-wide leading-snug group-hover:text-brand-sage transition-colors font-normal">
-                        {post.title}
+                  <div className="p-8 md:p-10 flex-1 flex flex-col justify-between gap-8">
+                    <div className="flex flex-col gap-4">
+                      <h3 className="text-xl md:text-3xl font-serif text-brand-text tracking-wide group-hover:text-brand-sage transition-colors leading-snug font-normal">
+                        {offering.title}
                       </h3>
-
                       <p className="text-xs md:text-sm text-brand-text/70 leading-relaxed font-normal tracking-wide">
-                        {post.excerpt}
+                        {offering.description}
                       </p>
-
-                      {/* Tags listing */}
-                      {post.tags && post.tags.length > 0 && (
-                        <div className="flex flex-wrap gap-2 mt-1">
-                          {post.tags.map((tag, i) => (
-                            <span key={i} className="text-[9px] bg-brand-sage-light/10 border border-brand-sage-light/20 text-[#8E847C] px-2.5 py-0.5 rounded-full font-mono lowercase">
-                              #{tag}
-                            </span>
-                          ))}
-                        </div>
-                      )}
                     </div>
-
-                    <div className="flex justify-between items-center pt-4 border-t border-[#26201C]">
-                      <button
-                        onClick={() => setActivePost(post)}
-                        className="text-xs font-bold uppercase tracking-[0.2em] text-[#F3EFEA] hover:text-brand-sage transition-colors border-b border-[#F3EFEA] pb-0.5 hover:border-brand-sage cursor-pointer"
+                    <div>
+                      <a
+                        href="#contact"
+                        className="inline-block text-xs font-bold uppercase tracking-[0.2em] border-b border-brand-text group-hover:border-brand-sage group-hover:text-brand-sage pb-1 transition-colors"
                       >
-                        Read Post
-                      </button>
-
-                      {/* Minimalist Heart/Like counter component */}
-                      <button
-                        onClick={() => handleLikeToggle(post.id)}
-                        className={`flex items-center gap-2 px-3 py-1.5 rounded-full border transition-all duration-300 cursor-pointer ${
-                          hasLiked
-                            ? "bg-brand-sage/15 border-brand-sage text-brand-sage"
-                            : "border-brand-sage-light/30 text-[#8E847C] hover:border-brand-sage/40 hover:text-[#F3EFEA]"
-                        }`}
-                      >
-                        <svg
-                          viewBox="0 0 24 24"
-                          className={`w-3.5 h-3.5 fill-current transition-transform duration-300 ${
-                            hasLiked ? "scale-110" : ""
-                          }`}
-                        >
-                          <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
-                        </svg>
-                        <span className="text-[10px] font-mono font-bold">{activeLikes}</span>
-                      </button>
+                        Inquire Space
+                      </a>
                     </div>
                   </div>
                 </div>
-              );
-            })
-          )}
-        </div>
-      </section>
+              ))}
+            </div>
+          </section>
 
-      {/* Divider */}
-      <div className="max-w-7xl mx-auto w-full px-8 md:px-16">
-        <div className="w-full h-px bg-brand-sage-light/20" />
-      </div>
+          {/* Divider */}
+          <div className="max-w-7xl mx-auto w-full px-8 md:px-16">
+            <div className="w-full h-px bg-brand-sage-light/20" />
+          </div>
+        </>
+      )}
+
+      {/* 5. Portfolio Gallery Section */}
+      {!currentContent.hidePortfolio && (
+        <>
+          <section id="portfolio" className="py-24 md:py-36 px-8 md:px-16 max-w-7xl mx-auto w-full">
+            <div className="text-center flex flex-col items-center gap-4 mb-16">
+              <span className="text-[10px] uppercase tracking-[0.25em] text-brand-sage font-bold">
+                Visual Sanctuary
+              </span>
+              <h2 className="text-3xl md:text-5xl font-serif text-brand-text tracking-wide font-normal">
+                Portfolio Gallery
+              </h2>
+              <p className="text-xs md:text-sm text-brand-text/60 leading-relaxed max-w-lg tracking-wide">
+                Glimpses into our physical studio environments, class alignments, and workshop gatherings.
+              </p>
+            </div>
+
+            <div className="flex justify-center gap-3 mb-12 overflow-x-auto pb-2 scrollbar-none">
+              {["All", "Studio", "Classes", "Workshops"].map((filter) => {
+                const active = activePortfolioFilter === filter;
+                return (
+                  <button
+                    key={filter}
+                    onClick={() => setActivePortfolioFilter(filter)}
+                    className={`px-6 py-3 rounded-full text-xs font-bold uppercase tracking-[0.2em] transition-colors duration-300 cursor-pointer ${
+                      active
+                        ? "bg-brand-sage text-[#111112]"
+                        : "bg-brand-sage-light/20 hover:bg-brand-sage-light/35 text-brand-text/70"
+                    }`}
+                  >
+                    {filter}
+                  </button>
+                );
+              })}
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+              {filteredPortfolio.length === 0 ? (
+                <div className="col-span-full py-20 text-center text-brand-text/40 italic text-sm border border-dashed border-brand-sage-light/25 rounded-3xl">
+                  No photos loaded under this category yet.
+                </div>
+              ) : (
+                filteredPortfolio.map((item) => (
+                  <div
+                    key={item.id}
+                    className="group relative aspect-square rounded-3xl overflow-hidden border border-brand-sage-light/20 bg-brand-sage-light/15 shadow-sm transition-all duration-500 hover:-translate-y-1.5 hover:shadow-lg cursor-pointer"
+                  >
+                    {item.image ? (
+                      <img
+                        src={item.image}
+                        alt={item.title}
+                        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                      />
+                    ) : (
+                      <div className="w-full h-full p-14 flex items-center justify-center opacity-30 text-brand-sage bg-gradient-to-tr from-brand-sage-light/20 to-transparent">
+                        <svg viewBox="0 0 100 120" fill="none" className="w-full h-full stroke-1.5">
+                          <circle cx="50" cy="40" r="12" className="stroke-brand-sage/20" />
+                          <path d="M50 100C50 70 50 45 50 35M50 85C45 80 32 78 35 70C38 62 48 68 50 68" stroke="currentColor" strokeLinecap="round" />
+                        </svg>
+                      </div>
+                    )}
+
+                    <div className="absolute inset-0 bg-[#111112]/70 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-8 text-left">
+                      <span className="text-[10px] uppercase tracking-[0.25em] text-[#E5E0D8]/80 font-bold mb-1.5">
+                        {item.category}
+                      </span>
+                      <h4 className="text-xl font-serif text-[#E5E0D8] tracking-wide leading-tight font-normal">
+                        {item.title}
+                      </h4>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+          </section>
+
+          {/* Divider */}
+          <div className="max-w-7xl mx-auto w-full px-8 md:px-16">
+            <div className="w-full h-px bg-brand-sage-light/20" />
+          </div>
+        </>
+      )}
+
+      {/* 6. Testimonials Section */}
+      {!currentContent.hideTestimonials && (
+        <>
+          <section id="testimonials" className="py-24 md:py-36 px-8 md:px-16 max-w-7xl mx-auto w-full">
+            <div className="text-center flex flex-col items-center gap-4 mb-20">
+              <span className="text-[10px] uppercase tracking-[0.25em] text-brand-sage font-bold">
+                Resonance
+              </span>
+              <h2 className="text-3xl md:text-5xl font-serif text-brand-text tracking-wide font-normal">
+                Client Testimonials
+              </h2>
+              <p className="text-xs md:text-sm text-brand-text/60 leading-relaxed max-w-lg tracking-wide">
+                Words of gratitude and somatic experiences shared by students practicing within our spaces.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-10 lg:gap-16">
+              {currentContent.testimonials.map((test) => (
+                <div
+                  key={test.id}
+                  className="border border-[#26201C] bg-[#161210] p-10 rounded-3xl flex flex-col justify-between gap-8 shadow-sm border-t-4 border-t-brand-sage"
+                >
+                  <div className="flex flex-col gap-5">
+                    <div className="flex gap-1 text-brand-sage text-sm font-bold tracking-widest">
+                      {Array.from({ length: test.rating }).map((_, i) => (
+                        <span key={i}>★</span>
+                      ))}
+                    </div>
+                    <p className="text-sm italic text-brand-text/80 leading-relaxed font-normal tracking-wide">
+                      &ldquo;{test.quote}&rdquo;
+                    </p>
+                  </div>
+
+                  <div className="flex justify-between items-center pt-4 border-t border-brand-sage-light/10">
+                    <span className="text-xs font-serif font-bold text-brand-text tracking-wide">
+                      {test.clientName}
+                    </span>
+                    <span className="text-[9px] uppercase tracking-[0.2em] text-brand-sage font-bold">
+                      {test.source}
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </section>
+
+          {/* Divider */}
+          <div className="max-w-7xl mx-auto w-full px-8 md:px-16">
+            <div className="w-full h-px bg-brand-sage-light/20" />
+          </div>
+        </>
+      )}
+
+      {/* 7. Blog / Journal Section (Editorial Stacked Rows) */}
+      {!currentContent.hideBlog && (
+        <>
+          <section id="journal" className="py-24 md:py-36 px-8 md:px-16 max-w-7xl mx-auto w-full">
+            <div className="text-center flex flex-col items-center gap-4 mb-20">
+              <span className="text-[10px] uppercase tracking-[0.25em] text-brand-sage font-bold">
+                Insights
+              </span>
+              <h2 className="text-3xl md:text-5xl font-serif text-brand-text tracking-wide font-normal">
+                The Philosophy Journal
+              </h2>
+              <p className="text-xs md:text-sm text-brand-text/60 leading-relaxed max-w-lg tracking-wide">
+                Essays, research notes, and reflections on somatic anatomy and mindful living.
+              </p>
+            </div>
+
+            {/* Spacious Rounded card panel wrapping the blog layout */}
+            <div className="bg-[#110D0B]/85 border border-[#26201C] p-6 md:p-12 lg:p-16 rounded-3xl flex flex-col gap-10">
+              {sortedPosts.length === 0 ? (
+                <div className="py-20 text-center text-[#8E847C] italic text-sm">
+                  No journal articles published yet.
+                </div>
+              ) : (
+                sortedPosts.map((post) => {
+                  const activeLikes = postLikes[post.id] !== undefined ? postLikes[post.id] : (post.likes || 0);
+                  const hasLiked = !!likedPosts[post.id];
+
+                  return (
+                    /* Full-width Stacked Row card */
+                    <div
+                      key={post.id}
+                      className={`bg-[#161210] border p-8 md:p-10 rounded-3xl flex flex-col lg:flex-row gap-8 lg:gap-12 transition-all duration-350 hover:border-brand-sage/40 group shadow-sm items-stretch relative ${
+                        post.isFeatured ? "border-brand-sage/40 ring-1 ring-brand-sage/20" : "border-[#26201C]"
+                      }`}
+                    >
+                      {/* Left Column: Featured Cover Photo */}
+                      <div
+                        className="w-full lg:w-80 h-52 lg:h-auto rounded-2xl overflow-hidden shrink-0 relative bg-brand-sage-light/10"
+                        style={{
+                          backgroundImage: post.featuredImage ? `url(${post.featuredImage})` : "none",
+                          backgroundSize: "cover",
+                          backgroundPosition: "center",
+                        }}
+                      >
+                        {!post.featuredImage && (
+                          <div className="absolute inset-0 bg-gradient-to-tr from-brand-sage/5 to-brand-sage-light/20" />
+                        )}
+                      </div>
+
+                      {/* Right Column: Article Details */}
+                      <div className="flex-1 flex flex-col justify-between gap-6 relative text-left">
+                        <div className="flex flex-col gap-3.5">
+                          {/* Metadata row (Taupe Color #8E847C with Featured tags) */}
+                          <div className="flex flex-wrap items-center gap-2.5 text-[9px] uppercase tracking-[0.25em] text-[#8E847C] font-semibold font-mono">
+                            <span>{post.category || "Philosophy"}</span>
+                            <span>•</span>
+                            <span>{post.date}</span>
+                            <span>•</span>
+                            <span>{post.readTime || "5 min read"}</span>
+                            {post.isFeatured && (
+                              <>
+                                <span>•</span>
+                                <span className="text-brand-sage font-bold">Featured Pin</span>
+                              </>
+                            )}
+                          </div>
+
+                          {/* Post Title (Striking Serif Off-White #F3EFEA) */}
+                          <h3 className="text-2xl md:text-3xl font-serif text-[#F3EFEA] tracking-wide leading-snug group-hover:text-brand-sage transition-colors font-normal">
+                            {post.title}
+                          </h3>
+
+                          <p className="text-xs md:text-sm text-brand-text/70 leading-relaxed font-normal tracking-wide">
+                            {post.excerpt}
+                          </p>
+
+                          {/* Tags listing */}
+                          {post.tags && post.tags.length > 0 && (
+                            <div className="flex flex-wrap gap-2 mt-1">
+                              {post.tags.map((tag, i) => (
+                                <span key={i} className="text-[9px] bg-brand-sage-light/10 border border-brand-sage-light/20 text-[#8E847C] px-2.5 py-0.5 rounded-full font-mono lowercase">
+                                  #{tag}
+                                </span>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+
+                        <div className="flex justify-between items-center pt-4 border-t border-[#26201C]">
+                          <button
+                            onClick={() => setActivePost(post)}
+                            className="text-xs font-bold uppercase tracking-[0.2em] text-[#F3EFEA] hover:text-brand-sage transition-colors border-b border-[#F3EFEA] pb-0.5 hover:border-brand-sage cursor-pointer"
+                          >
+                            Read Post
+                          </button>
+
+                          {/* Minimalist Heart/Like counter component */}
+                          <button
+                            onClick={() => handleLikeToggle(post.id)}
+                            className={`flex items-center gap-2 px-3 py-1.5 rounded-full border transition-all duration-300 cursor-pointer ${
+                              hasLiked
+                                ? "bg-brand-sage/15 border-brand-sage text-brand-sage"
+                                : "border-brand-sage-light/30 text-[#8E847C] hover:border-brand-sage/40 hover:text-[#F3EFEA]"
+                            }`}
+                          >
+                            <svg
+                              viewBox="0 0 24 24"
+                              className={`w-3.5 h-3.5 fill-current transition-transform duration-300 ${
+                                hasLiked ? "scale-110" : ""
+                              }`}
+                            >
+                              <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
+                            </svg>
+                            <span className="text-[10px] font-mono font-bold">{activeLikes}</span>
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })
+              )}
+            </div>
+          </section>
+
+          {/* Divider */}
+          <div className="max-w-7xl mx-auto w-full px-8 md:px-16">
+            <div className="w-full h-px bg-brand-sage-light/20" />
+          </div>
+        </>
+      )}
 
       {/* 8. Spacio-Minimalist Contact Form Section */}
       <section id="contact" className="py-24 md:py-36 px-8 md:px-16 max-w-lg mx-auto w-full">
@@ -727,7 +763,7 @@ export default function Home() {
       {/* Discreet Footer Entrance (Linking to /admin standalone CMS) */}
       <footer className="border-t border-brand-sage-light/20 py-12 mt-auto text-center text-[10px] text-brand-text/45 uppercase tracking-[0.25em] bg-transparent">
         <div className="max-w-7xl mx-auto px-8 flex flex-col md:flex-row justify-between items-center gap-6">
-          <span>© {new Date().getFullYear()} Elena Yoga. All rights reserved.</span>
+          <span>© {new Date().getFullYear()} {studioBranding}. All rights reserved.</span>
           <div className="flex items-center gap-4">
             <span>Peace • Alignment • Somatic Wisdom</span>
             <span>|</span>

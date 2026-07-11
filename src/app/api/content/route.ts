@@ -20,6 +20,13 @@ const DEFAULT_CONTENT: YogaContent = {
   authorBio: "Somatic educator, skeleto-tissue alignment specialist, and restorative Yin facilitator with 10+ years holding alignment sanctuaries.",
   contactEmail: "elena@example.com",
   leads: [],
+  studioName: "Elena Yoga",
+  hideHero: false,
+  hideAbout: false,
+  hideOfferings: false,
+  hidePortfolio: false,
+  hideTestimonials: false,
+  hideBlog: false,
   offerings: [
     {
       id: "private",
@@ -27,7 +34,6 @@ const DEFAULT_CONTENT: YogaContent = {
       price: 120,
       description: "Bespoke posture assessment, custom somatic adjustives, and individualized breath guidance. These private sessions are customized dynamically around your body's structural history, athletic goals, and specific nervous system needs.",
       image: "",
-      isHourly: true,
     },
     {
       id: "group",
@@ -35,7 +41,6 @@ const DEFAULT_CONTENT: YogaContent = {
       price: 35,
       description: "Shared vinyasa patterns, slow-flowing transitions, and community yin gatherings. Practice inside an airy, light-filled environment alongside a supportive, collective community seeking physical strength, structural ease, and daily grounding.",
       image: "",
-      isHourly: false,
     },
   ],
   portfolio: [
@@ -241,10 +246,13 @@ function patchContentDataDefaults(data: YogaContent) {
   if (!data.contactEmail) data.contactEmail = DEFAULT_CONTENT.contactEmail;
   if (!data.leads) data.leads = [];
 
-  data.offerings = data.offerings.map((offering) => ({
-    ...offering,
-    isHourly: typeof offering.isHourly === "boolean" ? offering.isHourly : false,
-  }));
+  if (!data.studioName) data.studioName = DEFAULT_CONTENT.studioName;
+  data.hideHero = typeof data.hideHero === "boolean" ? data.hideHero : false;
+  data.hideAbout = typeof data.hideAbout === "boolean" ? data.hideAbout : false;
+  data.hideOfferings = typeof data.hideOfferings === "boolean" ? data.hideOfferings : false;
+  data.hidePortfolio = typeof data.hidePortfolio === "boolean" ? data.hidePortfolio : false;
+  data.hideTestimonials = typeof data.hideTestimonials === "boolean" ? data.hideTestimonials : false;
+  data.hideBlog = typeof data.hideBlog === "boolean" ? data.hideBlog : false;
 
   data.blogPosts = data.blogPosts.map((post) => ({
     ...post,

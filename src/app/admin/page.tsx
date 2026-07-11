@@ -174,7 +174,6 @@ export default function AdminPage() {
       price: 50,
       description: "Class description...",
       image: "",
-      isHourly: false,
     };
     setEditForm({ ...editForm, offerings: [...editForm.offerings, newOffering] });
   };
@@ -311,6 +310,35 @@ export default function AdminPage() {
       delete updatedFiles[id];
       setBlogFiles(updatedFiles);
     }
+  };
+
+  // Compile Leads to structured Excel-compatible CSV Blob & Download
+  const handleExportLeadsCSV = () => {
+    const leads = editForm?.leads || content?.leads || [];
+    if (leads.length === 0) {
+      alert("No active leads in repository to export.");
+      return;
+    }
+
+    const headers = ["Name", "Email", "Timestamp", "Message"];
+    const rows = leads.map((lead) => [
+      `"${lead.name.replace(/"/g, '""')}"`,
+      `"${lead.email.replace(/"/g, '""')}"`,
+      `"${new Date(lead.timestamp).toISOString()}"`,
+      `"${lead.message.replace(/"/g, '""')}"`,
+    ]);
+
+    const csvString = [headers.join(","), ...rows.map((e) => e.join(","))].join("\n");
+    const blob = new Blob([csvString], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    
+    const link = document.createElement("a");
+    link.setAttribute("href", url);
+    link.setAttribute("download", `leads_export_${Date.now()}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
   };
 
   // Submit all edits via FormData
@@ -584,24 +612,45 @@ export default function AdminPage() {
 
           {/* TAB 1: OVERVIEW PANEL */}
           {activeTab === "overview" && (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-              {[
-                { title: "Yoga Classes", count: currentContent.offerings.length, tag: "Offerings" },
-                { title: "Gallery Photos", count: currentContent.portfolio.length, tag: "Portfolio Items" },
-                { title: "Client Reviews", count: currentContent.testimonials.length, tag: "Testimonials" },
-                { title: "Journal Articles", count: currentContent.blogPosts.length, tag: "Blog Posts" },
-              ].map((stat, i) => (
-                <div key={i} className="bg-white border border-[#dcdcde] p-5 rounded shadow-xs flex flex-col justify-between min-h-[110px]">
-                  <span className="text-xs font-bold text-[#1d2327] uppercase tracking-wider">{stat.title}</span>
-                  <span className="text-3xl font-sans font-bold text-[#2271b1] my-1">{stat.count}</span>
-                  <span className="text-[10px] text-[#8c8f94] font-semibold uppercase">{stat.tag}</span>
-                </div>
-              ))}
+            <div className="flex flex-col gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+                {[
+                  { title: "Yoga Classes", count: currentContent.offerings.length, tag: "Offerings" },
+                  { title: "Gallery Photos", count: currentContent.portfolio.length, tag: "Portfolio Items" },
+                  { title: "Client Reviews", count: currentContent.testimonials.length, tag: "Testimonials" },
+                  { title: "Journal Articles", count: currentContent.blogPosts.length, tag: "Blog Posts" },
+                ].map((stat, i) => (
+                  <div key={i} className="bg-white border border-[#dcdcde] p-5 rounded shadow-xs flex flex-col justify-between min-h-[110px]">
+                    <span className="text-xs font-bold text-[#1d2327] uppercase tracking-wider">{stat.title}</span>
+                    <span className="text-3xl font-sans font-bold text-[#2271b1] my-1">{stat.count}</span>
+                    <span className="text-[10px] text-[#8c8f94] font-semibold uppercase">{stat.tag}</span>
+                  </div>
+                ))}
+              </div>
 
-              <div className="bg-white border border-[#dcdcde] p-6 rounded shadow-xs col-span-full mt-2">
+              {/* Studio branding configuration */}
+              <div className="bg-white border border-[#dcdcde] p-6 rounded shadow-xs flex flex-col gap-4">
+                <h3 className="text-base font-bold text-[#1d2327] border-b border-[#f0f0f1] pb-3.5">Global Branding Settings</h3>
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-xs font-bold text-[#1d2327]">Studio Business Name (displays globally in headers and footers)</label>
+                  <input
+                    type="text"
+                    required
+                    value={currentContent.studioName || ""}
+                    onChange={(e) => {
+                      if (!editForm) return;
+                      setEditForm({ ...editForm, studioName: e.target.value });
+                    }}
+                    placeholder="Elena Yoga"
+                    className="px-3.5 py-2.5 bg-white border border-[#8c8f94] focus:border-[#2271b1] focus:outline-none rounded text-xs md:text-sm text-[#2c3338] max-w-md"
+                  />
+                </div>
+              </div>
+
+              <div className="bg-white border border-[#dcdcde] p-6 rounded shadow-xs">
                 <h4 className="text-base font-bold text-[#1d2327] mb-1">Welcome to Elena Yoga CMS</h4>
                 <p className="text-xs text-[#2c3338] leading-relaxed max-w-3xl">
-                  Use the left vertical navigation menu options to switch dashboard panels. You can upload banner photographs, edit somatic classes and rates, publish blog posts, review visitor inquiries, and preview modifications live. Clicking "Save" instantly commits all changes to local storage or Vercel Blob.
+                  Use the left vertical navigation menu options to switch dashboard panels. You can customize studio naming, check leads list, hide main pages blocks, configure class cards, publish articles, and verify layout integrations. Clicking "Save" instantly commits all changes to local storage or Vercel Blob.
                 </p>
               </div>
             </div>
@@ -610,6 +659,42 @@ export default function AdminPage() {
           {/* TAB 2: HERO & ABOUT & AUTHOR PANEL */}
           {activeTab === "heroAbout" && (
             <div className="flex flex-col gap-6">
+              {/* Section Visibility toggles */}
+              <div className="bg-white border border-[#dcdcde] p-6 rounded shadow-xs flex flex-col gap-4">
+                <h3 className="text-base font-bold text-[#1d2327] border-b border-[#f0f0f1] pb-3.5">Hero & About Section Visibility</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="flex flex-col gap-1.5">
+                    <label className="text-xs font-bold text-[#1d2327]">Hero Section Banner</label>
+                    <select
+                      value={currentContent.hideHero ? "off" : "on"}
+                      onChange={(e) => {
+                        if (!editForm) return;
+                        setEditForm({ ...editForm, hideHero: e.target.value === "off" });
+                      }}
+                      className="px-3.5 py-2 bg-white border border-[#8c8f94] focus:border-[#2271b1] focus:outline-none rounded text-xs text-[#2c3338]"
+                    >
+                      <option value="on">On (Visible)</option>
+                      <option value="off">Off (Hidden)</option>
+                    </select>
+                  </div>
+
+                  <div className="flex flex-col gap-1.5">
+                    <label className="text-xs font-bold text-[#1d2327]">About Me Section</label>
+                    <select
+                      value={currentContent.hideAbout ? "off" : "on"}
+                      onChange={(e) => {
+                        if (!editForm) return;
+                        setEditForm({ ...editForm, hideAbout: e.target.value === "off" });
+                      }}
+                      className="px-3.5 py-2 bg-white border border-[#8c8f94] focus:border-[#2271b1] focus:outline-none rounded text-xs text-[#2c3338]"
+                    >
+                      <option value="on">On (Visible)</option>
+                      <option value="off">Off (Hidden)</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+
               {/* Hero Settings Card */}
               <div className="bg-white border border-[#dcdcde] p-6 rounded shadow-xs flex flex-col gap-4">
                 <h3 className="text-base font-bold text-[#1d2327] border-b border-[#f0f0f1] pb-3.5">Hero Background & Text Settings</h3>
@@ -717,30 +802,31 @@ export default function AdminPage() {
                   </div>
                 </div>
               </div>
-
-              {/* Global Recipient Email Settings Card */}
-              <div className="bg-white border border-[#dcdcde] p-6 rounded shadow-xs flex flex-col gap-4">
-                <h3 className="text-base font-bold text-[#1d2327] border-b border-[#f0f0f1] pb-3.5">Notification Routing Email</h3>
-                <div className="flex flex-col gap-1.5">
-                  <label className="text-xs font-bold text-[#1d2327]">Recipient Contact Email (for Inquiry forwarding notifications)</label>
-                  <input
-                    type="email"
-                    required
-                    value={currentContent.contactEmail || ""}
-                    onChange={(e) => {
-                      if (!editForm) return;
-                      setEditForm({ ...editForm, contactEmail: e.target.value });
-                    }}
-                    className="px-3.5 py-2.5 bg-white border border-[#8c8f94] focus:border-[#2271b1] focus:outline-none rounded text-xs md:text-sm text-[#2c3338]"
-                  />
-                </div>
-              </div>
             </div>
           )}
 
           {/* TAB 3: OFFERINGS CRUD PANEL */}
           {activeTab === "offerings" && (
             <div className="flex flex-col gap-5">
+              {/* Offerings visibility toggle */}
+              <div className="bg-white border border-[#dcdcde] p-6 rounded shadow-xs flex flex-col gap-4">
+                <h3 className="text-base font-bold text-[#1d2327] border-b border-[#f0f0f1] pb-3.5">Offerings Section Visibility</h3>
+                <div className="flex flex-col gap-1.5 max-w-xs">
+                  <label className="text-xs font-bold text-[#1d2327]">Offerings Section</label>
+                  <select
+                    value={currentContent.hideOfferings ? "off" : "on"}
+                    onChange={(e) => {
+                      if (!editForm) return;
+                      setEditForm({ ...editForm, hideOfferings: e.target.value === "off" });
+                    }}
+                    className="px-3.5 py-2 bg-white border border-[#8c8f94] focus:border-[#2271b1] focus:outline-none rounded text-xs text-[#2c3338]"
+                  >
+                    <option value="on">On (Visible)</option>
+                    <option value="off">Off (Hidden)</option>
+                  </select>
+                </div>
+              </div>
+
               <div className="flex justify-between items-center">
                 <span className="text-xs font-bold text-[#1d2327] uppercase tracking-wider">Offerings List ({currentContent.offerings.length})</span>
                 <button
@@ -777,7 +863,7 @@ export default function AdminPage() {
                           />
                         </div>
                         <div className="flex flex-col gap-1.5">
-                          <span className="text-xs font-bold text-[#1d2327]">Hourly Rate / Fee ($)</span>
+                          <span className="text-xs font-bold text-[#1d2327]">Flat Fee Price ($)</span>
                           <input
                             type="number"
                             required
@@ -797,25 +883,6 @@ export default function AdminPage() {
                           onChange={(e) => handleOfferingChange(index, "description", e.target.value)}
                           className="px-3.5 py-2.5 bg-white border border-[#8c8f94] focus:border-[#2271b1] focus:outline-none rounded text-xs text-[#2c3338] resize-none"
                         />
-                      </div>
-
-                      {/* Pricing Type toggle */}
-                      <div className="flex items-center gap-2 pt-1">
-                        <input
-                          type="checkbox"
-                          id={`isHourly_${offering.id}`}
-                          checked={offering.isHourly || false}
-                          onChange={(e) => {
-                            if (!editForm) return;
-                            const updated = [...editForm.offerings];
-                            updated[index] = { ...updated[index], isHourly: e.target.checked };
-                            setEditForm({ ...editForm, offerings: updated });
-                          }}
-                          className="w-4 h-4 text-[#2271b1] border-[#8c8f94] rounded focus:ring-[#2271b1] cursor-pointer"
-                        />
-                        <label htmlFor={`isHourly_${offering.id}`} className="text-xs font-bold text-[#1d2327] cursor-pointer select-none">
-                          Hourly Rate pricing (e.g. show as "$120 / hr")
-                        </label>
                       </div>
 
                       <div className="flex flex-col gap-2 pt-3 border-t border-[#f0f0f1]">
@@ -844,6 +911,25 @@ export default function AdminPage() {
           {/* TAB 4: PORTFOLIO CRUD PANEL */}
           {activeTab === "portfolio" && (
             <div className="flex flex-col gap-6">
+              {/* Portfolio visibility toggle */}
+              <div className="bg-white border border-[#dcdcde] p-6 rounded shadow-xs flex flex-col gap-4">
+                <h3 className="text-base font-bold text-[#1d2327] border-b border-[#f0f0f1] pb-3.5">Portfolio Section Visibility</h3>
+                <div className="flex flex-col gap-1.5 max-w-xs">
+                  <label className="text-xs font-bold text-[#1d2327]">Portfolio Section</label>
+                  <select
+                    value={currentContent.hidePortfolio ? "off" : "on"}
+                    onChange={(e) => {
+                      if (!editForm) return;
+                      setEditForm({ ...editForm, hidePortfolio: e.target.value === "off" });
+                    }}
+                    className="px-3.5 py-2 bg-white border border-[#8c8f94] focus:border-[#2271b1] focus:outline-none rounded text-xs text-[#2c3338]"
+                  >
+                    <option value="on">On (Visible)</option>
+                    <option value="off">Off (Hidden)</option>
+                  </select>
+                </div>
+              </div>
+
               {/* Insert Form */}
               <div className="bg-white border border-[#dcdcde] p-6 rounded shadow-xs flex flex-col gap-4">
                 <span className="text-xs font-bold text-[#1d2327] uppercase tracking-wider">Upload Photo to Gallery</span>
@@ -940,6 +1026,25 @@ export default function AdminPage() {
           {/* TAB 5: TESTIMONIALS CRUD PANEL */}
           {activeTab === "testimonials" && (
             <div className="flex flex-col gap-6">
+              {/* Testimonials visibility toggle */}
+              <div className="bg-white border border-[#dcdcde] p-6 rounded shadow-xs flex flex-col gap-4">
+                <h3 className="text-base font-bold text-[#1d2327] border-b border-[#f0f0f1] pb-3.5">Testimonials Section Visibility</h3>
+                <div className="flex flex-col gap-1.5 max-w-xs">
+                  <label className="text-xs font-bold text-[#1d2327]">Testimonials Section</label>
+                  <select
+                    value={currentContent.hideTestimonials ? "off" : "on"}
+                    onChange={(e) => {
+                      if (!editForm) return;
+                      setEditForm({ ...editForm, hideTestimonials: e.target.value === "off" });
+                    }}
+                    className="px-3.5 py-2 bg-white border border-[#8c8f94] focus:border-[#2271b1] focus:outline-none rounded text-xs text-[#2c3338]"
+                  >
+                    <option value="on">On (Visible)</option>
+                    <option value="off">Off (Hidden)</option>
+                  </select>
+                </div>
+              </div>
+
               {/* Insert Form */}
               <div className="bg-white border border-[#dcdcde] p-6 rounded shadow-xs flex flex-col gap-4">
                 <span className="text-xs font-bold text-[#1d2327] uppercase tracking-wider">Add Client Testimonial</span>
@@ -1030,6 +1135,25 @@ export default function AdminPage() {
           {/* TAB 6: JOURNAL CRUD PANEL */}
           {activeTab === "blog" && (
             <div className="flex flex-col gap-6">
+              {/* Blog visibility toggle */}
+              <div className="bg-white border border-[#dcdcde] p-6 rounded shadow-xs flex flex-col gap-4">
+                <h3 className="text-base font-bold text-[#1d2327] border-b border-[#f0f0f1] pb-3.5">Blog Section Visibility</h3>
+                <div className="flex flex-col gap-1.5 max-w-xs">
+                  <label className="text-xs font-bold text-[#1d2327]">Philosophy Journal Section</label>
+                  <select
+                    value={currentContent.hideBlog ? "off" : "on"}
+                    onChange={(e) => {
+                      if (!editForm) return;
+                      setEditForm({ ...editForm, hideBlog: e.target.value === "off" });
+                    }}
+                    className="px-3.5 py-2 bg-white border border-[#8c8f94] focus:border-[#2271b1] focus:outline-none rounded text-xs text-[#2c3338]"
+                  >
+                    <option value="on">On (Visible)</option>
+                    <option value="off">Off (Hidden)</option>
+                  </select>
+                </div>
+              </div>
+
               {/* Insert Form */}
               <div className="bg-white border border-[#dcdcde] p-6 rounded shadow-xs flex flex-col gap-4">
                 <span className="text-xs font-bold text-[#1d2327] uppercase tracking-wider">Publish New Blog Post</span>
@@ -1267,6 +1391,37 @@ export default function AdminPage() {
           {/* TAB 7: LEADS PANEL */}
           {activeTab === "leads" && (
             <div className="flex flex-col gap-6 text-left">
+              {/* Notification setting & CSV Export Card at the top */}
+              <div className="bg-white border border-[#dcdcde] p-6 rounded shadow-xs flex flex-col gap-4">
+                <h3 className="text-base font-bold text-[#1d2327] border-b border-[#f0f0f1] pb-3.5">Leads Integration & Settings</h3>
+                
+                <div className="flex flex-col md:flex-row md:items-end gap-5">
+                  <div className="flex-1 flex flex-col gap-1.5">
+                    <label className="text-xs font-bold text-[#1d2327]">Notification Email Address</label>
+                    <input
+                      type="email"
+                      required
+                      value={currentContent.contactEmail || ""}
+                      onChange={(e) => {
+                        if (!editForm) return;
+                        setEditForm({ ...editForm, contactEmail: e.target.value });
+                      }}
+                      placeholder="elena@example.com"
+                      className="px-3.5 py-2 bg-white border border-[#8c8f94] focus:border-[#2271b1] focus:outline-none rounded text-xs text-[#2c3338]"
+                    />
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={handleExportLeadsCSV}
+                    className="h-9 px-4 bg-[#2271b1] hover:bg-[#135e96] text-white text-xs font-semibold rounded cursor-pointer transition-colors shadow-xs"
+                  >
+                    Export All Leads (CSV)
+                  </button>
+                </div>
+              </div>
+
+              {/* Leads inbox review */}
               <div className="bg-white border border-[#dcdcde] p-6 rounded shadow-xs flex flex-col gap-4">
                 <h3 className="text-base font-bold text-[#1d2327] border-b border-[#f0f0f1] pb-3.5">Visitor Inquiries Inbox</h3>
                 
@@ -1341,18 +1496,16 @@ export default function AdminPage() {
             </div>
           )}
 
-          {/* SIMPLIFIED Save Action Bar (Except overview tab) */}
-          {activeTab !== "overview" && (
-            <div className="border-t border-[#dcdcde] pt-6 flex flex-col gap-4 text-left">
-              <button
-                type="submit"
-                disabled={isSaving}
-                className="w-40 py-2.5 bg-[#2271b1] hover:bg-[#135e96] text-white text-xs font-bold uppercase rounded shadow-xs cursor-pointer disabled:opacity-40 transition-colors"
-              >
-                {isSaving ? "Saving..." : "Save"}
-              </button>
-            </div>
-          )}
+          {/* SIMPLIFIED Save Action Bar */}
+          <div className="border-t border-[#dcdcde] pt-6 flex flex-col gap-4 text-left">
+            <button
+              type="submit"
+              disabled={isSaving}
+              className="w-40 py-2.5 bg-[#2271b1] hover:bg-[#135e96] text-white text-xs font-bold uppercase rounded shadow-xs cursor-pointer disabled:opacity-40 transition-colors"
+            >
+              {isSaving ? "Saving..." : "Save"}
+            </button>
+          </div>
 
         </form>
       </main>
