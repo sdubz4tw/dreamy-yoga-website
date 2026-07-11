@@ -10,4 +10,6 @@ export interface YogaContent {
   heroSubtitle: string;
   aboutBioText: string;
   services: ServiceItem[];
+  heroImageUrl?: string;
+  aboutImageUrl?: string;
 }

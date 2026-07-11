@@ -19,20 +19,19 @@ const DEFAULT_CONTENT: YogaContent = {
       description: "Shared vinyasa patterns, slow-flowing transitions, and community yin gatherings. Practice inside an airy, light-filled environment alongside a supportive, collective community seeking physical strength, structural ease, and daily grounding.",
       price: 35,
     }
-  ]
+  ],
+  heroImageUrl: "",
+  aboutImageUrl: "",
 };
 
 export async function GET() {
   try {
-    // 1. List files in Vercel Blob to search for our content JSON file
-    // Note: If BLOB_READ_WRITE_TOKEN is not configured, list() will throw
     const { blobs } = await list();
     const contentBlob = blobs.find(
       (b) => b.pathname === "yoga-content.json" || b.pathname.endsWith("/yoga-content.json")
     );
 
     if (contentBlob) {
-      // 2. Fetch the JSON file contents directly from the public blob URL
       const response = await fetch(contentBlob.url);
       if (response.ok) {
         const data = (await response.json()) as YogaContent;
@@ -43,32 +42,69 @@ export async function GET() {
     console.warn("Vercel Blob GET failed. Returning fallback baseline content.", error);
   }
 
-  // 3. Fallback content if the file does not exist yet or connection fails
   return NextResponse.json(DEFAULT_CONTENT);
 }
 
 export async function POST(request: NextRequest) {
   try {
-    const updatedData = (await request.json()) as YogaContent;
+    const formData = await request.formData();
+    
+    // 1. Extract JSON content string and parse it
+    const contentStr = formData.get("content") as string;
+    if (!contentStr) {
+      return NextResponse.json({ error: "Missing content payload." }, { status: 400 });
+    }
+    const contentData = JSON.parse(contentStr) as YogaContent;
 
-    // Validate request structure briefly
-    if (!updatedData.heroTitle || !updatedData.services) {
-      return NextResponse.json({ error: "Invalid content structure." }, { status: 400 });
+    // Helper for file extension
+    const getExtension = (filename: string) => {
+      const parts = filename.split(".");
+      return parts.length > 1 ? `.${parts.pop()}` : "";
+    };
+
+    // 2. Extract uploaded files
+    const heroImage = formData.get("heroImage") as File | null;
+    const aboutImage = formData.get("aboutImage") as File | null;
+
+    // 3. Upload Hero Image if provided
+    if (heroImage && heroImage.size > 0) {
+      const ext = getExtension(heroImage.name);
+      const filename = `uploads/hero-bg-${Date.now()}${ext}`;
+      const blob = await put(filename, heroImage, {
+        access: "public",
+        allowOverwrite: true,
+      });
+      contentData.heroImageUrl = blob.url;
     }
 
-    // 4. Overwrite/Stream directly to Vercel Blob with the required allowOverwrite flag
-    const blob = await put("yoga-content.json", JSON.stringify(updatedData), {
+    // 4. Upload About Image if provided
+    if (aboutImage && aboutImage.size > 0) {
+      const ext = getExtension(aboutImage.name);
+      const filename = `uploads/about-profile-${Date.now()}${ext}`;
+      const blob = await put(filename, aboutImage, {
+        access: "public",
+        allowOverwrite: true,
+      });
+      contentData.aboutImageUrl = blob.url;
+    }
+
+    // 5. Overwrite the main configuration file
+    const contentBlob = await put("yoga-content.json", JSON.stringify(contentData), {
       access: "public",
       allowOverwrite: true,
     });
 
-    return NextResponse.json({ success: true, url: blob.url });
+    return NextResponse.json({
+      success: true,
+      url: contentBlob.url,
+      content: contentData
+    });
   } catch (error: any) {
     console.error("Vercel Blob POST failed:", error);
     return NextResponse.json(
       {
-        error: "Failed to write content to Vercel Blob database.",
-        details: error?.message || "Missing BLOB_READ_WRITE_TOKEN or network error.",
+        error: "Failed to write data or images to Vercel Blob.",
+        details: error?.message || "Missing BLOB_READ_WRITE_TOKEN or payload parsing error.",
       },
       { status: 500 }
     );

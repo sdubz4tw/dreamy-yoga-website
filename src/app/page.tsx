@@ -8,7 +8,7 @@ export default function Home() {
   const [isLoading, setIsLoading] = useState(true);
   const [isError, setIsError] = useState(false);
 
-  // Admin edit panel states
+  // Admin panel open state
   const [isAdminOpen, setIsAdminOpen] = useState(false);
   const [editForm, setEditForm] = useState<YogaContent | null>(null);
   const [isSaving, setIsSaving] = useState(false);
@@ -16,6 +16,12 @@ export default function Home() {
     type: null,
     msg: "",
   });
+
+  // Admin file uploads states
+  const [heroFile, setHeroFile] = useState<File | null>(null);
+  const [aboutFile, setAboutFile] = useState<File | null>(null);
+  const [heroPreview, setHeroPreview] = useState<string>("");
+  const [aboutPreview, setAboutPreview] = useState<string>("");
 
   // Client Inquiry State
   const [inquirySubmitted, setInquirySubmitted] = useState(false);
@@ -56,7 +62,7 @@ export default function Home() {
     setInquirySubmitted(false);
   };
 
-  // Admin save changes triggers
+  // Admin copy edits change handlers
   const handleAdminChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
     section: "heroTitle" | "heroSubtitle" | "aboutBioText"
@@ -78,6 +84,28 @@ export default function Home() {
     });
   };
 
+  // Admin image file handlers
+  const handleHeroFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0] || null;
+    setHeroFile(file);
+    if (file) {
+      setHeroPreview(URL.createObjectURL(file));
+    } else {
+      setHeroPreview("");
+    }
+  };
+
+  const handleAboutFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0] || null;
+    setAboutFile(file);
+    if (file) {
+      setAboutPreview(URL.createObjectURL(file));
+    } else {
+      setAboutPreview("");
+    }
+  };
+
+  // POST Form Data changes to route
   const handleAdminSave = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!editForm) return;
@@ -85,24 +113,39 @@ export default function Home() {
     setSaveStatus({ type: null, msg: "" });
 
     try {
+      const dataPayload = new FormData();
+      dataPayload.append("content", JSON.stringify(editForm));
+      if (heroFile) dataPayload.append("heroImage", heroFile);
+      if (aboutFile) dataPayload.append("aboutImage", aboutFile);
+
       const response = await fetch("/api/content", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(editForm),
+        body: dataPayload, // multipart/form-data boundary set by browser
       });
 
       const result = await response.json();
 
       if (response.ok) {
-        setContent(editForm);
+        setContent(result.content);
+        setEditForm(result.content);
         setSaveStatus({
           type: "success",
-          msg: "Content streamed successfully! Overwrote database file (yoga-content.json).",
+          msg: "Database overwrote successfully! Uploaded new assets and generated live URL endpoints.",
         });
+
+        // Revoke temporary object URLs
+        if (heroPreview) URL.revokeObjectURL(heroPreview);
+        if (aboutPreview) URL.revokeObjectURL(aboutPreview);
+
+        // Reset local files inputs
+        setHeroFile(null);
+        setAboutFile(null);
+        setHeroPreview("");
+        setAboutPreview("");
       } else {
         setSaveStatus({
           type: "error",
-          msg: result.error || "Failed to commit content to Vercel Blob.",
+          msg: result.error || "Failed to commit files to Vercel Blob.",
         });
       }
     } catch (err: any) {
@@ -115,7 +158,6 @@ export default function Home() {
     }
   };
 
-  // Ethereal loading state matching the palette
   if (isLoading) {
     return (
       <div className="flex-1 flex flex-col items-center justify-center min-h-screen bg-[#F4F1EA]">
@@ -128,7 +170,6 @@ export default function Home() {
     );
   }
 
-  // Graceful failure layout (though the API falls back automatically)
   const currentContent = content || editForm;
   if (!currentContent) {
     return (
@@ -151,7 +192,6 @@ export default function Home() {
             Elena Yoga
           </a>
 
-          {/* Nav Links */}
           <nav className="hidden md:flex items-center gap-10">
             <a href="#about" className="text-xs font-semibold uppercase tracking-widest text-brand-text/80 hover:text-brand-text transition-colors">
               About
@@ -164,7 +204,6 @@ export default function Home() {
             </a>
           </nav>
 
-          {/* Action button */}
           <div className="flex items-center gap-4">
             <button
               onClick={() => setIsAdminOpen(!isAdminOpen)}
@@ -182,12 +221,26 @@ export default function Home() {
         </div>
       </header>
 
-      {/* 2. Peaceful Hero Section */}
-      <section className="relative py-24 md:py-36 px-6 md:px-12 flex flex-col items-center text-center justify-center overflow-hidden">
-        {/* Background atmospheric shapes */}
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full bg-[#E5E1D5]/40 blur-3xl -z-10 pointer-events-none" />
+      {/* 2. Peaceful Hero Section (Supports background image dynamically) */}
+      <section
+        className="relative py-28 md:py-40 px-6 md:px-12 flex flex-col items-center text-center justify-center overflow-hidden"
+        style={{
+          backgroundImage: currentContent.heroImageUrl ? `url(${currentContent.heroImageUrl})` : "none",
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+        }}
+      >
+        {/* Soft overlay when background image is present to maintain text readability */}
+        {currentContent.heroImageUrl && (
+          <div className="absolute inset-0 bg-[#F4F1EA]/85 -z-10" />
+        )}
 
-        <div className="max-w-3xl flex flex-col items-center gap-6 md:gap-8">
+        {/* Ambient fallback gradient when background image is not present */}
+        {!currentContent.heroImageUrl && (
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full bg-[#E5E1D5]/40 blur-3xl -z-10 pointer-events-none" />
+        )}
+
+        <div className="max-w-3xl flex flex-col items-center gap-6 md:gap-8 z-10">
           <span className="text-xs uppercase tracking-[0.25em] text-brand-sage font-bold">
             ✦ Mindful Movement & Alignment
           </span>
@@ -213,29 +266,40 @@ export default function Home() {
         <div className="w-full h-px bg-brand-sage/10" />
       </div>
 
-      {/* 3. Side-by-Side About Me Section */}
+      {/* 3. Side-by-Side About Me Section (Supports profile image dynamically) */}
       <section id="about" className="py-20 md:py-32 px-6 md:px-12 max-w-6xl mx-auto w-full">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-center">
-          {/* Profile Art/Picture Container (Left) */}
+          {/* Profile Container (Left) */}
           <div className="lg:col-span-5 flex justify-center">
-            <div className="w-full max-w-[360px] aspect-[4/5] rounded-3xl bg-brand-sage-light flex flex-col items-center justify-center p-8 relative overflow-hidden shadow-sm border border-brand-sage/5">
-              <svg
-                viewBox="0 0 100 120"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-                className="w-full h-full opacity-65 text-brand-sage/80 stroke-1.5"
-              >
-                <circle cx="50" cy="40" r="16" className="stroke-brand-sage/20 fill-brand-sage/5" />
-                <path
-                  d="M50 105C50 75 50 45 50 35M50 85C45 80 32 78 35 70C38 62 48 68 50 68M50 72C55 67 68 65 65 57C62 49 52 55 50 55M50 55C46 50 35 48 37 42C39 36 48 40 50 40"
-                  stroke="currentColor"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
+            <div className="w-full max-w-[360px] aspect-[4/5] rounded-3xl bg-brand-sage-light flex flex-col items-center justify-center relative overflow-hidden shadow-sm border border-brand-sage/5">
+              {currentContent.aboutImageUrl ? (
+                <img
+                  src={currentContent.aboutImageUrl}
+                  alt="Elena Yoga Instructor Profile"
+                  className="w-full h-full object-cover rounded-3xl"
                 />
-              </svg>
+              ) : (
+                /* Fallback line-art illustration */
+                <div className="w-full h-full p-8 flex flex-col items-center justify-center">
+                  <svg
+                    viewBox="0 0 100 120"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="w-full h-full opacity-65 text-brand-sage/80 stroke-1.5"
+                  >
+                    <circle cx="50" cy="40" r="16" className="stroke-brand-sage/20 fill-brand-sage/5" />
+                    <path
+                      d="M50 105C50 75 50 45 50 35M50 85C45 80 32 78 35 70C38 62 48 68 50 68M50 72C55 67 68 65 65 57C62 49 52 55 50 55M50 55C46 50 35 48 37 42C39 36 48 40 50 40"
+                      stroke="currentColor"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                </div>
+              )}
 
-              <div className="absolute bottom-6 inset-x-6 text-center">
-                <span className="text-[10px] uppercase font-bold tracking-widest text-brand-text/60">
+              <div className="absolute bottom-6 inset-x-6 text-center z-10 bg-[#F4F1EA]/60 backdrop-blur-xs py-1.5 rounded-full border border-brand-sage/10">
+                <span className="text-[10px] uppercase font-bold tracking-widest text-brand-text">
                   Elena • Founder of Elena Yoga
                 </span>
               </div>
@@ -284,7 +348,6 @@ export default function Home() {
           </p>
         </div>
 
-        {/* Responsive Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-12">
           {currentContent.services.map((service, index) => (
             <div
@@ -402,7 +465,7 @@ export default function Home() {
         )}
       </section>
 
-      {/* 6. Admin Panel Overlay Modal */}
+      {/* 6. Admin Panel Overlay Modal (Supports Image Upload fields) */}
       {isAdminOpen && editForm && (
         <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
           <div className="bg-[#F4F1EA] border border-brand-sage/20 rounded-3xl max-w-xl w-full max-h-[85vh] flex flex-col relative overflow-hidden shadow-2xl">
@@ -410,7 +473,7 @@ export default function Home() {
             <div className="flex justify-between items-center p-6 border-b border-brand-sage/15">
               <div>
                 <span className="text-[9px] uppercase tracking-widest text-brand-sage font-bold">Vercel Blob Pipeline</span>
-                <h4 className="text-xl font-serif text-brand-text mt-0.5">Database Content Editor</h4>
+                <h4 className="text-xl font-serif text-brand-text mt-0.5">Database Content & Asset Editor</h4>
               </div>
               <button
                 onClick={() => {
@@ -423,7 +486,7 @@ export default function Home() {
               </button>
             </div>
 
-            {/* Form scrollable */}
+            {/* Scrollable Form */}
             <form onSubmit={handleAdminSave} className="flex-1 overflow-y-auto p-6 flex flex-col gap-5">
               <div className="flex flex-col gap-1.5">
                 <label className="text-[10px] uppercase tracking-widest font-semibold text-brand-text/70">Hero Title</label>
@@ -458,7 +521,7 @@ export default function Home() {
                 />
               </div>
 
-              {/* Service Prices */}
+              {/* Dynamic Service Prices */}
               <div className="flex flex-col gap-2">
                 <label className="text-[10px] uppercase tracking-widest font-semibold text-brand-text/70">Services Hourly Pricing</label>
                 <div className="grid grid-cols-2 gap-4">
@@ -474,6 +537,57 @@ export default function Home() {
                       />
                     </div>
                   ))}
+                </div>
+              </div>
+
+              {/* Upload Image fields */}
+              <div className="flex flex-col gap-4 border-t border-brand-sage/15 pt-4">
+                <span className="text-[10px] uppercase tracking-widest font-bold text-brand-sage">Asset Upload Pipeline</span>
+                
+                {/* Hero BG Image Upload */}
+                <div className="flex flex-col gap-2">
+                  <label className="text-[10px] uppercase tracking-widest font-semibold text-brand-text/70">Hero Background Image</label>
+                  <div className="flex items-center gap-4">
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleHeroFileChange}
+                      className="text-xs text-brand-text/60 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-brand-sage file:text-[#F4F1EA] hover:file:bg-brand-sage-hover file:cursor-pointer"
+                    />
+                    {heroPreview && (
+                      <div className="w-12 h-12 rounded-lg border border-brand-sage/10 overflow-hidden shrink-0">
+                        <img src={heroPreview} alt="Preview" className="w-full h-full object-cover" />
+                      </div>
+                    )}
+                    {!heroPreview && currentContent.heroImageUrl && (
+                      <div className="w-12 h-12 rounded-lg border border-brand-sage/10 overflow-hidden shrink-0 opacity-55">
+                        <img src={currentContent.heroImageUrl} alt="Current" className="w-full h-full object-cover" />
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* About Profile Image Upload */}
+                <div className="flex flex-col gap-2">
+                  <label className="text-[10px] uppercase tracking-widest font-semibold text-brand-text/70">About Me Image</label>
+                  <div className="flex items-center gap-4">
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleAboutFileChange}
+                      className="text-xs text-brand-text/60 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-brand-sage file:text-[#F4F1EA] hover:file:bg-brand-sage-hover file:cursor-pointer"
+                    />
+                    {aboutPreview && (
+                      <div className="w-12 h-12 rounded-lg border border-brand-sage/10 overflow-hidden shrink-0">
+                        <img src={aboutPreview} alt="Preview" className="w-full h-full object-cover" />
+                      </div>
+                    )}
+                    {!aboutPreview && currentContent.aboutImageUrl && (
+                      <div className="w-12 h-12 rounded-lg border border-brand-sage/10 overflow-hidden shrink-0 opacity-55">
+                        <img src={currentContent.aboutImageUrl} alt="Current" className="w-full h-full object-cover" />
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
 
@@ -497,7 +611,7 @@ export default function Home() {
                 disabled={isSaving}
                 className="w-full py-4 bg-brand-sage hover:bg-brand-sage-hover text-[#F4F1EA] text-xs font-bold uppercase tracking-wider transition-colors duration-300 rounded-xl cursor-pointer disabled:opacity-40"
               >
-                {isSaving ? "Streaming to Vercel Blob..." : "Overwrites & Save to Blob"}
+                {isSaving ? "Streaming files to Vercel Blob..." : "Overwrites & Save to Blob"}
               </button>
             </form>
           </div>
