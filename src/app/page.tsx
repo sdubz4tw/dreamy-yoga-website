@@ -1,22 +1,12 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { YogaContent, OfferingItem, PortfolioItem, TestimonialItem, BlogPostItem } from "@/types";
+import { YogaContent, BlogPostItem } from "@/types";
 
 export default function Home() {
   const [content, setContent] = useState<YogaContent | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isError, setIsError] = useState(false);
-
-  // Admin panel open state
-  const [isAdminOpen, setIsAdminOpen] = useState(false);
-  const [adminTab, setAdminTab] = useState<"general" | "offerings" | "portfolio" | "testimonials" | "blog">("general");
-  const [editForm, setEditForm] = useState<YogaContent | null>(null);
-  const [isSaving, setIsSaving] = useState(false);
-  const [saveStatus, setSaveStatus] = useState<{ type: "success" | "error" | null; msg: string }>({
-    type: null,
-    msg: "",
-  });
 
   // Client Blog Post reader modal state
   const [activePost, setActivePost] = useState<BlogPostItem | null>(null);
@@ -24,43 +14,6 @@ export default function Home() {
   // Client like states (local overrides)
   const [likedPosts, setLikedPosts] = useState<Record<string, boolean>>({});
   const [postLikes, setPostLikes] = useState<Record<string, number>>({});
-
-  // Admin file upload states
-  const [heroFile, setHeroFile] = useState<File | null>(null);
-  const [aboutFile, setAboutFile] = useState<File | null>(null);
-  const [heroPreview, setHeroPreview] = useState<string>("");
-  const [aboutPreview, setAboutPreview] = useState<string>("");
-
-  // Dynamic list files states
-  const [offeringFiles, setOfferingFiles] = useState<Record<string, File>>({});
-  const [offeringPreviews, setOfferingPreviews] = useState<Record<string, string>>({});
-
-  const [portfolioFiles, setPortfolioFiles] = useState<Record<string, File>>({});
-  const [portfolioPreviews, setPortfolioPreviews] = useState<Record<string, string>>({});
-
-  const [blogFiles, setBlogFiles] = useState<Record<string, File>>({});
-  const [blogPreviews, setBlogPreviews] = useState<Record<string, string>>({});
-
-  // New portfolio item input form state
-  const [newPortTitle, setNewPortTitle] = useState("");
-  const [newPortCategory, setNewPortCategory] = useState("Classes");
-  const [newPortFile, setNewPortFile] = useState<File | null>(null);
-  const [newPortPreview, setNewPortPreview] = useState("");
-
-  // New testimonial form state
-  const [newTestName, setNewTestName] = useState("");
-  const [newTestQuote, setNewTestQuote] = useState("");
-  const [newTestRating, setNewTestRating] = useState(5);
-  const [newTestSource, setNewTestSource] = useState("");
-
-  // New blog post form state
-  const [newBlogTitle, setNewBlogTitle] = useState("");
-  const [newBlogExcerpt, setNewBlogExcerpt] = useState("");
-  const [newBlogContent, setNewBlogContent] = useState("");
-  const [newBlogCategory, setNewBlogCategory] = useState("Philosophy");
-  const [newBlogReadTime, setNewBlogReadTime] = useState("5 min read");
-  const [newBlogFile, setNewBlogFile] = useState<File | null>(null);
-  const [newBlogPreview, setNewBlogPreview] = useState("");
 
   // Portfolio client filter state
   const [activePortfolioFilter, setActivePortfolioFilter] = useState("All");
@@ -78,7 +31,6 @@ export default function Home() {
       })
       .then((data: YogaContent) => {
         setContent(data);
-        setEditForm(data);
         
         // Initialize likes cache
         const initialLikes: Record<string, number> = {};
@@ -112,223 +64,6 @@ export default function Home() {
     setInquirySubmitted(false);
   };
 
-  // Admin banner change handlers
-  const handleHeroFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0] || null;
-    setHeroFile(file);
-    if (file) setHeroPreview(URL.createObjectURL(file));
-    else setHeroPreview("");
-  };
-
-  const handleAboutFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0] || null;
-    setAboutFile(file);
-    if (file) setAboutPreview(URL.createObjectURL(file));
-    else setAboutPreview("");
-  };
-
-  // General tab change handler
-  const handleAdminChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
-    section: "heroTitle" | "heroSubtitle" | "aboutBioText"
-  ) => {
-    if (!editForm) return;
-    setEditForm({
-      ...editForm,
-      [section]: e.target.value,
-    });
-  };
-
-  // Offerings CRUD functions
-  const handleOfferingChange = (
-    index: number,
-    field: "title" | "price" | "description",
-    value: string | number
-  ) => {
-    if (!editForm) return;
-    const updated = [...editForm.offerings];
-    updated[index] = { ...updated[index], [field]: value };
-    setEditForm({ ...editForm, offerings: updated });
-  };
-
-  const handleOfferingFileChange = (index: number, file: File | null) => {
-    if (!editForm) return;
-    const item = editForm.offerings[index];
-    if (!file) return;
-
-    setOfferingFiles((prev) => ({ ...prev, [item.id]: file }));
-    setOfferingPreviews((prev) => ({
-      ...prev,
-      [item.id]: URL.createObjectURL(file),
-    }));
-  };
-
-  const handleAddOffering = () => {
-    if (!editForm) return;
-    const newId = `offering-${Date.now()}`;
-    const newOffering: OfferingItem = {
-      id: newId,
-      title: "New Yoga Class",
-      price: 50,
-      description: "Class description...",
-      image: "",
-    };
-    setEditForm({
-      ...editForm,
-      offerings: [...editForm.offerings, newOffering],
-    });
-  };
-
-  const handleDeleteOffering = (id: string) => {
-    if (!editForm) return;
-    setEditForm({
-      ...editForm,
-      offerings: editForm.offerings.filter((o) => o.id !== id),
-    });
-  };
-
-  // Portfolio items CRUD functions
-  const handleNewPortFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0] || null;
-    setNewPortFile(file);
-    if (file) setNewPortPreview(URL.createObjectURL(file));
-    else setNewPortPreview("");
-  };
-
-  const handleAddPortfolioItem = () => {
-    if (!editForm || !newPortTitle || !newPortFile) return;
-
-    const newId = `port-${Date.now()}`;
-    const newItem: PortfolioItem = {
-      id: newId,
-      title: newPortTitle,
-      category: newPortCategory,
-      image: "",
-    };
-
-    setPortfolioFiles((prev) => ({ ...prev, [newId]: newPortFile }));
-    setPortfolioPreviews((prev) => ({ ...prev, [newId]: newPortPreview }));
-
-    setEditForm({
-      ...editForm,
-      portfolio: [...editForm.portfolio, newItem],
-    });
-
-    setNewPortTitle("");
-    setNewPortFile(null);
-    setNewPortPreview("");
-  };
-
-  const handleDeletePortfolioItem = (id: string) => {
-    if (!editForm) return;
-    setEditForm({
-      ...editForm,
-      portfolio: editForm.portfolio.filter((p) => p.id !== id),
-    });
-    if (portfolioFiles[id]) {
-      const updatedFiles = { ...portfolioFiles };
-      delete updatedFiles[id];
-      setPortfolioFiles(updatedFiles);
-    }
-  };
-
-  // Testimonials CRUD functions
-  const handleAddTestimonial = () => {
-    if (!editForm || !newTestName || !newTestQuote) return;
-
-    const newId = `test-${Date.now()}`;
-    const newTest: TestimonialItem = {
-      id: newId,
-      clientName: newTestName,
-      quote: newTestQuote,
-      rating: newTestRating,
-      source: newTestSource || "Client Review",
-    };
-
-    setEditForm({
-      ...editForm,
-      testimonials: [...editForm.testimonials, newTest],
-    });
-
-    setNewTestName("");
-    setNewTestQuote("");
-    setNewTestRating(5);
-    setNewTestSource("");
-  };
-
-  const handleDeleteTestimonial = (id: string) => {
-    if (!editForm) return;
-    setEditForm({
-      ...editForm,
-      testimonials: editForm.testimonials.filter((t) => t.id !== id),
-    });
-  };
-
-  // Blog CRUD functions
-  const handleNewBlogFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0] || null;
-    setNewBlogFile(file);
-    if (file) setNewBlogPreview(URL.createObjectURL(file));
-    else setNewBlogPreview("");
-  };
-
-  const handleAddBlogPost = () => {
-    if (!editForm || !newBlogTitle || !newBlogContent) return;
-
-    const newId = `blog-${Date.now()}`;
-    const formattedDate = new Date().toLocaleDateString("en-US", {
-      month: "long",
-      day: "numeric",
-      year: "numeric",
-    });
-
-    const newPost: BlogPostItem = {
-      id: newId,
-      title: newBlogTitle,
-      excerpt: newBlogExcerpt || newBlogContent.substring(0, 120) + "...",
-      content: newBlogContent,
-      featuredImage: "",
-      date: formattedDate,
-      category: newBlogCategory || "Philosophy",
-      readTime: newBlogReadTime || "5 min read",
-      likes: 0,
-    };
-
-    // Update local post likes mapping
-    setPostLikes((prev) => ({ ...prev, [newId]: 0 }));
-
-    if (newBlogFile) {
-      setBlogFiles((prev) => ({ ...prev, [newId]: newBlogFile }));
-      setBlogPreviews((prev) => ({ ...prev, [newId]: newBlogPreview }));
-    }
-
-    setEditForm({
-      ...editForm,
-      blogPosts: [...editForm.blogPosts, newPost],
-    });
-
-    setNewBlogTitle("");
-    setNewBlogExcerpt("");
-    setNewBlogContent("");
-    setNewBlogCategory("Philosophy");
-    setNewBlogReadTime("5 min read");
-    setNewBlogFile(null);
-    setNewBlogPreview("");
-  };
-
-  const handleDeleteBlogPost = (id: string) => {
-    if (!editForm) return;
-    setEditForm({
-      ...editForm,
-      blogPosts: editForm.blogPosts.filter((b) => b.id !== id),
-    });
-    if (blogFiles[id]) {
-      const updatedFiles = { ...blogFiles };
-      delete updatedFiles[id];
-      setBlogFiles(updatedFiles);
-    }
-  };
-
   // Interactive like clicks handling
   const handleLikeToggle = (postId: string) => {
     const isLiked = likedPosts[postId];
@@ -348,7 +83,6 @@ export default function Home() {
 
       const updatedContent = { ...content, blogPosts: updatedBlogPosts };
       setContent(updatedContent);
-      setEditForm(updatedContent);
 
       // Async sync database JSON
       const dataPayload = new FormData();
@@ -360,88 +94,9 @@ export default function Home() {
     }
   };
 
-  // Submit all FormData edits to backend serverless function
-  const handleAdminSave = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!editForm) return;
-    setIsSaving(true);
-    setSaveStatus({ type: null, msg: "" });
-
-    try {
-      const dataPayload = new FormData();
-      dataPayload.append("content", JSON.stringify(editForm));
-
-      // Append general image files
-      if (heroFile) dataPayload.append("heroImage", heroFile);
-      if (aboutFile) dataPayload.append("aboutImage", aboutFile);
-
-      // Append dynamic offering files
-      Object.entries(offeringFiles).forEach(([id, file]) => {
-        dataPayload.append("offeringImage_" + id, file);
-      });
-
-      // Append dynamic portfolio files
-      Object.entries(portfolioFiles).forEach(([id, file]) => {
-        dataPayload.append("portfolioImage_" + id, file);
-      });
-
-      // Append dynamic blog files
-      Object.entries(blogFiles).forEach(([id, file]) => {
-        dataPayload.append("blogImage_" + id, file);
-      });
-
-      const response = await fetch("/api/content", {
-        method: "POST",
-        body: dataPayload,
-      });
-
-      const result = await response.json();
-
-      if (response.ok) {
-        setContent(result.content);
-        setEditForm(result.content);
-        setSaveStatus({
-          type: "success",
-          msg: "Changes committed successfully! Main JSON file and uploaded images synced in Vercel Blob.",
-        });
-
-        // Revoke temporary previews
-        if (heroPreview) URL.revokeObjectURL(heroPreview);
-        if (aboutPreview) URL.revokeObjectURL(aboutPreview);
-        Object.values(offeringPreviews).forEach(URL.revokeObjectURL);
-        Object.values(portfolioPreviews).forEach(URL.revokeObjectURL);
-        Object.values(blogPreviews).forEach(URL.revokeObjectURL);
-
-        // Reset file inputs
-        setHeroFile(null);
-        setAboutFile(null);
-        setHeroPreview("");
-        setAboutPreview("");
-        setOfferingFiles({});
-        setOfferingPreviews({});
-        setPortfolioFiles({});
-        setPortfolioPreviews({});
-        setBlogFiles({});
-        setBlogPreviews({});
-      } else {
-        setSaveStatus({
-          type: "error",
-          msg: result.error || "Failed to commit database changes.",
-        });
-      }
-    } catch (err: any) {
-      setSaveStatus({
-        type: "error",
-        msg: "Failed to establish connection with serverless backend.",
-      });
-    } finally {
-      setIsSaving(false);
-    }
-  };
-
   if (isLoading) {
     return (
-      <div className="flex-1 flex flex-col items-center justify-center min-h-screen bg-brand-bg">
+      <div className="flex-1 flex flex-col items-center justify-center min-h-screen bg-[#0B0807]">
         <div className="flex flex-col items-center gap-6 animate-pulse">
           <span className="font-serif text-3xl tracking-[0.2em] text-[#F3EFEA] font-light">✦ ELENA</span>
           <div className="w-16 h-0.5 bg-brand-sage/40" />
@@ -451,10 +106,10 @@ export default function Home() {
     );
   }
 
-  const currentContent = content || editForm;
+  const currentContent = content;
   if (!currentContent) {
     return (
-      <div className="flex-1 flex flex-col items-center justify-center min-h-screen bg-brand-bg p-8 text-center">
+      <div className="flex-1 flex flex-col items-center justify-center min-h-screen bg-[#0B0807] p-8 text-center">
         <h1 className="text-2xl font-serif text-[#F3EFEA] mb-3 tracking-wide">Sanctuary Disconnected</h1>
         <p className="text-sm text-[#F3EFEA]/60 mb-6 max-w-sm">Failed to connect to layout content engine.</p>
         <button
@@ -474,7 +129,7 @@ export default function Home() {
   return (
     <div className="flex-1 flex flex-col font-sans bg-transparent">
       {/* 1. Navigation Bar */}
-      <header className="w-full border-b border-brand-sage-light/20 py-7 px-8 md:px-16 bg-brand-bg/80 backdrop-blur-md sticky top-0 z-30">
+      <header className="w-full border-b border-brand-sage-light/20 py-7 px-8 md:px-16 bg-[#0B0807]/80 backdrop-blur-md sticky top-0 z-30">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           <a href="#" className="font-serif text-xl md:text-2xl tracking-[0.25em] text-brand-text font-semibold uppercase">
             Elena Yoga
@@ -502,12 +157,6 @@ export default function Home() {
           </nav>
 
           <div className="flex items-center gap-6">
-            <button
-              onClick={() => setIsAdminOpen(!isAdminOpen)}
-              className="text-[10px] font-bold uppercase tracking-widest text-brand-text/60 hover:text-brand-sage transition-colors cursor-pointer"
-            >
-              [Admin Panel]
-            </button>
             <a
               href="#contact"
               className="px-6 py-3 border border-brand-sage text-brand-sage hover:bg-brand-sage hover:text-[#111112] text-xs font-bold uppercase tracking-[0.15em] transition-all duration-300 rounded-full"
@@ -528,7 +177,7 @@ export default function Home() {
         }}
       >
         {currentContent.heroImageUrl && (
-          <div className="absolute inset-0 bg-brand-bg/85 -z-10" />
+          <div className="absolute inset-0 bg-[#0B0807]/85 -z-10" />
         )}
 
         {!currentContent.heroImageUrl && (
@@ -591,7 +240,7 @@ export default function Home() {
                 </div>
               )}
 
-              <div className="absolute bottom-6 inset-x-6 text-center z-10 bg-brand-bg/60 backdrop-blur-xs py-2 rounded-full border border-brand-sage-light/20">
+              <div className="absolute bottom-6 inset-x-6 text-center z-10 bg-[#0B0807]/60 backdrop-blur-xs py-2 rounded-full border border-brand-sage-light/20">
                 <span className="text-[10px] uppercase font-bold tracking-[0.2em] text-brand-text">
                   Elena • Founder of Elena Yoga
                 </span>
@@ -657,7 +306,7 @@ export default function Home() {
                 {!offering.image && (
                   <div className="absolute inset-0 bg-gradient-to-tr from-brand-sage/5 to-brand-sage-light/20" />
                 )}
-                <div className="absolute top-4 right-4 bg-brand-bg border border-brand-sage-light/30 px-4 py-2 rounded-full text-xs font-bold text-brand-sage shadow-sm font-mono tracking-wider">
+                <div className="absolute top-4 right-4 bg-[#0B0807] border border-brand-sage-light/30 px-4 py-2 rounded-full text-xs font-bold text-brand-sage shadow-sm font-mono tracking-wider">
                   ${offering.price} / hr
                 </div>
               </div>
@@ -1002,567 +651,24 @@ export default function Home() {
         )}
       </section>
 
-      {/* Discreet Editorial Footer Entrance */}
+      {/* Discreet Footer Entrance (Linking to /admin standalone CMS) */}
       <footer className="border-t border-brand-sage-light/20 py-12 mt-auto text-center text-[10px] text-brand-text/45 uppercase tracking-[0.25em] bg-transparent">
         <div className="max-w-7xl mx-auto px-8 flex flex-col md:flex-row justify-between items-center gap-6">
           <span>© {new Date().getFullYear()} Elena Yoga. All rights reserved.</span>
           <div className="flex items-center gap-4">
             <span>Peace • Alignment • Somatic Wisdom</span>
             <span>|</span>
-            <button
-              onClick={() => setIsAdminOpen(true)}
-              className="text-brand-sage hover:text-brand-sage-hover transition-colors font-bold uppercase tracking-widest cursor-pointer text-[10px]"
+            <a
+              href="/admin"
+              className="text-brand-sage hover:text-brand-sage-hover transition-colors font-bold uppercase tracking-widest text-[10px]"
             >
-              Admin Panel
-            </button>
+              Admin Dashboard
+            </a>
           </div>
         </div>
       </footer>
 
-      {/* 10. Collapsible Admin Panel Modal */}
-      {isAdminOpen && editForm && (
-        <div className="fixed inset-0 bg-black/70 backdrop-blur-md z-50 flex items-center justify-center p-4">
-          <div className="bg-[#111112] border border-brand-sage-light/30 rounded-3xl max-w-2xl w-full h-[85vh] flex flex-col relative overflow-hidden shadow-2xl">
-            
-            {/* Header */}
-            <div className="p-6 border-b border-brand-sage-light/20 flex justify-between items-center shrink-0">
-              <div>
-                <span className="text-[9px] uppercase tracking-[0.3em] text-brand-sage font-bold">Sanctuary Database</span>
-                <h4 className="text-xl font-serif text-brand-text mt-0.5 tracking-wider">Control Center Console</h4>
-              </div>
-              <button
-                onClick={() => {
-                  setIsAdminOpen(false);
-                  setSaveStatus({ type: null, msg: "" });
-                }}
-                className="text-brand-text/50 hover:text-brand-text transition-colors text-lg cursor-pointer"
-              >
-                ✕
-              </button>
-            </div>
-
-            {/* Inner Dashboard Navigation tabs */}
-            <div className="flex overflow-x-auto border-b border-brand-sage-light/10 bg-brand-sage-light/20 shrink-0 px-6 gap-2 scrollbar-none">
-              {[
-                { id: "general", label: "Copy & Banners" },
-                { id: "offerings", label: "Yoga Classes" },
-                { id: "portfolio", label: "Portfolio" },
-                { id: "testimonials", label: "Testimonials" },
-                { id: "blog", label: "Blog Editor" },
-              ].map((tab) => (
-                <button
-                  key={tab.id}
-                  type="button"
-                  onClick={() => setAdminTab(tab.id as any)}
-                  className={`py-3.5 px-4 text-xs font-semibold uppercase tracking-[0.15em] border-b-2 transition-all cursor-pointer shrink-0 ${
-                    adminTab === tab.id
-                      ? "border-brand-sage text-brand-text font-bold"
-                      : "border-transparent text-brand-text/50 hover:text-brand-text"
-                  }`}
-                >
-                  {tab.label}
-                </button>
-              ))}
-            </div>
-
-            {/* Scrollable Form Body */}
-            <form onSubmit={handleAdminSave} className="flex-1 overflow-y-auto p-6 flex flex-col gap-6">
-              
-              {/* Tab 1: General Copy */}
-              {adminTab === "general" && (
-                <div className="flex flex-col gap-5">
-                  <div className="flex flex-col gap-2">
-                    <label className="text-[10px] uppercase tracking-[0.25em] font-semibold text-brand-text/70">Hero Title</label>
-                    <input
-                      type="text"
-                      required
-                      value={editForm.heroTitle}
-                      onChange={(e) => handleAdminChange(e, "heroTitle")}
-                      className="px-4 py-3 bg-brand-sage-light/25 border border-brand-sage-light/30 focus:border-brand-sage focus:outline-none rounded-xl text-xs md:text-sm text-brand-text"
-                    />
-                  </div>
-
-                  <div className="flex flex-col gap-2">
-                    <label className="text-[10px] uppercase tracking-[0.25em] font-semibold text-brand-text/70">Hero Subtitle</label>
-                    <textarea
-                      required
-                      rows={3}
-                      value={editForm.heroSubtitle}
-                      onChange={(e) => handleAdminChange(e, "heroSubtitle")}
-                      className="px-4 py-3 bg-brand-sage-light/25 border border-brand-sage-light/30 focus:border-brand-sage focus:outline-none rounded-xl text-xs md:text-sm text-brand-text resize-none"
-                    />
-                  </div>
-
-                  <div className="flex flex-col gap-2">
-                    <label className="text-[10px] uppercase tracking-[0.25em] font-semibold text-brand-text/70">About Bio Text</label>
-                    <textarea
-                      required
-                      rows={6}
-                      value={editForm.aboutBioText}
-                      onChange={(e) => handleAdminChange(e, "aboutBioText")}
-                      className="px-4 py-3 bg-brand-sage-light/25 border border-brand-sage-light/30 focus:border-brand-sage focus:outline-none rounded-xl text-xs md:text-sm text-brand-text resize-none"
-                    />
-                  </div>
-
-                  <div className="border-t border-brand-sage-light/20 pt-5 flex flex-col gap-4">
-                    <span className="text-[10px] uppercase tracking-[0.25em] font-bold text-brand-sage">Homepage Banners</span>
-                    
-                    <div className="flex flex-col gap-2">
-                      <label className="text-[10px] uppercase tracking-[0.25em] font-semibold text-brand-text/70">Hero Background</label>
-                      <div className="flex items-center gap-4">
-                        <input
-                          type="file"
-                          accept="image/*"
-                          onChange={handleHeroFileChange}
-                          className="text-xs text-brand-text/65 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-brand-sage file:text-[#111112] hover:file:bg-brand-sage-hover"
-                        />
-                        {(heroPreview || currentContent.heroImageUrl) && (
-                          <div className="w-12 h-12 rounded-lg border border-brand-sage-light/30 overflow-hidden shrink-0">
-                            <img src={heroPreview || currentContent.heroImageUrl} alt="Preview" className="w-full h-full object-cover" />
-                          </div>
-                        )}
-                      </div>
-                    </div>
-
-                    <div className="flex flex-col gap-2">
-                      <label className="text-[10px] uppercase tracking-[0.25em] font-semibold text-brand-text/70">About Profile Picture</label>
-                      <div className="flex items-center gap-4">
-                        <input
-                          type="file"
-                          accept="image/*"
-                          onChange={handleAboutFileChange}
-                          className="text-xs text-brand-text/65 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-brand-sage file:text-[#111112] hover:file:bg-brand-sage-hover"
-                        />
-                        {(aboutPreview || currentContent.aboutImageUrl) && (
-                          <div className="w-12 h-12 rounded-lg border border-brand-sage-light/30 overflow-hidden shrink-0">
-                            <img src={aboutPreview || currentContent.aboutImageUrl} alt="Preview" className="w-full h-full object-cover" />
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {/* Tab 2: Yoga Classes / Offerings CRUD */}
-              {adminTab === "offerings" && (
-                <div className="flex flex-col gap-6">
-                  <div className="flex justify-between items-center">
-                    <span className="text-[10px] uppercase tracking-[0.25em] font-bold text-brand-sage">Offerings List ({editForm.offerings.length})</span>
-                    <button
-                      type="button"
-                      onClick={handleAddOffering}
-                      className="px-4 py-2 bg-brand-sage text-[#111112] text-[10px] font-bold uppercase tracking-[0.15em] rounded-full hover:bg-brand-sage-hover cursor-pointer"
-                    >
-                      + Add New Class
-                    </button>
-                  </div>
-
-                  <div className="flex flex-col gap-6">
-                    {editForm.offerings.map((offering, index) => {
-                      const hasLocalPreview = offeringPreviews[offering.id];
-                      return (
-                        <div key={offering.id} className="border border-brand-sage-light/25 rounded-2xl p-6 bg-brand-sage-light/20 flex flex-col gap-4 relative">
-                          <button
-                            type="button"
-                            onClick={() => handleDeleteOffering(offering.id)}
-                            className="absolute top-4 right-4 text-xs font-bold text-rose-500 hover:text-rose-700 uppercase cursor-pointer"
-                          >
-                            ✕ Remove
-                          </button>
-
-                          <div className="grid grid-cols-3 gap-4">
-                            <div className="col-span-2 flex flex-col gap-1.5">
-                              <span className="text-[9px] uppercase tracking-widest font-bold text-brand-text/50">Class Title</span>
-                              <input
-                                type="text"
-                                required
-                                value={offering.title}
-                                onChange={(e) => handleOfferingChange(index, "title", e.target.value)}
-                                className="px-3 py-2 bg-[#111112] border border-brand-sage-light/20 rounded-lg text-xs text-brand-text"
-                              />
-                            </div>
-                            <div className="flex flex-col gap-1.5">
-                              <span className="text-[9px] uppercase tracking-widest font-bold text-brand-text/50">Hourly Rate ($)</span>
-                              <input
-                                type="number"
-                                required
-                                value={offering.price}
-                                onChange={(e) => handleOfferingChange(index, "price", parseInt(e.target.value) || 0)}
-                                className="px-3 py-2 bg-[#111112] border border-brand-sage-light/20 rounded-lg text-xs text-brand-text"
-                              />
-                            </div>
-                          </div>
-
-                          <div className="flex flex-col gap-1.5">
-                            <span className="text-[9px] uppercase tracking-widest font-bold text-brand-text/50">Description</span>
-                            <textarea
-                              required
-                              rows={2}
-                              value={offering.description}
-                              onChange={(e) => handleOfferingChange(index, "description", e.target.value)}
-                              className="px-3 py-2 bg-[#111112] border border-brand-sage-light/20 rounded-lg text-xs text-brand-text resize-none"
-                            />
-                          </div>
-
-                          <div className="flex flex-col gap-1.5 pt-2">
-                            <span className="text-[9px] uppercase tracking-widest font-bold text-brand-text/50">Class Card Photo</span>
-                            <div className="flex items-center gap-4">
-                              <input
-                                type="file"
-                                accept="image/*"
-                                onChange={(e) => handleOfferingFileChange(index, e.target.files?.[0] || null)}
-                                className="text-[10px] text-brand-text/60 file:mr-3 file:py-1 file:px-3 file:rounded-full file:border-0 file:text-[9px] file:font-semibold file:bg-brand-sage file:text-[#111112]"
-                              />
-                              {(hasLocalPreview || offering.image) && (
-                                <div className="w-10 h-10 rounded-lg border border-brand-sage-light/30 overflow-hidden shrink-0">
-                                  <img src={hasLocalPreview || offering.image} alt="Preview" className="w-full h-full object-cover" />
-                                </div>
-                              )}
-                            </div>
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-              )}
-
-              {/* Tab 3: Portfolio CRUD */}
-              {adminTab === "portfolio" && (
-                <div className="flex flex-col gap-6">
-                  <div className="border border-brand-sage-light/25 rounded-2xl p-6 bg-brand-sage-light/25 flex flex-col gap-4">
-                    <span className="text-[10px] uppercase tracking-[0.25em] font-bold text-brand-sage">Add Photo to Gallery</span>
-                    <div className="grid grid-cols-2 gap-4">
-                      <div className="flex flex-col gap-1.5">
-                        <label className="text-[9px] uppercase tracking-widest font-bold text-brand-text/50">Photo Title</label>
-                        <input
-                          type="text"
-                          value={newPortTitle}
-                          onChange={(e) => setNewPortTitle(e.target.value)}
-                          placeholder="e.g. Studio Sunrise"
-                          className="px-3 py-2 bg-[#111112] border border-brand-sage-light/20 rounded-lg text-xs text-brand-text"
-                        />
-                      </div>
-
-                      <div className="flex flex-col gap-1.5">
-                        <label className="text-[9px] uppercase tracking-widest font-bold text-brand-text/50">Tag Category</label>
-                        <select
-                          value={newPortCategory}
-                          onChange={(e) => setNewPortCategory(e.target.value)}
-                          className="px-3 py-2 bg-[#111112] border border-brand-sage-light/20 rounded-lg text-xs text-brand-text"
-                        >
-                          <option value="Studio">Studio</option>
-                          <option value="Classes">Classes</option>
-                          <option value="Workshops">Workshops</option>
-                        </select>
-                      </div>
-                    </div>
-
-                    <div className="flex flex-col gap-2 pt-2">
-                      <label className="text-[9px] uppercase tracking-widest font-bold text-brand-text/50">Select Image File</label>
-                      <div className="flex items-center gap-4">
-                        <input
-                          type="file"
-                          accept="image/*"
-                          onChange={handleNewPortFileChange}
-                          className="text-[10px] text-brand-text/60 file:mr-3 file:py-1 file:px-3 file:rounded-full file:border-0 file:text-[9px] file:font-semibold file:bg-brand-sage file:text-[#111112]"
-                        />
-                        {newPortPreview && (
-                          <div className="w-10 h-10 rounded-lg border border-brand-sage-light/30 overflow-hidden shrink-0">
-                            <img src={newPortPreview} alt="Preview" className="w-full h-full object-cover" />
-                          </div>
-                        )}
-                      </div>
-                    </div>
-
-                    <button
-                      type="button"
-                      disabled={!newPortTitle || !newPortFile}
-                      onClick={handleAddPortfolioItem}
-                      className="mt-2 py-3 bg-brand-sage hover:bg-brand-sage-hover text-[#111112] text-[10px] font-bold uppercase tracking-[0.2em] rounded-xl cursor-pointer disabled:opacity-40"
-                    >
-                      Queue Photo Addition
-                    </button>
-                  </div>
-
-                  <div className="flex flex-col gap-4">
-                    <span className="text-[10px] uppercase tracking-[0.25em] font-bold text-brand-sage">Existing Photos</span>
-                    <div className="grid grid-cols-2 gap-4">
-                      {editForm.portfolio.map((item) => {
-                        const localPreview = portfolioPreviews[item.id];
-                        return (
-                          <div key={item.id} className="border border-brand-sage-light/20 rounded-xl p-4 bg-[#111112] flex items-center justify-between gap-4 shadow-sm animate-fade-in">
-                            <div className="flex items-center gap-3 min-w-0">
-                              <div className="w-12 h-12 rounded-lg border border-brand-sage-light/35 overflow-hidden shrink-0 bg-brand-sage-light/15">
-                                {(localPreview || item.image) ? (
-                                  <img src={localPreview || item.image} alt="Thumb" className="w-full h-full object-cover" />
-                                ) : (
-                                  <div className="w-full h-full flex items-center justify-center text-[10px] opacity-40">Art</div>
-                                )}
-                              </div>
-                              <div className="min-w-0">
-                                <h5 className="text-xs font-semibold text-brand-text truncate leading-tight">{item.title}</h5>
-                                <span className="text-[8px] uppercase tracking-wider font-bold text-brand-sage block mt-0.5">{item.category}</span>
-                              </div>
-                            </div>
-                            <button
-                              type="button"
-                              onClick={() => handleDeletePortfolioItem(item.id)}
-                              className="text-[10px] font-bold text-rose-500 hover:text-rose-700 uppercase shrink-0 cursor-pointer"
-                            >
-                              Delete
-                            </button>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {/* Tab 4: Testimonials CRUD */}
-              {adminTab === "testimonials" && (
-                <div className="flex flex-col gap-6">
-                  <div className="border border-brand-sage-light/25 rounded-2xl p-6 bg-brand-sage-light/25 flex flex-col gap-4">
-                    <span className="text-[10px] uppercase tracking-[0.25em] font-bold text-brand-sage">Add Client Review</span>
-                    
-                    <div className="grid grid-cols-3 gap-4">
-                      <div className="col-span-2 flex flex-col gap-1.5">
-                        <label className="text-[9px] uppercase tracking-widest font-bold text-brand-text/50">Client Name</label>
-                        <input
-                          type="text"
-                          value={newTestName}
-                          onChange={(e) => setNewTestName(e.target.value)}
-                          placeholder="e.g. Jane Foster"
-                          className="px-3 py-2 bg-[#111112] border border-brand-sage-light/20 rounded-lg text-xs text-brand-text"
-                        />
-                      </div>
-                      <div className="flex flex-col gap-1.5">
-                        <label className="text-[9px] uppercase tracking-widest font-bold text-brand-text/50">Rating (Stars)</label>
-                        <select
-                          value={newTestRating}
-                          onChange={(e) => setNewTestRating(parseInt(e.target.value) || 5)}
-                          className="px-3 py-2 bg-[#111112] border border-brand-sage-light/20 rounded-lg text-xs text-brand-text"
-                        >
-                          <option value="5">5 Stars</option>
-                          <option value="4">4 Stars</option>
-                          <option value="3">3 Stars</option>
-                        </select>
-                      </div>
-                    </div>
-
-                    <div className="flex flex-col gap-1.5">
-                      <label className="text-[9px] uppercase tracking-widest font-bold text-brand-text/50">Client Quote</label>
-                      <textarea
-                        value={newTestQuote}
-                        onChange={(e) => setNewTestQuote(e.target.value)}
-                        placeholder="Type review quote..."
-                        rows={3}
-                        className="px-3 py-2 bg-[#111112] border border-brand-sage-light/20 rounded-lg text-xs text-brand-text resize-none"
-                      />
-                    </div>
-
-                    <div className="flex flex-col gap-1.5">
-                      <label className="text-[9px] uppercase tracking-widest font-bold text-brand-text/50">Inquiry Context / Source</label>
-                      <input
-                        type="text"
-                        value={newTestSource}
-                        onChange={(e) => setNewTestSource(e.target.value)}
-                        placeholder="e.g. Private Alignment Client"
-                        className="px-3 py-2 bg-[#111112] border border-brand-sage-light/20 rounded-lg text-xs text-brand-text"
-                      />
-                    </div>
-
-                    <button
-                      type="button"
-                      disabled={!newTestName || !newTestQuote}
-                      onClick={handleAddTestimonial}
-                      className="mt-2 py-3 bg-brand-sage hover:bg-brand-sage-hover text-[#111112] text-[10px] font-bold uppercase tracking-[0.2em] rounded-xl cursor-pointer disabled:opacity-40"
-                    >
-                      Queue Review Addition
-                    </button>
-                  </div>
-
-                  <div className="flex flex-col gap-4">
-                    <span className="text-[10px] uppercase tracking-[0.25em] font-bold text-brand-sage">Existing Testimonials</span>
-                    <div className="flex flex-col gap-3">
-                      {editForm.testimonials.map((test) => (
-                        <div key={test.id} className="border border-brand-sage-light/20 rounded-xl p-4 bg-[#111112] flex justify-between items-start gap-4">
-                          <div className="flex-1 text-xs">
-                            <span className="font-semibold block text-brand-text">{test.clientName} ({test.rating}★)</span>
-                            <span className="text-[9px] text-brand-sage block font-bold mt-0.5">{test.source}</span>
-                            <p className="text-[11px] text-brand-text/70 italic mt-1.5 leading-relaxed">&ldquo;{test.quote}&rdquo;</p>
-                          </div>
-                          <button
-                            type="button"
-                            onClick={() => handleDeleteTestimonial(test.id)}
-                            className="text-[10px] font-bold text-rose-500 hover:text-rose-700 uppercase shrink-0 cursor-pointer"
-                          >
-                            Delete
-                          </button>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {/* Tab 5: Blog Posts CRUD */}
-              {adminTab === "blog" && (
-                <div className="flex flex-col gap-6">
-                  <div className="border border-brand-sage-light/25 rounded-2xl p-6 bg-brand-sage-light/25 flex flex-col gap-4">
-                    <span className="text-[10px] uppercase tracking-[0.25em] font-bold text-brand-sage">Publish Blog Post</span>
-                    
-                    <div className="flex flex-col gap-1.5">
-                      <label className="text-[9px] uppercase tracking-widest font-bold text-brand-text/50">Article Title</label>
-                      <input
-                        type="text"
-                        value={newBlogTitle}
-                        onChange={(e) => setNewBlogTitle(e.target.value)}
-                        placeholder="e.g. Diaphragm Control & Nervous Systems"
-                        className="px-3 py-2 bg-[#111112] border border-brand-sage-light/20 rounded-lg text-xs text-brand-text"
-                      />
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-4">
-                      <div className="flex flex-col gap-1.5">
-                        <label className="text-[9px] uppercase tracking-widest font-bold text-brand-text/50">Category Tag</label>
-                        <input
-                          type="text"
-                          value={newBlogCategory}
-                          onChange={(e) => setNewBlogCategory(e.target.value)}
-                          placeholder="e.g. Philosophy"
-                          className="px-3 py-2 bg-[#111112] border border-brand-sage-light/20 rounded-lg text-xs text-brand-text"
-                        />
-                      </div>
-                      <div className="flex flex-col gap-1.5">
-                        <label className="text-[9px] uppercase tracking-widest font-bold text-brand-text/50">Read Time</label>
-                        <input
-                          type="text"
-                          value={newBlogReadTime}
-                          onChange={(e) => setNewBlogReadTime(e.target.value)}
-                          placeholder="e.g. 5 min read"
-                          className="px-3 py-2 bg-[#111112] border border-brand-sage-light/20 rounded-lg text-xs text-brand-text"
-                        />
-                      </div>
-                    </div>
-
-                    <div className="flex flex-col gap-1.5">
-                      <label className="text-[9px] uppercase tracking-widest font-bold text-brand-text/50">Excerpt Summary</label>
-                      <input
-                        type="text"
-                        value={newBlogExcerpt}
-                        onChange={(e) => setNewBlogExcerpt(e.target.value)}
-                        placeholder="Brief summary..."
-                        className="px-3 py-2 bg-[#111112] border border-brand-sage-light/20 rounded-lg text-xs text-brand-text"
-                      />
-                    </div>
-
-                    <div className="flex flex-col gap-1.5">
-                      <label className="text-[9px] uppercase tracking-widest font-bold text-brand-text/50">Full Body Content</label>
-                      <textarea
-                        value={newBlogContent}
-                        onChange={(e) => setNewBlogContent(e.target.value)}
-                        placeholder="Write article details here..."
-                        rows={6}
-                        className="px-3 py-2 bg-[#111112] border border-brand-sage-light/20 rounded-lg text-xs text-brand-text resize-none"
-                      />
-                    </div>
-
-                    <div className="flex flex-col gap-2 pt-2">
-                      <label className="text-[9px] uppercase tracking-widest font-bold text-brand-text/50">Featured Cover Image</label>
-                      <div className="flex items-center gap-4">
-                        <input
-                          type="file"
-                          accept="image/*"
-                          onChange={handleNewBlogFileChange}
-                          className="text-[10px] text-brand-text/60 file:mr-3 file:py-1 file:px-3 file:rounded-full file:border-0 file:text-[9px] file:font-semibold file:bg-brand-sage file:text-[#111112]"
-                        />
-                        {newBlogPreview && (
-                          <div className="w-10 h-10 rounded-lg border border-brand-sage-light/30 overflow-hidden shrink-0">
-                            <img src={newBlogPreview} alt="Preview" className="w-full h-full object-cover" />
-                          </div>
-                        )}
-                      </div>
-                    </div>
-
-                    <button
-                      type="button"
-                      disabled={!newBlogTitle || !newBlogContent}
-                      onClick={handleAddBlogPost}
-                      className="mt-2 py-3 bg-brand-sage hover:bg-brand-sage-hover text-[#111112] text-[10px] font-bold uppercase tracking-[0.2em] rounded-xl cursor-pointer disabled:opacity-40"
-                    >
-                      Queue Article Publication
-                    </button>
-                  </div>
-
-                  <div className="flex flex-col gap-4">
-                    <span className="text-[10px] uppercase tracking-[0.25em] font-bold text-brand-sage">Published Articles</span>
-                    <div className="grid grid-cols-2 gap-4">
-                      {editForm.blogPosts.map((post) => {
-                        const localPreview = blogPreviews[post.id];
-                        return (
-                          <div key={post.id} className="border border-brand-sage-light/20 rounded-xl p-3 bg-[#111112] flex items-center justify-between gap-3 shadow-sm">
-                            <div className="flex items-center gap-3 min-w-0">
-                              <div className="w-12 h-12 rounded-lg border border-brand-sage-light/35 overflow-hidden shrink-0 bg-brand-sage-light/15">
-                                {(localPreview || post.featuredImage) ? (
-                                  <img src={localPreview || post.featuredImage} alt="Thumb" className="w-full h-full object-cover" />
-                                ) : (
-                                  <div className="w-full h-full flex items-center justify-center text-[10px] opacity-40">Cover</div>
-                                )}
-                              </div>
-                              <div className="min-w-0">
-                                <h5 className="text-xs font-semibold text-brand-text truncate leading-tight">{post.title}</h5>
-                                <span className="text-[8px] text-brand-sage block mt-0.5 font-mono">{post.date}</span>
-                              </div>
-                            </div>
-                            <button
-                              type="button"
-                              onClick={() => handleDeleteBlogPost(post.id)}
-                              className="text-[10px] font-bold text-rose-500 hover:text-rose-700 uppercase shrink-0 cursor-pointer"
-                            >
-                              Delete
-                            </button>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {/* Status and Action controls */}
-              <div className="border-t border-brand-sage-light/20 pt-5 shrink-0">
-                {saveStatus.type && (
-                  <div
-                    className={`p-4 rounded-xl text-xs leading-normal mb-4 ${
-                      saveStatus.type === "success"
-                        ? "bg-emerald-500/10 text-emerald-300 border border-emerald-500/20"
-                        : "bg-rose-500/10 text-rose-300 border border-rose-500/20"
-                    }`}
-                  >
-                    <span className="font-bold block mb-0.5">
-                      {saveStatus.type === "success" ? "Sync Success" : "Sync Error"}
-                    </span>
-                    {saveStatus.msg}
-                  </div>
-                )}
-
-                <button
-                  type="submit"
-                  disabled={isSaving}
-                  className="w-full py-4 bg-brand-sage hover:bg-brand-sage-hover text-[#111112] text-xs font-bold uppercase tracking-[0.2em] transition-colors duration-300 rounded-xl cursor-pointer disabled:opacity-40 shadow-sm"
-                >
-                  {isSaving ? "Saving & Uploading Assets to Vercel Blob..." : "Commit All Changes & Sync Vercel Blob"}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-
-      {/* 11. Client Blog Post Reader Modal */}
+      {/* Client Blog Post Reader Modal */}
       {activePost && (
         <div className="fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-center justify-center p-4">
           <div className="bg-[#111112] border border-brand-sage-light/35 rounded-3xl max-w-2xl w-full h-[80vh] flex flex-col relative overflow-hidden shadow-2xl">
