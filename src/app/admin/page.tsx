@@ -50,7 +50,6 @@ export default function AdminPage() {
   const [newTestName, setNewTestName] = useState("");
   const [newTestQuote, setNewTestQuote] = useState("");
   const [newTestRating, setNewTestRating] = useState(5);
-  const [newTestParagraph, setNewTestParagraph] = useState("");
   const [newTestSource, setNewTestSource] = useState("");
 
   // New blog post form state
@@ -339,10 +338,15 @@ export default function AdminPage() {
       if (response.ok) {
         setContent(result.content);
         setEditForm(result.content);
+        
+        // WordPress-style auto-dismissing visual success toast notification
         setSaveStatus({
           type: "success",
-          msg: "CMS Overwrites synced successfully with Vercel Blob!",
+          msg: "Success! Your changes have been saved.",
         });
+        setTimeout(() => {
+          setSaveStatus({ type: null, msg: "" });
+        }, 3500);
 
         // Revoke objects
         if (heroPreview) URL.revokeObjectURL(heroPreview);
@@ -380,70 +384,69 @@ export default function AdminPage() {
 
   if (isLoading) {
     return (
-      <div className="flex-1 flex flex-col items-center justify-center min-h-screen bg-[#111112]">
-        <div className="flex flex-col items-center gap-6 animate-pulse">
-          <span className="font-serif text-3xl tracking-[0.2em] text-[#E5E0D8] font-light">✦ ELENA YOGA</span>
-          <div className="w-16 h-0.5 bg-[#8C7A6B]/40" />
-          <span className="text-[10px] tracking-widest uppercase text-[#8C7A6B]">Loading CMS Dashboard...</span>
+      <div className="flex-1 flex flex-col items-center justify-center min-h-screen bg-[#f1f1f1]">
+        <div className="flex flex-col items-center gap-4 animate-pulse">
+          <span className="font-sans text-xl font-bold tracking-wider text-[#23282d]">Elena Yoga</span>
+          <div className="w-12 h-1 bg-[#2271b1]/40" />
+          <span className="text-[11px] font-semibold uppercase tracking-wider text-[#23282d]/70">Loading CMS Dashboard...</span>
         </div>
       </div>
     );
   }
 
-  // Unauthorized: Center Secure Login Overlay
+  // Unauthorized: Center Light WordPress Admin Login
   if (!isLoggedIn) {
     return (
-      <div className="flex-1 flex items-center justify-center min-h-screen bg-[#111112] px-6 py-12">
+      <div className="flex-1 flex items-center justify-center min-h-screen bg-[#f1f1f1] px-6 py-12">
         <form
           onSubmit={handleAuthSubmit}
-          className="bg-[#161210] border border-[#26201C] rounded-3xl max-w-md w-full p-8 md:p-10 flex flex-col gap-6 shadow-2xl relative"
+          className="bg-white border border-[#dcdcde] rounded-lg max-w-sm w-full p-8 flex flex-col gap-5 shadow-md text-left"
         >
-          <div className="text-center">
-            <span className="text-[9px] uppercase tracking-[0.3em] text-[#8C7A6B] font-bold">Aura & Flow</span>
-            <h4 className="text-2xl font-serif text-[#E5E0D8] mt-1.5 tracking-wide">CMS Authorization</h4>
-            <p className="text-xs text-[#E5E0D8]/65 mt-1 leading-relaxed">
+          <div className="text-center pb-2 border-b border-[#f0f0f1]">
+            <h4 className="text-xl font-sans text-[#1d2327] font-bold tracking-wide">WordPress CMS Login</h4>
+            <p className="text-xs text-[#2c3338] mt-1">
               Enter your administration login credentials to manage website configs.
             </p>
           </div>
 
           <div className="flex flex-col gap-4">
-            <div className="flex flex-col gap-2">
-              <label className="text-[10px] uppercase tracking-[0.2em] font-semibold text-[#E5E0D8]">Admin Username</label>
+            <div className="flex flex-col gap-1.5">
+              <label className="text-xs font-semibold text-[#1d2327]">Username or Email Address</label>
               <input
                 type="text"
                 required
                 value={authUsername}
                 onChange={(e) => setAuthUsername(e.target.value)}
                 placeholder="Username"
-                className="px-5 py-3.5 bg-[#111112] border border-[#26201C] focus:border-[#8C7A6B] focus:outline-none rounded-xl text-xs md:text-sm text-[#E5E0D8]"
+                className="px-3.5 py-2.5 bg-white border border-[#8c8f94] focus:border-[#2271b1] focus:ring-1 focus:ring-[#2271b1] focus:outline-none rounded text-sm text-[#2c3338]"
               />
             </div>
 
-            <div className="flex flex-col gap-2">
-              <label className="text-[10px] uppercase tracking-[0.2em] font-semibold text-[#E5E0D8]">Admin Password</label>
+            <div className="flex flex-col gap-1.5">
+              <label className="text-xs font-semibold text-[#1d2327]">Password</label>
               <input
                 type="password"
                 required
                 value={authPassword}
                 onChange={(e) => setAuthPassword(e.target.value)}
                 placeholder="Password"
-                className="px-5 py-3.5 bg-[#111112] border border-[#26201C] focus:border-[#8C7A6B] focus:outline-none rounded-xl text-xs md:text-sm text-[#E5E0D8]"
+                className="px-3.5 py-2.5 bg-white border border-[#8c8f94] focus:border-[#2271b1] focus:ring-1 focus:ring-[#2271b1] focus:outline-none rounded text-sm text-[#2c3338]"
               />
             </div>
           </div>
 
           {authError && (
-            <div className="p-4 bg-rose-500/10 border border-rose-500/20 text-rose-300 text-xs rounded-xl leading-normal text-left font-normal animate-shake">
-              <span className="font-bold block mb-0.5">Authorization Error</span>
+            <div className="p-3 bg-rose-50 border-l-4 border-rose-500 text-rose-800 text-xs rounded font-normal">
+              <span className="font-bold block mb-0.5">Error</span>
               {authError}
             </div>
           )}
 
           <button
             type="submit"
-            className="w-full mt-2 py-4 bg-[#8C7A6B] hover:bg-[#79685A] text-[#111112] text-xs font-bold uppercase tracking-[0.2em] transition-colors duration-300 rounded-xl cursor-pointer"
+            className="w-full mt-2 py-2.5 bg-[#2271b1] hover:bg-[#135e96] text-white text-xs font-bold uppercase tracking-wider rounded transition-colors cursor-pointer"
           >
-            Authorize Admin Access
+            Log In
           </button>
         </form>
       </div>
@@ -453,32 +456,31 @@ export default function AdminPage() {
   const currentContent = editForm || content;
   if (!currentContent) {
     return (
-      <div className="flex-1 flex items-center justify-center min-h-screen bg-[#111112] text-[#E5E0D8]">
+      <div className="flex-1 flex items-center justify-center min-h-screen bg-[#f1f1f1] text-[#1d2327]">
         Failed to construct configuration form.
       </div>
     );
   }
 
   return (
-    <div className="flex-1 flex flex-col md:flex-row min-h-screen bg-[#111112] text-[#E5E0D8] font-sans">
+    <div className="flex-1 flex flex-col md:flex-row min-h-screen bg-[#f1f1f1] text-[#2c3338] font-sans antialiased">
       
-      {/* LEFT SIDEBAR navigation drawer */}
-      <aside className="w-full md:w-64 border-r border-[#26201C] bg-[#161210] flex flex-col shrink-0">
-        {/* Sidebar Header */}
-        <div className="p-6 border-b border-[#26201C] flex flex-col">
-          <span className="text-[10px] uppercase tracking-[0.3em] text-[#8C7A6B] font-bold">Elena Yoga</span>
-          <span className="text-sm font-serif text-[#E5E0D8] mt-1 font-semibold tracking-wide">CMS Control Panel</span>
+      {/* LEFT SIDEBAR: traditional WP dark slate drawer */}
+      <aside className="w-full md:w-60 border-r border-[#2c3338]/10 bg-[#23282d] flex flex-col shrink-0">
+        {/* Sidebar Brand Header */}
+        <div className="p-4 bg-[#1d2327] flex items-center gap-2 border-b border-[#2c3338]/20 text-white shrink-0">
+          <span className="text-sm font-bold tracking-wide">✦ Elena Yoga CMS</span>
         </div>
 
-        {/* Navigation links drawer */}
-        <nav className="flex-1 p-4 flex flex-col gap-1">
+        {/* Navigation Drawer options */}
+        <nav className="flex-1 py-3 flex flex-col">
           {[
-            { id: "overview", label: "Dashboard Overview" },
-            { id: "heroAbout", label: "Hero & About Copy" },
-            { id: "offerings", label: "Manage Classes" },
+            { id: "overview", label: "Dashboard" },
+            { id: "heroAbout", label: "Hero & About" },
+            { id: "offerings", label: "Yoga Classes" },
             { id: "portfolio", label: "Portfolio Gallery" },
             { id: "testimonials", label: "Testimonials" },
-            { id: "blog", label: "Philosophy Journal" },
+            { id: "blog", label: "Journal Blog" },
           ].map((tab) => {
             const active = activeTab === tab.id;
             return (
@@ -489,10 +491,10 @@ export default function AdminPage() {
                   setActiveTab(tab.id as any);
                   setSaveStatus({ type: null, msg: "" });
                 }}
-                className={`w-full text-left py-3 px-4 rounded-xl text-xs font-bold uppercase tracking-wider transition-colors cursor-pointer ${
+                className={`w-full text-left py-2.5 px-5 text-[13px] font-medium transition-colors cursor-pointer border-l-4 ${
                   active
-                    ? "bg-[#8C7A6B] text-[#111112]"
-                    : "text-[#E5E0D8]/60 hover:bg-[#111112] hover:text-[#E5E0D8]"
+                    ? "bg-[#1d2327] border-[#72aee6] text-white"
+                    : "border-transparent text-[#c3c4c7] hover:bg-[#1d2327] hover:text-[#72aee6]"
                 }`}
               >
                 {tab.label}
@@ -501,18 +503,11 @@ export default function AdminPage() {
           })}
         </nav>
 
-        {/* Sidebar Footer Controls */}
-        <div className="p-4 border-t border-[#26201C] flex flex-col gap-2">
-          <a
-            href="/"
-            target="_blank"
-            className="w-full text-center py-2.5 rounded-xl border border-brand-sage-light/20 text-[#E5E0D8]/80 hover:text-[#E5E0D8] hover:bg-brand-bg text-[10px] font-bold uppercase tracking-widest transition-colors"
-          >
-            Preview Site ↗
-          </a>
+        {/* Sidebar Drawer Footer */}
+        <div className="p-4 border-t border-[#2c3338]/30 flex flex-col gap-2 shrink-0">
           <button
             onClick={handleLogout}
-            className="w-full text-center py-2.5 rounded-xl bg-rose-500/10 border border-rose-500/25 text-rose-300 hover:bg-rose-500/20 text-[10px] font-bold uppercase tracking-widest transition-colors cursor-pointer"
+            className="w-full text-center py-2 bg-rose-900/40 hover:bg-rose-900/60 border border-rose-500/20 text-rose-200 text-xs font-semibold rounded transition-colors cursor-pointer"
           >
             Log Out
           </button>
@@ -521,46 +516,69 @@ export default function AdminPage() {
 
       {/* MAIN INTERIOR WORKSPACE */}
       <main className="flex-1 flex flex-col overflow-y-auto">
-        <header className="p-6 md:p-8 border-b border-[#26201C] bg-[#161210]/40 flex justify-between items-center">
-          <h2 className="text-xl md:text-2xl font-serif text-[#E5E0D8] tracking-wide font-normal uppercase">
+        
+        {/* HEADER NAVIGATION & TOP BAR */}
+        <header className="px-6 py-4 bg-white border-b border-[#dcdcde] flex justify-between items-center shrink-0">
+          <h2 className="text-xl font-sans text-[#1d2327] font-semibold tracking-tight">
             {activeTab === "overview" && "Dashboard Overview"}
             {activeTab === "heroAbout" && "Hero & About Settings"}
-            {activeTab === "offerings" && "Yoga Classes & Rates"}
-            {activeTab === "portfolio" && "Portfolio Image Pipeline"}
-            {activeTab === "testimonials" && "Client Resonance Reviews"}
-            {activeTab === "blog" && "Philosophy Journal Articles"}
+            {activeTab === "offerings" && "Manage Yoga Classes"}
+            {activeTab === "portfolio" && "Manage Portfolio Gallery"}
+            {activeTab === "testimonials" && "Manage Testimonials"}
+            {activeTab === "blog" && "Manage Journal Blog"}
           </h2>
 
-          <div className="text-[10px] uppercase font-mono tracking-widest text-[#8E847C]">
-            Connected • Vercel Blob API
-          </div>
+          <a
+            href="/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="px-4 py-2 bg-[#2271b1] hover:bg-[#135e96] text-white text-xs font-semibold rounded shadow-xs transition-colors"
+          >
+            View Website
+          </a>
         </header>
 
-        {/* Master CRUD form */}
-        <form onSubmit={handleSaveAllChanges} className="p-6 md:p-8 flex flex-col gap-6">
+        {/* Master CMS Form */}
+        <form onSubmit={handleSaveAllChanges} className="p-6 md:p-8 flex flex-col gap-6 max-w-5xl text-left">
           
-          {/* Active Tab View Panels */}
-          
+          {/* WordPress Success Toast Notification Notice banner */}
+          {saveStatus.type === "success" && (
+            <div className="bg-white border-l-4 border-[#46b450] p-4 rounded shadow-xs flex items-center justify-between text-xs text-[#2c3338] animate-fade-in shrink-0">
+              <div className="flex items-center gap-2">
+                <span className="text-[#46b450] font-bold text-sm">✓</span>
+                <span>{saveStatus.msg}</span>
+              </div>
+            </div>
+          )}
+
+          {/* WordPress Error banner */}
+          {saveStatus.type === "error" && (
+            <div className="bg-white border-l-4 border-rose-500 p-4 rounded shadow-xs text-xs text-[#2c3338] shrink-0">
+              <span className="font-bold block mb-0.5 text-rose-600">Save Error</span>
+              {saveStatus.msg}
+            </div>
+          )}
+
           {/* TAB 1: OVERVIEW PANEL */}
           {activeTab === "overview" && (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
               {[
-                { title: "Yoga Offerings", count: currentContent.offerings.length, tag: "Classes listed" },
-                { title: "Gallery Assets", count: currentContent.portfolio.length, tag: "Visual items" },
-                { title: "Resonance Reviews", count: currentContent.testimonials.length, tag: "Quotes synced" },
-                { title: "Journal Essays", count: currentContent.blogPosts.length, tag: "Published posts" },
+                { title: "Yoga Classes", count: currentContent.offerings.length, tag: "Offerings" },
+                { title: "Gallery Photos", count: currentContent.portfolio.length, tag: "Portfolio Items" },
+                { title: "Client Reviews", count: currentContent.testimonials.length, tag: "Testimonials" },
+                { title: "Journal Articles", count: currentContent.blogPosts.length, tag: "Blog Posts" },
               ].map((stat, i) => (
-                <div key={i} className="bg-[#161210] border border-[#26201C] p-6 rounded-2xl flex flex-col justify-between min-h-[140px] shadow-sm">
-                  <span className="text-[10px] uppercase tracking-widest text-[#8C7A6B] font-bold">{stat.title}</span>
-                  <span className="text-4xl font-serif font-light text-[#F3EFEA] my-2">{stat.count}</span>
-                  <span className="text-[9px] uppercase tracking-wider text-[#8E847C] font-mono">{stat.tag}</span>
+                <div key={i} className="bg-white border border-[#dcdcde] p-5 rounded shadow-xs flex flex-col justify-between min-h-[110px]">
+                  <span className="text-xs font-bold text-[#1d2327] uppercase tracking-wider">{stat.title}</span>
+                  <span className="text-3xl font-sans font-bold text-[#2271b1] my-1">{stat.count}</span>
+                  <span className="text-[10px] text-[#8c8f94] font-semibold uppercase">{stat.tag}</span>
                 </div>
               ))}
 
-              <div className="bg-[#161210] border border-[#26201C] p-8 rounded-3xl col-span-full mt-4 text-left">
-                <h4 className="text-lg font-serif text-[#F3EFEA] mb-2 tracking-wide font-normal">Welcome to your Sanctuary CMS</h4>
-                <p className="text-xs text-[#E5E0D8]/70 leading-relaxed max-w-2xl tracking-wide">
-                  Use the left vertical navigation drawer tabs to modify layouts, upload high-resolution banner images, list class programs, or write somatic essays. All updates are streamed instantly to Vercel Blob and persisted globally inside your configuration schema.
+              <div className="bg-white border border-[#dcdcde] p-6 rounded shadow-xs col-span-full mt-2">
+                <h4 className="text-base font-bold text-[#1d2327] mb-1">Welcome to Elena Yoga CMS</h4>
+                <p className="text-xs text-[#2c3338] leading-relaxed max-w-3xl">
+                  Use the left vertical navigation menu options to switch dashboard panels. You can upload banner photographs, edit somatic classes and rates, publish blog posts, and preview modifications live. Clicking "Save" instantly commits all changes to Vercel Blob storage.
                 </p>
               </div>
             </div>
@@ -569,42 +587,43 @@ export default function AdminPage() {
           {/* TAB 2: HERO & ABOUT PANEL */}
           {activeTab === "heroAbout" && (
             <div className="flex flex-col gap-6">
-              <div className="bg-[#161210] border border-[#26201C] p-6 md:p-8 rounded-3xl flex flex-col gap-5 text-left">
-                <h3 className="text-lg font-serif text-[#F3EFEA] border-b border-[#26201C] pb-3 font-normal">Hero Section Config</h3>
+              {/* Hero Settings Card */}
+              <div className="bg-white border border-[#dcdcde] p-6 rounded shadow-xs flex flex-col gap-4">
+                <h3 className="text-base font-bold text-[#1d2327] border-b border-[#f0f0f1] pb-3.5">Hero Background & Text Settings</h3>
                 
-                <div className="flex flex-col gap-2">
-                  <label className="text-[10px] uppercase tracking-[0.2em] font-semibold text-[#E5E0D8]">Hero Title Header</label>
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-xs font-bold text-[#1d2327]">Hero Banner Main Title</label>
                   <input
                     type="text"
                     required
                     value={currentContent.heroTitle}
                     onChange={(e) => handleGeneralChange(e, "heroTitle")}
-                    className="px-5 py-3.5 bg-[#111112] border border-[#26201C] focus:border-[#8C7A6B] focus:outline-none rounded-xl text-xs md:text-sm text-[#E5E0D8] tracking-wide"
+                    className="px-3.5 py-2.5 bg-white border border-[#8c8f94] focus:border-[#2271b1] focus:outline-none rounded text-xs md:text-sm text-[#2c3338]"
                   />
                 </div>
 
-                <div className="flex flex-col gap-2">
-                  <label className="text-[10px] uppercase tracking-[0.2em] font-semibold text-[#E5E0D8]">Hero Subtitle Description</label>
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-xs font-bold text-[#1d2327]">Hero Subtitle Description</label>
                   <textarea
                     required
                     rows={3}
                     value={currentContent.heroSubtitle}
                     onChange={(e) => handleGeneralChange(e, "heroSubtitle")}
-                    className="px-5 py-3.5 bg-[#111112] border border-[#26201C] focus:border-[#8C7A6B] focus:outline-none rounded-xl text-xs md:text-sm text-[#E5E0D8] resize-none tracking-wide"
+                    className="px-3.5 py-2.5 bg-white border border-[#8c8f94] focus:border-[#2271b1] focus:outline-none rounded text-xs md:text-sm text-[#2c3338] resize-none"
                   />
                 </div>
 
-                <div className="flex flex-col gap-2 pt-2">
-                  <label className="text-[10px] uppercase tracking-[0.2em] font-semibold text-[#E5E0D8]">Cover Background Banner</label>
-                  <div className="flex items-center gap-6">
+                <div className="flex flex-col gap-1.5 pt-2 border-t border-[#f0f0f1]">
+                  <label className="text-xs font-bold text-[#1d2327]">Hero Background Image</label>
+                  <div className="flex items-center gap-5">
                     <input
                       type="file"
                       accept="image/*"
                       onChange={handleHeroFileChange}
-                      className="text-xs text-[#E5E0D8]/65 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-[#8C7A6B] file:text-[#111112] file:cursor-pointer"
+                      className="text-xs text-[#2c3338]/70 file:mr-3 file:py-1.5 file:px-3 file:rounded file:border file:border-[#8c8f94] file:text-xs file:bg-white file:text-[#1d2327] file:cursor-pointer"
                     />
                     {(heroPreview || currentContent.heroImageUrl) && (
-                      <div className="w-16 h-16 rounded-xl border border-[#26201C] overflow-hidden shrink-0 bg-brand-bg">
+                      <div className="w-14 h-14 rounded border border-[#dcdcde] overflow-hidden bg-[#f1f1f1] shrink-0">
                         <img src={heroPreview || currentContent.heroImageUrl} alt="Hero Banner Preview" className="w-full h-full object-cover" />
                       </div>
                     )}
@@ -612,31 +631,32 @@ export default function AdminPage() {
                 </div>
               </div>
 
-              <div className="bg-[#161210] border border-[#26201C] p-6 md:p-8 rounded-3xl flex flex-col gap-5 text-left">
-                <h3 className="text-lg font-serif text-[#F3EFEA] border-b border-[#26201C] pb-3 font-normal">About Instructor Biography</h3>
+              {/* About Settings Card */}
+              <div className="bg-white border border-[#dcdcde] p-6 rounded shadow-xs flex flex-col gap-4">
+                <h3 className="text-base font-bold text-[#1d2327] border-b border-[#f0f0f1] pb-3.5">About Biography Settings</h3>
 
-                <div className="flex flex-col gap-2">
-                  <label className="text-[10px] uppercase tracking-[0.2em] font-semibold text-[#E5E0D8]">Biography Content Text</label>
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-xs font-bold text-[#1d2327]">Biography Body Copy</label>
                   <textarea
                     required
-                    rows={8}
+                    rows={6}
                     value={currentContent.aboutBioText}
                     onChange={(e) => handleGeneralChange(e, "aboutBioText")}
-                    className="px-5 py-3.5 bg-[#111112] border border-[#26201C] focus:border-[#8C7A6B] focus:outline-none rounded-xl text-xs md:text-sm text-[#E5E0D8] resize-none tracking-wide"
+                    className="px-3.5 py-2.5 bg-white border border-[#8c8f94] focus:border-[#2271b1] focus:outline-none rounded text-xs md:text-sm text-[#2c3338] resize-none"
                   />
                 </div>
 
-                <div className="flex flex-col gap-2 pt-2">
-                  <label className="text-[10px] uppercase tracking-[0.2em] font-semibold text-[#E5E0D8]">Profile Picture</label>
-                  <div className="flex items-center gap-6">
+                <div className="flex flex-col gap-1.5 pt-2 border-t border-[#f0f0f1]">
+                  <label className="text-xs font-bold text-[#1d2327]">Instructor Profile Picture</label>
+                  <div className="flex items-center gap-5">
                     <input
                       type="file"
                       accept="image/*"
                       onChange={handleAboutFileChange}
-                      className="text-xs text-[#E5E0D8]/65 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-[#8C7A6B] file:text-[#111112] file:cursor-pointer"
+                      className="text-xs text-[#2c3338]/70 file:mr-3 file:py-1.5 file:px-3 file:rounded file:border file:border-[#8c8f94] file:text-xs file:bg-white file:text-[#1d2327] file:cursor-pointer"
                     />
                     {(aboutPreview || currentContent.aboutImageUrl) && (
-                      <div className="w-16 h-16 rounded-xl border border-[#26201C] overflow-hidden shrink-0 bg-brand-bg">
+                      <div className="w-14 h-14 rounded border border-[#dcdcde] overflow-hidden bg-[#f1f1f1] shrink-0">
                         <img src={aboutPreview || currentContent.aboutImageUrl} alt="Profile Preview" className="w-full h-full object-cover" />
                       </div>
                     )}
@@ -648,76 +668,76 @@ export default function AdminPage() {
 
           {/* TAB 3: OFFERINGS CRUD PANEL */}
           {activeTab === "offerings" && (
-            <div className="flex flex-col gap-6 text-left">
+            <div className="flex flex-col gap-5">
               <div className="flex justify-between items-center">
-                <span className="text-[10px] uppercase tracking-[0.25em] font-bold text-[#8C7A6B]">Offerings Programs ({currentContent.offerings.length})</span>
+                <span className="text-xs font-bold text-[#1d2327] uppercase tracking-wider">Offerings List ({currentContent.offerings.length})</span>
                 <button
                   type="button"
                   onClick={handleAddOffering}
-                  className="px-5 py-2.5 bg-[#8C7A6B] text-[#111112] text-[10px] font-bold uppercase tracking-[0.15em] rounded-full hover:bg-[#79685A] cursor-pointer"
+                  className="px-4 py-2 bg-[#2271b1] hover:bg-[#135e96] text-white text-xs font-semibold rounded cursor-pointer transition-colors"
                 >
                   + Add New Class
                 </button>
               </div>
 
-              <div className="flex flex-col gap-6">
+              <div className="flex flex-col gap-5">
                 {currentContent.offerings.map((offering, index) => {
                   const hasLocalPreview = offeringPreviews[offering.id];
                   return (
-                    <div key={offering.id} className="border border-[#26201C] rounded-2xl p-6 bg-[#161210] flex flex-col gap-4 relative shadow-sm">
+                    <div key={offering.id} className="bg-white border border-[#dcdcde] p-6 rounded shadow-xs flex flex-col gap-4 relative">
                       <button
                         type="button"
                         onClick={() => handleDeleteOffering(offering.id)}
-                        className="absolute top-6 right-6 text-xs font-bold text-rose-500 hover:text-rose-700 uppercase cursor-pointer"
+                        className="absolute top-6 right-6 text-xs font-bold text-rose-600 hover:text-rose-800 uppercase cursor-pointer"
                       >
-                        ✕ Remove Program
+                        ✕ Remove Class
                       </button>
 
                       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <div className="md:col-span-2 flex flex-col gap-1.5">
-                          <span className="text-[9px] uppercase tracking-widest font-bold text-[#E5E0D8]/50">Class Title</span>
+                          <span className="text-xs font-bold text-[#1d2327]">Class Title</span>
                           <input
                             type="text"
                             required
                             value={offering.title}
                             onChange={(e) => handleOfferingChange(index, "title", e.target.value)}
-                            className="px-4 py-2.5 bg-[#111112] border border-[#26201C] focus:border-[#8C7A6B] focus:outline-none rounded-xl text-xs text-[#E5E0D8]"
+                            className="px-3.5 py-2.5 bg-white border border-[#8c8f94] focus:border-[#2271b1] focus:outline-none rounded text-xs text-[#2c3338]"
                           />
                         </div>
                         <div className="flex flex-col gap-1.5">
-                          <span className="text-[9px] uppercase tracking-widest font-bold text-[#E5E0D8]/50">Hourly Rate ($)</span>
+                          <span className="text-xs font-bold text-[#1d2327]">Hourly Rate ($)</span>
                           <input
                             type="number"
                             required
                             value={offering.price}
                             onChange={(e) => handleOfferingChange(index, "price", parseInt(e.target.value) || 0)}
-                            className="px-4 py-2.5 bg-[#111112] border border-[#26201C] focus:border-[#8C7A6B] focus:outline-none rounded-xl text-xs text-[#E5E0D8]"
+                            className="px-3.5 py-2.5 bg-white border border-[#8c8f94] focus:border-[#2271b1] focus:outline-none rounded text-xs text-[#2c3338]"
                           />
                         </div>
                       </div>
 
                       <div className="flex flex-col gap-1.5">
-                        <span className="text-[9px] uppercase tracking-widest font-bold text-[#E5E0D8]/50">Description Details</span>
+                        <span className="text-xs font-bold text-[#1d2327]">Description Details</span>
                         <textarea
                           required
                           rows={3}
                           value={offering.description}
                           onChange={(e) => handleOfferingChange(index, "description", e.target.value)}
-                          className="px-4 py-2.5 bg-[#111112] border border-[#26201C] focus:border-[#8C7A6B] focus:outline-none rounded-xl text-xs text-[#E5E0D8] resize-none"
+                          className="px-3.5 py-2.5 bg-white border border-[#8c8f94] focus:border-[#2271b1] focus:outline-none rounded text-xs text-[#2c3338] resize-none"
                         />
                       </div>
 
-                      <div className="flex flex-col gap-2 pt-2 border-t border-[#26201C]/50">
-                        <span className="text-[9px] uppercase tracking-widest font-bold text-[#E5E0D8]/50">Class Card Photo</span>
+                      <div className="flex flex-col gap-2 pt-3 border-t border-[#f0f0f1]">
+                        <span className="text-xs font-bold text-[#1d2327]">Class Card Image</span>
                         <div className="flex items-center gap-4">
                           <input
                             type="file"
                             accept="image/*"
                             onChange={(e) => handleOfferingFileChange(index, e.target.files?.[0] || null)}
-                            className="text-[10px] text-[#E5E0D8]/60 file:mr-3 file:py-1.5 file:px-3.5 file:rounded-full file:border-0 file:text-[9px] file:font-semibold file:bg-[#8C7A6B] file:text-[#111112] file:cursor-pointer"
+                            className="text-xs text-[#2c3338]/70 file:mr-3 file:py-1.5 file:px-3 file:rounded file:border file:border-[#8c8f94] file:text-xs file:bg-white file:text-[#1d2327] file:cursor-pointer"
                           />
                           {(hasLocalPreview || offering.image) && (
-                            <div className="w-12 h-12 rounded-xl border border-[#26201C] overflow-hidden shrink-0 bg-brand-bg">
+                            <div className="w-12 h-12 rounded border border-[#dcdcde] overflow-hidden bg-[#f1f1f1] shrink-0">
                               <img src={hasLocalPreview || offering.image} alt="Class Preview" className="w-full h-full object-cover" />
                             </div>
                           )}
@@ -732,28 +752,29 @@ export default function AdminPage() {
 
           {/* TAB 4: PORTFOLIO CRUD PANEL */}
           {activeTab === "portfolio" && (
-            <div className="flex flex-col gap-6 text-left">
+            <div className="flex flex-col gap-6">
               {/* Insert Form */}
-              <div className="border border-[#26201C] rounded-3xl p-6 bg-[#161210] flex flex-col gap-4 shadow-sm">
-                <span className="text-[10px] uppercase tracking-[0.25em] font-bold text-[#8C7A6B]">Upload Photo to Gallery</span>
+              <div className="bg-white border border-[#dcdcde] p-6 rounded shadow-xs flex flex-col gap-4">
+                <span className="text-xs font-bold text-[#1d2327] uppercase tracking-wider">Upload Photo to Gallery</span>
+                
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="flex flex-col gap-1.5">
-                    <label className="text-[9px] uppercase tracking-widest font-bold text-[#E5E0D8]/60">Photo Title</label>
+                    <label className="text-xs font-bold text-[#1d2327]">Photo Title</label>
                     <input
                       type="text"
                       value={newPortTitle}
                       onChange={(e) => setNewPortTitle(e.target.value)}
                       placeholder="e.g. Alabaster Alignment"
-                      className="px-4 py-2.5 bg-[#111112] border border-[#26201C] focus:border-[#8C7A6B] focus:outline-none rounded-xl text-xs text-[#E5E0D8]"
+                      className="px-3.5 py-2.5 bg-white border border-[#8c8f94] focus:border-[#2271b1] focus:outline-none rounded text-xs text-[#2c3338]"
                     />
                   </div>
 
                   <div className="flex flex-col gap-1.5">
-                    <label className="text-[9px] uppercase tracking-widest font-bold text-[#E5E0D8]/60">Gallery Tag Category</label>
+                    <label className="text-xs font-bold text-[#1d2327]">Gallery Tag Category</label>
                     <select
                       value={newPortCategory}
                       onChange={(e) => setNewPortCategory(e.target.value)}
-                      className="px-4 py-2.5 bg-[#111112] border border-[#26201C] focus:border-[#8C7A6B] focus:outline-none rounded-xl text-xs text-[#E5E0D8] cursor-pointer"
+                      className="px-3.5 py-2.5 bg-white border border-[#8c8f94] focus:border-[#2271b1] focus:outline-none rounded text-xs text-[#2c3338] cursor-pointer"
                     >
                       <option value="Studio">Studio</option>
                       <option value="Classes">Classes</option>
@@ -762,17 +783,17 @@ export default function AdminPage() {
                   </div>
                 </div>
 
-                <div className="flex flex-col gap-2 pt-2 border-t border-[#26201C]/50">
-                  <label className="text-[9px] uppercase tracking-widest font-bold text-[#E5E0D8]/60">Select Image File</label>
+                <div className="flex flex-col gap-2 pt-3 border-t border-[#f0f0f1]">
+                  <label className="text-xs font-bold text-[#1d2327]">Select Image File</label>
                   <div className="flex items-center gap-4">
                     <input
                       type="file"
                       accept="image/*"
                       onChange={handleNewPortFileChange}
-                      className="text-[10px] text-[#E5E0D8]/60 file:mr-3 file:py-1.5 file:px-3.5 file:rounded-full file:border-0 file:text-[9px] file:font-semibold file:bg-[#8C7A6B] file:text-[#111112] file:cursor-pointer"
+                      className="text-xs text-[#2c3338]/70 file:mr-3 file:py-1.5 file:px-3 file:rounded file:border file:border-[#8c8f94] file:text-xs file:bg-white file:text-[#1d2327] file:cursor-pointer"
                     />
                     {newPortPreview && (
-                      <div className="w-12 h-12 rounded-xl border border-[#26201C] overflow-hidden shrink-0 bg-brand-bg">
+                      <div className="w-12 h-12 rounded border border-[#dcdcde] overflow-hidden bg-[#f1f1f1] shrink-0">
                         <img src={newPortPreview} alt="New Preview" className="w-full h-full object-cover" />
                       </div>
                     )}
@@ -783,22 +804,22 @@ export default function AdminPage() {
                   type="button"
                   disabled={!newPortTitle || !newPortFile}
                   onClick={handleAddPortfolioItem}
-                  className="mt-2 py-3.5 bg-[#8C7A6B] hover:bg-[#79685A] text-[#111112] text-[10px] font-bold uppercase tracking-[0.2em] rounded-xl cursor-pointer disabled:opacity-30"
+                  className="mt-2 py-2.5 bg-[#2271b1] hover:bg-[#135e96] text-white text-xs font-bold uppercase rounded cursor-pointer disabled:opacity-30 transition-colors"
                 >
-                  Queue Photo Addition
+                  Add Photo
                 </button>
               </div>
 
               {/* List existing */}
               <div className="flex flex-col gap-4">
-                <span className="text-[10px] uppercase tracking-[0.25em] font-bold text-[#8C7A6B]">Existing Photos</span>
+                <span className="text-xs font-bold text-[#1d2327] uppercase tracking-wider">Existing Gallery Photos</span>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                   {currentContent.portfolio.map((item) => {
                     const localPreview = portfolioPreviews[item.id];
                     return (
-                      <div key={item.id} className="border border-[#26201C] rounded-2xl p-4 bg-[#161210] flex items-center justify-between gap-4 shadow-sm">
+                      <div key={item.id} className="bg-white border border-[#dcdcde] rounded p-4 flex items-center justify-between gap-4 shadow-xs">
                         <div className="flex items-center gap-3.5 min-w-0">
-                          <div className="w-14 h-14 rounded-xl border border-[#26201C] overflow-hidden shrink-0 bg-[#161210]/55">
+                          <div className="w-14 h-14 rounded border border-[#dcdcde] overflow-hidden bg-[#f1f1f1] shrink-0">
                             {(localPreview || item.image) ? (
                               <img src={localPreview || item.image} alt="Thumbnail preview" className="w-full h-full object-cover" />
                             ) : (
@@ -806,14 +827,14 @@ export default function AdminPage() {
                             )}
                           </div>
                           <div className="min-w-0">
-                            <h5 className="text-xs font-semibold text-[#E5E0D8] truncate leading-tight">{item.title}</h5>
-                            <span className="text-[8px] uppercase tracking-wider font-bold text-[#8C7A6B] block mt-1 font-mono">{item.category}</span>
+                            <h5 className="text-xs font-bold text-[#1d2327] truncate leading-tight">{item.title}</h5>
+                            <span className="text-[10px] uppercase font-bold text-[#2271b1] block mt-1">{item.category}</span>
                           </div>
                         </div>
                         <button
                           type="button"
                           onClick={() => handleDeletePortfolioItem(item.id)}
-                          className="text-[10px] font-bold text-rose-500 hover:text-rose-700 uppercase shrink-0 cursor-pointer"
+                          className="text-xs font-bold text-rose-600 hover:text-rose-800 uppercase shrink-0 cursor-pointer"
                         >
                           Delete
                         </button>
@@ -827,28 +848,29 @@ export default function AdminPage() {
 
           {/* TAB 5: TESTIMONIALS CRUD PANEL */}
           {activeTab === "testimonials" && (
-            <div className="flex flex-col gap-6 text-left">
-              <div className="border border-[#26201C] rounded-3xl p-6 bg-[#161210] flex flex-col gap-4 shadow-sm">
-                <span className="text-[10px] uppercase tracking-[0.25em] font-bold text-[#8C7A6B]">Add Client Resonance Review</span>
+            <div className="flex flex-col gap-6">
+              {/* Insert Form */}
+              <div className="bg-white border border-[#dcdcde] p-6 rounded shadow-xs flex flex-col gap-4">
+                <span className="text-xs font-bold text-[#1d2327] uppercase tracking-wider">Add Client Testimonial</span>
                 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div className="md:col-span-2 flex flex-col gap-1.5">
-                    <label className="text-[9px] uppercase font-bold text-[#E5E0D8]/60">Client Name</label>
+                    <label className="text-xs font-bold text-[#1d2327]">Client Name</label>
                     <input
                       type="text"
                       value={newTestName}
                       onChange={(e) => setNewTestName(e.target.value)}
                       placeholder="e.g. Claire Vance"
-                      className="px-4 py-2.5 bg-[#111112] border border-[#26201C] focus:border-[#8C7A6B] focus:outline-none rounded-xl text-xs text-[#E5E0D8]"
+                      className="px-3.5 py-2.5 bg-white border border-[#8c8f94] focus:border-[#2271b1] focus:outline-none rounded text-xs text-[#2c3338]"
                     />
                   </div>
 
                   <div className="flex flex-col gap-1.5">
-                    <label className="text-[9px] uppercase font-bold text-[#E5E0D8]/60">Rating Score</label>
+                    <label className="text-xs font-bold text-[#1d2327]">Rating Score</label>
                     <select
                       value={newTestRating}
                       onChange={(e) => setNewTestRating(parseInt(e.target.value) || 5)}
-                      className="px-4 py-2.5 bg-[#111112] border border-[#26201C] focus:border-[#8C7A6B] focus:outline-none rounded-xl text-xs text-[#E5E0D8] cursor-pointer"
+                      className="px-3.5 py-2.5 bg-white border border-[#8c8f94] focus:border-[#2271b1] focus:outline-none rounded text-xs text-[#2c3338] cursor-pointer"
                     >
                       <option value="5">5 Stars</option>
                       <option value="4">4 Stars</option>
@@ -858,24 +880,24 @@ export default function AdminPage() {
                 </div>
 
                 <div className="flex flex-col gap-1.5">
-                  <label className="text-[9px] uppercase font-bold text-[#E5E0D8]/60">Client Quote Text</label>
+                  <label className="text-xs font-bold text-[#1d2327]">Client Quote Text</label>
                   <textarea
                     value={newTestQuote}
                     onChange={(e) => setNewTestQuote(e.target.value)}
                     placeholder="Enter review quote..."
                     rows={3}
-                    className="px-4 py-2.5 bg-[#111112] border border-[#26201C] focus:border-[#8C7A6B] focus:outline-none rounded-xl text-xs text-[#E5E0D8] resize-none"
+                    className="px-3.5 py-2.5 bg-white border border-[#8c8f94] focus:border-[#2271b1] focus:outline-none rounded text-xs text-[#2c3338] resize-none"
                   />
                 </div>
 
                 <div className="flex flex-col gap-1.5">
-                  <label className="text-[9px] uppercase font-bold text-[#E5E0D8]/60">Class context / Source description</label>
+                  <label className="text-xs font-bold text-[#1d2327]">Class context / Source description</label>
                   <input
                     type="text"
                     value={newTestSource}
                     onChange={(e) => setNewTestSource(e.target.value)}
                     placeholder="e.g. Private 1-on-1 Mentorship Client"
-                    className="px-4 py-2.5 bg-[#111112] border border-[#26201C] focus:border-[#8C7A6B] focus:outline-none rounded-xl text-xs text-[#E5E0D8]"
+                    className="px-3.5 py-2.5 bg-white border border-[#8c8f94] focus:border-[#2271b1] focus:outline-none rounded text-xs text-[#2c3338]"
                   />
                 </div>
 
@@ -883,27 +905,27 @@ export default function AdminPage() {
                   type="button"
                   disabled={!newTestName || !newTestQuote}
                   onClick={handleAddTestimonial}
-                  className="mt-2 py-3.5 bg-[#8C7A6B] hover:bg-[#79685A] text-[#111112] text-[10px] font-bold uppercase tracking-[0.2em] rounded-xl cursor-pointer disabled:opacity-30"
+                  className="mt-2 py-2.5 bg-[#2271b1] hover:bg-[#135e96] text-white text-xs font-bold uppercase rounded cursor-pointer disabled:opacity-30 transition-colors"
                 >
-                  Queue Review Addition
+                  Add Testimonial
                 </button>
               </div>
 
               {/* Existing List */}
               <div className="flex flex-col gap-4">
-                <span className="text-[10px] uppercase tracking-[0.25em] font-bold text-[#8C7A6B]">Existing Reviews</span>
+                <span className="text-xs font-bold text-[#1d2327] uppercase tracking-wider">Existing Reviews</span>
                 <div className="flex flex-col gap-4">
                   {currentContent.testimonials.map((test) => (
-                    <div key={test.id} className="border border-[#26201C] rounded-2xl p-6 bg-[#161210] flex justify-between items-start gap-6 shadow-sm">
+                    <div key={test.id} className="bg-white border border-[#dcdcde] rounded p-6 flex justify-between items-start gap-6 shadow-xs">
                       <div className="flex-1 text-xs">
-                        <span className="font-semibold block text-[#F3EFEA] text-sm">{test.clientName} ({test.rating}★)</span>
-                        <span className="text-[9px] text-[#8C7A6B] block font-bold mt-1 font-mono">{test.source}</span>
-                        <p className="text-xs text-[#E5E0D8]/75 italic mt-2.5 leading-relaxed">&ldquo;{test.quote}&rdquo;</p>
+                        <span className="font-bold block text-[#1d2327] text-sm">{test.clientName} ({test.rating}★)</span>
+                        <span className="text-[10px] text-[#2271b1] block font-bold mt-1">{test.source}</span>
+                        <p className="text-xs text-[#2c3338] italic mt-2.5 leading-relaxed">&ldquo;{test.quote}&rdquo;</p>
                       </div>
                       <button
                         type="button"
                         onClick={() => handleDeleteTestimonial(test.id)}
-                        className="text-[10px] font-bold text-rose-500 hover:text-rose-700 uppercase shrink-0 cursor-pointer"
+                        className="text-xs font-bold text-rose-600 hover:text-rose-800 uppercase shrink-0 cursor-pointer"
                       >
                         Delete
                       </button>
@@ -916,78 +938,79 @@ export default function AdminPage() {
 
           {/* TAB 6: JOURNAL CRUD PANEL */}
           {activeTab === "blog" && (
-            <div className="flex flex-col gap-6 text-left">
-              <div className="border border-[#26201C] rounded-3xl p-6 bg-[#161210] flex flex-col gap-4 shadow-sm">
-                <span className="text-[10px] uppercase tracking-[0.25em] font-bold text-[#8C7A6B]">Publish Philosophy Essay</span>
+            <div className="flex flex-col gap-6">
+              {/* Insert Form */}
+              <div className="bg-white border border-[#dcdcde] p-6 rounded shadow-xs flex flex-col gap-4">
+                <span className="text-xs font-bold text-[#1d2327] uppercase tracking-wider">Publish New Blog Post</span>
                 
                 <div className="flex flex-col gap-1.5">
-                  <label className="text-[9px] uppercase font-bold text-[#E5E0D8]/60">Article Title</label>
+                  <label className="text-xs font-bold text-[#1d2327]">Article Title</label>
                   <input
                     type="text"
                     value={newBlogTitle}
                     onChange={(e) => setNewBlogTitle(e.target.value)}
                     placeholder="e.g. Somatic Breathwork Nets"
-                    className="px-4 py-2.5 bg-[#111112] border border-[#26201C] focus:border-[#8C7A6B] focus:outline-none rounded-xl text-xs text-[#E5E0D8]"
+                    className="px-3.5 py-2.5 bg-white border border-[#8c8f94] focus:border-[#2271b1] focus:outline-none rounded text-xs text-[#2c3338]"
                   />
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="flex flex-col gap-1.5">
-                    <label className="text-[9px] uppercase font-bold text-[#E5E0D8]/60">Category tag</label>
+                    <label className="text-xs font-bold text-[#1d2327]">Category Tag</label>
                     <input
                       type="text"
                       value={newBlogCategory}
                       onChange={(e) => setNewBlogCategory(e.target.value)}
                       placeholder="Philosophy"
-                      className="px-4 py-2.5 bg-[#111112] border border-[#26201C] focus:border-[#8C7A6B] focus:outline-none rounded-xl text-xs text-[#E5E0D8]"
+                      className="px-3.5 py-2.5 bg-white border border-[#8c8f94] focus:border-[#2271b1] focus:outline-none rounded text-xs text-[#2c3338]"
                     />
                   </div>
 
                   <div className="flex flex-col gap-1.5">
-                    <label className="text-[9px] uppercase font-bold text-[#E5E0D8]/60">Read Time duration</label>
+                    <label className="text-xs font-bold text-[#1d2327]">Read Time duration</label>
                     <input
                       type="text"
                       value={newBlogReadTime}
                       onChange={(e) => setNewBlogReadTime(e.target.value)}
                       placeholder="5 min read"
-                      className="px-4 py-2.5 bg-[#111112] border border-[#26201C] focus:border-[#8C7A6B] focus:outline-none rounded-xl text-xs text-[#E5E0D8]"
+                      className="px-3.5 py-2.5 bg-white border border-[#8c8f94] focus:border-[#2271b1] focus:outline-none rounded text-xs text-[#2c3338]"
                     />
                   </div>
                 </div>
 
                 <div className="flex flex-col gap-1.5">
-                  <label className="text-[9px] uppercase font-bold text-[#E5E0D8]/60">Excerpt Outline Summary</label>
+                  <label className="text-xs font-bold text-[#1d2327]">Excerpt Outline Summary</label>
                   <input
                     type="text"
                     value={newBlogExcerpt}
                     onChange={(e) => setNewBlogExcerpt(e.target.value)}
                     placeholder="Brief description outline..."
-                    className="px-4 py-2.5 bg-[#111112] border border-[#26201C] focus:border-[#8C7A6B] focus:outline-none rounded-xl text-xs text-[#E5E0D8]"
+                    className="px-3.5 py-2.5 bg-white border border-[#8c8f94] focus:border-[#2271b1] focus:outline-none rounded text-xs text-[#2c3338]"
                   />
                 </div>
 
                 <div className="flex flex-col gap-1.5">
-                  <label className="text-[9px] uppercase font-bold text-[#E5E0D8]/60">Full Body Article Content</label>
+                  <label className="text-xs font-bold text-[#1d2327]">Full Body Article Content</label>
                   <textarea
                     value={newBlogContent}
                     onChange={(e) => setNewBlogContent(e.target.value)}
                     placeholder="Write essay content..."
                     rows={6}
-                    className="px-4 py-2.5 bg-[#111112] border border-[#26201C] focus:border-[#8C7A6B] focus:outline-none rounded-xl text-xs text-[#E5E0D8] resize-none"
+                    className="px-3.5 py-2.5 bg-white border border-[#8c8f94] focus:border-[#2271b1] focus:outline-none rounded text-xs text-[#2c3338] resize-none"
                   />
                 </div>
 
-                <div className="flex flex-col gap-2 pt-2 border-t border-[#26201C]/50">
-                  <label className="text-[9px] uppercase font-bold text-[#E5E0D8]/60">Cover Image Asset</label>
+                <div className="flex flex-col gap-2 pt-3 border-t border-[#f0f0f1]">
+                  <label className="text-xs font-bold text-[#1d2327]">Cover Image Asset</label>
                   <div className="flex items-center gap-4">
                     <input
                       type="file"
                       accept="image/*"
                       onChange={handleNewBlogFileChange}
-                      className="text-[10px] text-[#E5E0D8]/60 file:mr-3 file:py-1.5 file:px-3.5 file:rounded-full file:border-0 file:text-[9px] file:font-semibold file:bg-[#8C7A6B] file:text-[#111112] file:cursor-pointer"
+                      className="text-xs text-[#2c3338]/70 file:mr-3 file:py-1.5 file:px-3 file:rounded file:border file:border-[#8c8f94] file:text-xs file:bg-white file:text-[#1d2327] file:cursor-pointer"
                     />
                     {newBlogPreview && (
-                      <div className="w-12 h-12 rounded-xl border border-[#26201C] overflow-hidden shrink-0 bg-brand-bg">
+                      <div className="w-12 h-12 rounded border border-[#dcdcde] overflow-hidden bg-[#f1f1f1] shrink-0">
                         <img src={newBlogPreview} alt="Cover Preview" className="w-full h-full object-cover" />
                       </div>
                     )}
@@ -998,22 +1021,22 @@ export default function AdminPage() {
                   type="button"
                   disabled={!newBlogTitle || !newBlogContent}
                   onClick={handleAddBlogPost}
-                  className="mt-2 py-3.5 bg-[#8C7A6B] hover:bg-[#79685A] text-[#111112] text-[10px] font-bold uppercase tracking-[0.2em] rounded-xl cursor-pointer disabled:opacity-30"
+                  className="mt-2 py-2.5 bg-[#2271b1] hover:bg-[#135e96] text-white text-xs font-bold uppercase rounded cursor-pointer disabled:opacity-30 transition-colors"
                 >
-                  Queue Article Publication
+                  Publish Article
                 </button>
               </div>
 
               {/* Published Grid */}
               <div className="flex flex-col gap-4">
-                <span className="text-[10px] uppercase tracking-[0.25em] font-bold text-[#8C7A6B]">Published essays</span>
+                <span className="text-xs font-bold text-[#1d2327] uppercase tracking-wider">Published Articles</span>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {currentContent.blogPosts.map((post) => {
                     const localPreview = blogPreviews[post.id];
                     return (
-                      <div key={post.id} className="border border-[#26201C] rounded-2xl p-4 bg-[#161210] flex items-center justify-between gap-4 shadow-sm">
+                      <div key={post.id} className="bg-white border border-[#dcdcde] rounded p-4 flex items-center justify-between gap-4 shadow-xs">
                         <div className="flex items-center gap-3.5 min-w-0">
-                          <div className="w-14 h-14 rounded-xl border border-[#26201C] overflow-hidden shrink-0 bg-[#161210]/55">
+                          <div className="w-14 h-14 rounded border border-[#dcdcde] overflow-hidden bg-[#f1f1f1] shrink-0">
                             {(localPreview || post.featuredImage) ? (
                               <img src={localPreview || post.featuredImage} alt="Thumbnail preview" className="w-full h-full object-cover" />
                             ) : (
@@ -1021,14 +1044,14 @@ export default function AdminPage() {
                             )}
                           </div>
                           <div className="min-w-0">
-                            <h5 className="text-xs font-semibold text-[#E5E0D8] truncate leading-tight">{post.title}</h5>
-                            <span className="text-[8px] text-[#8C7A6B] block mt-1 font-mono">{post.date}</span>
+                            <h5 className="text-xs font-bold text-[#1d2327] truncate leading-tight">{post.title}</h5>
+                            <span className="text-[10px] text-[#2271b1] block mt-1">{post.date}</span>
                           </div>
                         </div>
                         <button
                           type="button"
                           onClick={() => handleDeleteBlogPost(post.id)}
-                          className="text-[10px] font-bold text-rose-500 hover:text-rose-700 uppercase shrink-0 cursor-pointer"
+                          className="text-xs font-bold text-rose-600 hover:text-rose-800 uppercase shrink-0 cursor-pointer"
                         >
                           Delete
                         </button>
@@ -1040,30 +1063,15 @@ export default function AdminPage() {
             </div>
           )}
 
-          {/* Persistent Sync Status & Action Bar (Except overview tab) */}
+          {/* SIMPLIFIED Save Action Bar (Except overview tab) */}
           {activeTab !== "overview" && (
-            <div className="border-t border-[#26201C] pt-6 flex flex-col gap-4 text-left">
-              {saveStatus.type && (
-                <div
-                  className={`p-4 rounded-xl text-xs leading-normal ${
-                    saveStatus.type === "success"
-                      ? "bg-emerald-500/10 text-emerald-300 border border-emerald-500/20"
-                      : "bg-rose-500/10 text-rose-300 border border-rose-500/20"
-                  }`}
-                >
-                  <span className="font-bold block mb-0.5">
-                    {saveStatus.type === "success" ? "Sync Success" : "Sync Error"}
-                  </span>
-                  {saveStatus.msg}
-                </div>
-              )}
-
+            <div className="border-t border-[#dcdcde] pt-6 flex flex-col gap-4 text-left">
               <button
                 type="submit"
                 disabled={isSaving}
-                className="w-full py-4 bg-[#8C7A6B] hover:bg-[#79685A] text-[#111112] text-xs font-bold uppercase tracking-[0.2em] transition-colors duration-300 rounded-xl cursor-pointer disabled:opacity-30 shadow-md"
+                className="w-40 py-2.5 bg-[#2271b1] hover:bg-[#135e96] text-white text-xs font-bold uppercase rounded shadow-xs cursor-pointer disabled:opacity-40 transition-colors"
               >
-                {isSaving ? "Saving & Uploading Assets to Vercel Blob..." : "Commit All Changes & Sync Vercel Blob"}
+                {isSaving ? "Saving..." : "Save"}
               </button>
             </div>
           )}
