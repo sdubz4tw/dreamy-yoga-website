@@ -1454,7 +1454,7 @@ export default function Home() {
               {/* Cover Banner */}
               {activePost.featuredImage && (
                 <div className="w-full h-64 rounded-2xl overflow-hidden border border-brand-sage/10 mb-8 shrink-0">
-                  <img src={activePost.featuredImage} alt="Cover" className="w-full h-full object-cover" />
+                  <img src={activePost.featuredImage} alt={activePost.title} className="w-full h-full object-cover" />
                 </div>
               )}
 
