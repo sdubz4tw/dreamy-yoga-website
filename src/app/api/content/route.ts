@@ -18,6 +18,8 @@ const DEFAULT_CONTENT: YogaContent = {
   aboutImageUrl: "",
   authorName: "Elena",
   authorBio: "Somatic educator, skeleto-tissue alignment specialist, and restorative Yin facilitator with 10+ years holding alignment sanctuaries.",
+  contactEmail: "elena@example.com",
+  leads: [],
   offerings: [
     {
       id: "private",
@@ -236,6 +238,8 @@ function patchContentDataDefaults(data: YogaContent) {
   
   if (!data.authorName) data.authorName = DEFAULT_CONTENT.authorName;
   if (!data.authorBio) data.authorBio = DEFAULT_CONTENT.authorBio;
+  if (!data.contactEmail) data.contactEmail = DEFAULT_CONTENT.contactEmail;
+  if (!data.leads) data.leads = [];
 
   data.offerings = data.offerings.map((offering) => ({
     ...offering,
@@ -250,5 +254,10 @@ function patchContentDataDefaults(data: YogaContent) {
     status: post.status || "published",
     tags: Array.isArray(post.tags) ? post.tags : (post.category ? [post.category] : []),
     isFeatured: typeof post.isFeatured === "boolean" ? post.isFeatured : false,
+  }));
+
+  data.leads = data.leads.map((lead) => ({
+    ...lead,
+    status: lead.status || "New",
   }));
 }

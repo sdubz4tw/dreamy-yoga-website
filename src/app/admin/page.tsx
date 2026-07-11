@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { YogaContent, OfferingItem, PortfolioItem, TestimonialItem, BlogPostItem } from "@/types";
+import { YogaContent, OfferingItem, PortfolioItem, TestimonialItem, BlogPostItem, LeadItem } from "@/types";
 
 export default function AdminPage() {
   const [content, setContent] = useState<YogaContent | null>(null);
@@ -15,7 +15,7 @@ export default function AdminPage() {
   const [authError, setAuthError] = useState("");
 
   // CMS active sidebar tab
-  const [activeTab, setActiveTab] = useState<"overview" | "heroAbout" | "offerings" | "portfolio" | "testimonials" | "blog">("overview");
+  const [activeTab, setActiveTab] = useState<"overview" | "heroAbout" | "offerings" | "portfolio" | "testimonials" | "blog" | "leads">("overview");
 
   // Save progress states
   const [isSaving, setIsSaving] = useState(false);
@@ -412,7 +412,7 @@ export default function AdminPage() {
     );
   }
 
-  // Unauthorized: Center Light WordPress Admin Login
+  // Center Light WordPress Admin Login
   if (!isLoggedIn) {
     return (
       <div className="flex-1 flex items-center justify-center min-h-screen bg-[#f1f1f1] px-6 py-12">
@@ -454,7 +454,7 @@ export default function AdminPage() {
           </div>
 
           {authError && (
-            <div className="p-3 bg-rose-55 border-l-4 border-rose-500 text-rose-800 text-xs rounded font-normal">
+            <div className="p-3 bg-rose-50 border-l-4 border-rose-500 text-rose-800 text-xs rounded font-normal">
               <span className="font-bold block mb-0.5">Error</span>
               {authError}
             </div>
@@ -480,6 +480,9 @@ export default function AdminPage() {
     );
   }
 
+  // Calculate unread leads count
+  const newLeadsCount = currentContent.leads?.filter((l) => l.status === "New").length || 0;
+
   return (
     <div className="flex-1 flex flex-col md:flex-row min-h-screen bg-[#f1f1f1] text-[#2c3338] font-sans antialiased">
       
@@ -499,6 +502,7 @@ export default function AdminPage() {
             { id: "portfolio", label: "Portfolio Gallery" },
             { id: "testimonials", label: "Testimonials" },
             { id: "blog", label: "Journal Blog" },
+            { id: "leads", label: `Inquiries / Leads ${newLeadsCount > 0 ? `(${newLeadsCount})` : ""}` },
           ].map((tab) => {
             const active = activeTab === tab.id;
             return (
@@ -544,6 +548,7 @@ export default function AdminPage() {
             {activeTab === "portfolio" && "Manage Portfolio Gallery"}
             {activeTab === "testimonials" && "Manage Testimonials"}
             {activeTab === "blog" && "Manage Journal Blog"}
+            {activeTab === "leads" && "Manage Inquiries / Leads"}
           </h2>
 
           <a
@@ -596,7 +601,7 @@ export default function AdminPage() {
               <div className="bg-white border border-[#dcdcde] p-6 rounded shadow-xs col-span-full mt-2">
                 <h4 className="text-base font-bold text-[#1d2327] mb-1">Welcome to Elena Yoga CMS</h4>
                 <p className="text-xs text-[#2c3338] leading-relaxed max-w-3xl">
-                  Use the left vertical navigation menu options to switch dashboard panels. You can upload banner photographs, edit somatic classes and rates, publish blog posts, and preview modifications live. Clicking "Save" instantly commits all changes to local storage or Vercel Blob.
+                  Use the left vertical navigation menu options to switch dashboard panels. You can upload banner photographs, edit somatic classes and rates, publish blog posts, review visitor inquiries, and preview modifications live. Clicking "Save" instantly commits all changes to local storage or Vercel Blob.
                 </p>
               </div>
             </div>
@@ -710,6 +715,24 @@ export default function AdminPage() {
                       className="px-3.5 py-2.5 bg-white border border-[#8c8f94] focus:border-[#2271b1] focus:outline-none rounded text-xs md:text-sm text-[#2c3338]"
                     />
                   </div>
+                </div>
+              </div>
+
+              {/* Global Recipient Email Settings Card */}
+              <div className="bg-white border border-[#dcdcde] p-6 rounded shadow-xs flex flex-col gap-4">
+                <h3 className="text-base font-bold text-[#1d2327] border-b border-[#f0f0f1] pb-3.5">Notification Routing Email</h3>
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-xs font-bold text-[#1d2327]">Recipient Contact Email (for Inquiry forwarding notifications)</label>
+                  <input
+                    type="email"
+                    required
+                    value={currentContent.contactEmail || ""}
+                    onChange={(e) => {
+                      if (!editForm) return;
+                      setEditForm({ ...editForm, contactEmail: e.target.value });
+                    }}
+                    className="px-3.5 py-2.5 bg-white border border-[#8c8f94] focus:border-[#2271b1] focus:outline-none rounded text-xs md:text-sm text-[#2c3338]"
+                  />
                 </div>
               </div>
             </div>
@@ -1229,7 +1252,7 @@ export default function AdminPage() {
                                 );
                                 setEditForm({ ...editForm, blogPosts: updated });
                               }}
-                              className="px-2 py-1 bg-white border border-[#8c8f94] rounded text-[11px] text-[#2c3338]"
+                              className="px-2 py-1 bg-white border-[#8c8f94] rounded text-[11px] text-[#2c3338]"
                             />
                           </div>
                         </div>
@@ -1237,6 +1260,83 @@ export default function AdminPage() {
                     );
                   })}
                 </div>
+              </div>
+            </div>
+          )}
+
+          {/* TAB 7: LEADS PANEL */}
+          {activeTab === "leads" && (
+            <div className="flex flex-col gap-6 text-left">
+              <div className="bg-white border border-[#dcdcde] p-6 rounded shadow-xs flex flex-col gap-4">
+                <h3 className="text-base font-bold text-[#1d2327] border-b border-[#f0f0f1] pb-3.5">Visitor Inquiries Inbox</h3>
+                
+                {(!currentContent.leads || currentContent.leads.length === 0) ? (
+                  <div className="p-8 text-center text-[#8c8f94] italic text-sm">
+                    No inquiries received yet.
+                  </div>
+                ) : (
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-left border-collapse text-xs">
+                      <thead>
+                        <tr className="border-b border-[#dcdcde] bg-[#f9f9f9]">
+                          <th className="p-3 font-bold text-[#1d2327] w-36">Name</th>
+                          <th className="p-3 font-bold text-[#1d2327] w-48">Email</th>
+                          <th className="p-3 font-bold text-[#1d2327] w-44">Date / Time</th>
+                          <th className="p-3 font-bold text-[#1d2327]">Inquiry Message</th>
+                          <th className="p-3 font-bold text-[#1d2327] w-24 text-center">Status</th>
+                          <th className="p-3 font-bold text-[#1d2327] w-48 text-right">Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {currentContent.leads.map((lead) => (
+                          <tr key={lead.id} className="border-b border-[#f0f0f1] hover:bg-[#fafafa]">
+                            <td className="p-3 font-bold text-[#1d2327]">{lead.name}</td>
+                            <td className="p-3">
+                              <a href={`mailto:${lead.email}`} className="text-[#2271b1] hover:underline font-mono">{lead.email}</a>
+                            </td>
+                            <td className="p-3 text-[#8c8f94] font-mono">
+                              {new Date(lead.timestamp).toLocaleString()}
+                            </td>
+                            <td className="p-3 whitespace-pre-wrap leading-relaxed text-[#2c3338]">{lead.message}</td>
+                            <td className="p-3 text-center">
+                              <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase font-mono ${
+                                lead.status === "New" ? "bg-blue-100 text-blue-800" : "bg-gray-100 text-gray-700"
+                              }`}>
+                                {lead.status || "New"}
+                              </span>
+                            </td>
+                            <td className="p-3 text-right">
+                              <div className="flex justify-end gap-2">
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    if (!editForm) return;
+                                    const updated = editForm.leads?.map(l => l.id === lead.id ? { ...l, status: (l.status === "New" ? "Read" : "New") as "New" | "Read" } : l) || [];
+                                    setEditForm({ ...editForm, leads: updated });
+                                  }}
+                                  className="px-2.5 py-1 text-[11px] font-semibold border border-[#8c8f94] rounded bg-white hover:bg-[#f9f9f9] text-[#2c3338] cursor-pointer"
+                                >
+                                  {lead.status === "New" ? "Mark Read" : "Mark New"}
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    if (!editForm) return;
+                                    const updated = editForm.leads?.filter(l => l.id !== lead.id) || [];
+                                    setEditForm({ ...editForm, leads: updated });
+                                  }}
+                                  className="px-2.5 py-1 text-[11px] font-semibold border border-rose-300 rounded bg-white hover:bg-rose-50 text-rose-600 cursor-pointer"
+                                >
+                                  Delete
+                                </button>
+                              </div>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
               </div>
             </div>
           )}

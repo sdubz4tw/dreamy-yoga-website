@@ -20,6 +20,8 @@ export default function Home() {
 
   // Client Inquiry State
   const [inquirySubmitted, setInquirySubmitted] = useState(false);
+  const [isInquirySaving, setIsInquirySaving] = useState(false);
+  const [inquiryError, setInquiryError] = useState("");
   const [formData, setFormData] = useState({ name: "", email: "", notes: "" });
 
   // Fetch content dynamically from Vercel Blob / serverless fallback
@@ -53,15 +55,42 @@ export default function Home() {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleInquirySubmit = (e: React.FormEvent) => {
+  const handleInquirySubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.name || !formData.email) return;
-    setInquirySubmitted(true);
+
+    setIsInquirySaving(true);
+    setInquiryError("");
+
+    try {
+      const response = await fetch("/api/leads", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: formData.name,
+          email: formData.email,
+          message: formData.notes,
+        }),
+      });
+
+      const result = await response.json();
+
+      if (response.ok) {
+        setInquirySubmitted(true);
+      } else {
+        setInquiryError(result.error || "Failed to submit inquiry message.");
+      }
+    } catch (err: any) {
+      setInquiryError("Failed to connect to inquiry dispatch route. Please retry.");
+    } finally {
+      setIsInquirySaving(false);
+    }
   };
 
   const resetForm = () => {
     setFormData({ name: "", email: "", notes: "" });
     setInquirySubmitted(false);
+    setInquiryError("");
   };
 
   // Interactive like clicks handling
@@ -606,7 +635,7 @@ export default function Home() {
         <div className="w-full h-px bg-brand-sage-light/20" />
       </div>
 
-      {/* 8. Minimal Contact Form Section */}
+      {/* 8. Spacio-Minimalist Contact Form Section */}
       <section id="contact" className="py-24 md:py-36 px-8 md:px-16 max-w-lg mx-auto w-full">
         <div className="text-center flex flex-col items-center gap-4 mb-12">
           <span className="text-[10px] uppercase tracking-[0.25em] text-brand-sage font-bold">
@@ -621,7 +650,7 @@ export default function Home() {
         </div>
 
         {!inquirySubmitted ? (
-          <form onSubmit={handleInquirySubmit} className="flex flex-col gap-5">
+          <form onSubmit={handleInquirySubmit} className="flex flex-col gap-5 text-left">
             <div className="flex flex-col gap-2">
               <label className="text-[10px] uppercase tracking-[0.25em] font-semibold text-brand-text/60">Name</label>
               <input
@@ -630,7 +659,8 @@ export default function Home() {
                 name="name"
                 value={formData.name}
                 onChange={handleInputChange}
-                className="px-5 py-3.5 bg-brand-sage-light/20 border border-brand-sage-light/35 focus:border-brand-sage focus:outline-none rounded-xl text-xs md:text-sm text-brand-text tracking-wide"
+                disabled={isInquirySaving}
+                className="px-5 py-3.5 bg-brand-sage-light/20 border border-brand-sage-light/35 focus:border-brand-sage focus:outline-none rounded-xl text-xs md:text-sm text-brand-text tracking-wide disabled:opacity-40"
                 placeholder="Your Name"
               />
             </div>
@@ -642,7 +672,8 @@ export default function Home() {
                 name="email"
                 value={formData.email}
                 onChange={handleInputChange}
-                className="px-5 py-3.5 bg-brand-sage-light/20 border border-brand-sage-light/35 focus:border-brand-sage focus:outline-none rounded-xl text-xs md:text-sm text-brand-text tracking-wide"
+                disabled={isInquirySaving}
+                className="px-5 py-3.5 bg-brand-sage-light/20 border border-brand-sage-light/35 focus:border-brand-sage focus:outline-none rounded-xl text-xs md:text-sm text-brand-text tracking-wide disabled:opacity-40"
                 placeholder="yourname@domain.com"
               />
             </div>
@@ -652,20 +683,30 @@ export default function Home() {
                 name="notes"
                 value={formData.notes}
                 onChange={handleInputChange}
+                disabled={isInquirySaving}
                 rows={4}
-                className="px-5 py-3.5 bg-brand-sage-light/20 border border-brand-sage-light/35 focus:border-brand-sage focus:outline-none rounded-xl text-xs md:text-sm text-brand-text resize-none tracking-wide"
-                placeholder="Any posture goals or injuries..."
+                className="px-5 py-3.5 bg-brand-sage-light/20 border border-brand-sage-light/35 focus:border-brand-sage focus:outline-none rounded-xl text-xs md:text-sm text-brand-text resize-none tracking-wide disabled:opacity-40"
+                placeholder="Any posture goals or intentions..."
               />
             </div>
+
+            {inquiryError && (
+              <div className="p-4 bg-rose-500/10 border border-rose-500/20 text-rose-300 text-xs rounded-xl leading-normal text-left font-normal animate-shake">
+                <span className="font-bold block mb-0.5">Submission Error</span>
+                {inquiryError}
+              </div>
+            )}
+
             <button
               type="submit"
-              className="w-full mt-2 py-4 bg-brand-sage hover:bg-brand-sage-hover text-[#111112] text-xs font-bold uppercase tracking-[0.2em] transition-colors duration-300 rounded-xl cursor-pointer"
+              disabled={isInquirySaving}
+              className="w-full mt-2 py-4 bg-brand-sage hover:bg-brand-sage-hover text-[#111112] text-xs font-bold uppercase tracking-[0.2em] transition-colors duration-300 rounded-xl cursor-pointer disabled:opacity-40"
             >
-              Send Request
+              {isInquirySaving ? "Transmitting..." : "Send Request"}
             </button>
           </form>
         ) : (
-          <div className="text-center py-8 flex flex-col items-center gap-5 border border-brand-sage-light/35 rounded-3xl bg-brand-sage-light/20 p-8">
+          <div className="text-center py-12 flex flex-col items-center gap-5 border border-brand-sage-light/35 rounded-3xl bg-brand-sage-light/20 p-8 animate-fade-in">
             <div className="w-12 h-12 rounded-full border border-brand-sage flex items-center justify-center text-brand-sage text-sm font-bold">
               ✓
             </div>
@@ -675,7 +716,7 @@ export default function Home() {
             </p>
             <button
               onClick={resetForm}
-              className="mt-2 text-xs font-bold uppercase tracking-[0.2em] text-brand-sage hover:underline cursor-pointer"
+              className="mt-3 text-xs font-bold uppercase tracking-[0.2em] text-brand-sage hover:underline cursor-pointer"
             >
               Reset Form
             </button>

@@ -44,6 +44,15 @@ export interface BlogPostItem {
   isFeatured?: boolean; // Featured toggle to pin posts
 }
 
+export interface LeadItem {
+  id: string;
+  name: string;
+  email: string;
+  message: string;
+  timestamp: string;
+  status: "New" | "Read";
+}
+
 export interface YogaContent {
   heroTitle: string;
   heroSubtitle: string;
@@ -57,4 +66,6 @@ export interface YogaContent {
   blogPosts: BlogPostItem[];
   authorName?: string; // WordPress Global Author name
   authorBio?: string; // WordPress Global Author bio
+  contactEmail?: string; // Email to route leads/inquiries
+  leads?: LeadItem[]; // Lead submissions database
 }
