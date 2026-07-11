@@ -1,11 +1,11 @@
 @import "tailwindcss";
 
 :root {
-  --background: #F4F1EA;
-  --foreground: #2B2625;
-  --sage-accent: #6B5E4F;
-  --sage-accent-hover: #5A4E40;
-  --sage-accent-light: #E5E1D5;
+  --background: #111112;
+  --foreground: #E5E0D8;
+  --sage-accent: #8C7A6B; /* Warm Earth-Gold */
+  --sage-accent-hover: #79685A;
+  --sage-accent-light: #4E433A; /* Shadowy Umber */
 }
 
 @theme {

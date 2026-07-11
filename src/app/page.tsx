@@ -388,11 +388,11 @@ export default function Home() {
 
   if (isLoading) {
     return (
-      <div className="flex-1 flex flex-col items-center justify-center min-h-screen bg-[#F4F1EA]">
-        <div className="flex flex-col items-center gap-4 animate-pulse">
-          <span className="font-serif text-3xl tracking-widest text-[#2B2625] font-light">✦ ELENA</span>
-          <div className="w-12 h-0.5 bg-[#6B5E4F]/40" />
-          <span className="text-[10px] tracking-widest uppercase text-[#6B5E4F]">Loading Sanctuary Content...</span>
+      <div className="flex-1 flex flex-col items-center justify-center min-h-screen bg-brand-bg">
+        <div className="flex flex-col items-center gap-6 animate-pulse">
+          <span className="font-serif text-3xl tracking-[0.2em] text-brand-text font-light">✦ ELENA</span>
+          <div className="w-16 h-0.5 bg-brand-sage/40" />
+          <span className="text-[10px] tracking-widest uppercase text-brand-sage">Entering Sanctuary...</span>
         </div>
       </div>
     );
@@ -401,10 +401,13 @@ export default function Home() {
   const currentContent = content || editForm;
   if (!currentContent) {
     return (
-      <div className="flex-1 flex flex-col items-center justify-center min-h-screen bg-[#F4F1EA] p-6 text-center">
-        <h1 className="text-2xl font-serif text-[#2B2625] mb-2">Sanctuary Disconnected</h1>
-        <p className="text-sm text-brand-text/70 mb-4 max-w-sm">Failed to connect to layout content engine.</p>
-        <button onClick={() => window.location.reload()} className="px-6 py-2.5 bg-brand-sage text-[#F4F1EA] text-xs font-bold uppercase rounded-full">
+      <div className="flex-1 flex flex-col items-center justify-center min-h-screen bg-brand-bg p-8 text-center">
+        <h1 className="text-2xl font-serif text-brand-text mb-3 tracking-wide">Sanctuary Disconnected</h1>
+        <p className="text-sm text-brand-text/60 mb-6 max-w-sm">Failed to connect to layout content engine.</p>
+        <button
+          onClick={() => window.location.reload()}
+          className="px-6 py-2.5 bg-brand-sage hover:bg-brand-sage-hover text-[#111112] text-xs font-bold uppercase rounded-full tracking-wider"
+        >
           Retry Connection
         </button>
       </div>
@@ -416,45 +419,45 @@ export default function Home() {
   });
 
   return (
-    <div className="flex-1 flex flex-col font-sans">
-      {/* 1. Minimal Navigation Bar */}
-      <header className="w-full border-b border-brand-sage/10 py-6 px-6 md:px-12 bg-[#F4F1EA]/80 backdrop-blur-md sticky top-0 z-30">
-        <div className="max-w-6xl mx-auto flex items-center justify-between">
-          <a href="#" className="font-serif text-xl md:text-2xl tracking-widest text-brand-text font-semibold uppercase">
+    <div className="flex-1 flex flex-col font-sans bg-brand-bg text-brand-text">
+      {/* 1. Navigation Bar (Cinematic Spacing) */}
+      <header className="w-full border-b border-brand-sage-light/20 py-7 px-8 md:px-16 bg-brand-bg/85 backdrop-blur-md sticky top-0 z-30">
+        <div className="max-w-7xl mx-auto flex items-center justify-between">
+          <a href="#" className="font-serif text-xl md:text-2xl tracking-[0.25em] text-brand-text font-semibold uppercase">
             Elena Yoga
           </a>
 
-          <nav className="hidden md:flex items-center gap-10">
-            <a href="#about" className="text-xs font-semibold uppercase tracking-widest text-brand-text/80 hover:text-brand-text transition-colors">
+          <nav className="hidden md:flex items-center gap-12">
+            <a href="#about" className="text-[11px] font-bold uppercase tracking-[0.2em] text-brand-text/70 hover:text-brand-text transition-colors">
               About
             </a>
-            <a href="#services" className="text-xs font-semibold uppercase tracking-widest text-brand-text/80 hover:text-brand-text transition-colors">
+            <a href="#services" className="text-[11px] font-bold uppercase tracking-[0.2em] text-brand-text/70 hover:text-brand-text transition-colors">
               Offerings
             </a>
-            <a href="#portfolio" className="text-xs font-semibold uppercase tracking-widest text-brand-text/80 hover:text-brand-text transition-colors">
+            <a href="#portfolio" className="text-[11px] font-bold uppercase tracking-[0.2em] text-brand-text/70 hover:text-brand-text transition-colors">
               Portfolio
             </a>
-            <a href="#testimonials" className="text-xs font-semibold uppercase tracking-widest text-brand-text/80 hover:text-brand-text transition-colors">
+            <a href="#testimonials" className="text-[11px] font-bold uppercase tracking-[0.2em] text-brand-text/70 hover:text-brand-text transition-colors">
               Reviews
             </a>
-            <a href="#journal" className="text-xs font-semibold uppercase tracking-widest text-brand-text/80 hover:text-brand-text transition-colors">
+            <a href="#journal" className="text-[11px] font-bold uppercase tracking-[0.2em] text-brand-text/70 hover:text-brand-text transition-colors">
               Journal
             </a>
-            <a href="#contact" className="text-xs font-semibold uppercase tracking-widest text-brand-text/80 hover:text-brand-text transition-colors">
+            <a href="#contact" className="text-[11px] font-bold uppercase tracking-[0.2em] text-brand-text/70 hover:text-brand-text transition-colors">
               Contact
             </a>
           </nav>
 
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-6">
             <button
               onClick={() => setIsAdminOpen(!isAdminOpen)}
-              className="text-[10px] font-bold uppercase tracking-widest text-brand-text/60 hover:text-brand-sage transition-colors cursor-pointer"
+              className="text-[10px] font-bold uppercase tracking-widest text-brand-text/45 hover:text-brand-sage transition-colors cursor-pointer"
             >
               [Admin Panel]
             </button>
             <a
               href="#contact"
-              className="px-6 py-2.5 border border-brand-sage text-brand-sage hover:bg-brand-sage hover:text-[#F4F1EA] text-xs font-bold uppercase tracking-widest transition-all duration-300 rounded-full"
+              className="px-6 py-3 border border-brand-sage text-brand-sage hover:bg-brand-sage hover:text-[#111112] text-xs font-bold uppercase tracking-[0.15em] transition-all duration-300 rounded-full"
             >
               Book Session
             </a>
@@ -462,9 +465,9 @@ export default function Home() {
         </div>
       </header>
 
-      {/* 2. Peaceful Hero Section */}
+      {/* 2. Cinematic Hero Section (Spacious Padding) */}
       <section
-        className="relative py-28 md:py-40 px-6 md:px-12 flex flex-col items-center text-center justify-center overflow-hidden"
+        className="relative py-36 md:py-52 px-8 md:px-16 flex flex-col items-center text-center justify-center overflow-hidden min-h-[70vh]"
         style={{
           backgroundImage: currentContent.heroImageUrl ? `url(${currentContent.heroImageUrl})` : "none",
           backgroundSize: "cover",
@@ -472,27 +475,27 @@ export default function Home() {
         }}
       >
         {currentContent.heroImageUrl && (
-          <div className="absolute inset-0 bg-[#F4F1EA]/85 -z-10" />
+          <div className="absolute inset-0 bg-brand-bg/85 -z-10" />
         )}
 
         {!currentContent.heroImageUrl && (
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full bg-[#E5E1D5]/40 blur-3xl -z-10 pointer-events-none" />
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[700px] rounded-full bg-brand-sage-light/10 blur-3xl -z-10 pointer-events-none" />
         )}
 
-        <div className="max-w-3xl flex flex-col items-center gap-6 md:gap-8 z-10">
-          <span className="text-xs uppercase tracking-[0.25em] text-brand-sage font-bold">
-            ✦ Mindful Movement & Alignment
+        <div className="max-w-4xl flex flex-col items-center gap-8 md:gap-10 z-10">
+          <span className="text-xs uppercase tracking-[0.35em] text-brand-sage font-bold">
+            ✦ Mindful Movement & Somatic Alignment
           </span>
-          <h1 className="text-4xl md:text-6xl lg:text-7xl font-serif text-brand-text tracking-wide leading-[1.15] font-normal">
+          <h1 className="text-4xl md:text-6xl lg:text-7xl font-serif text-brand-text tracking-wider leading-[1.2] font-normal">
             {currentContent.heroTitle}
           </h1>
-          <p className="text-sm md:text-base text-brand-text/75 leading-relaxed max-w-xl">
+          <p className="text-sm md:text-base text-brand-text/70 leading-relaxed max-w-2xl tracking-wide">
             {currentContent.heroSubtitle}
           </p>
-          <div className="mt-4">
+          <div className="mt-6">
             <a
               href="#contact"
-              className="inline-block px-8 py-4 bg-brand-sage text-[#F4F1EA] hover:bg-brand-sage-hover text-xs font-bold uppercase tracking-widest transition-colors duration-300 rounded-full shadow-sm"
+              className="inline-block px-10 py-5 bg-brand-sage text-[#111112] hover:bg-brand-sage-hover text-xs font-bold uppercase tracking-[0.2em] transition-colors duration-300 rounded-full shadow-sm"
             >
               Book a Session
             </a>
@@ -501,15 +504,15 @@ export default function Home() {
       </section>
 
       {/* Divider */}
-      <div className="max-w-6xl mx-auto w-full px-6 md:px-12">
-        <div className="w-full h-px bg-brand-sage/10" />
+      <div className="max-w-7xl mx-auto w-full px-8 md:px-16">
+        <div className="w-full h-px bg-brand-sage-light/20" />
       </div>
 
-      {/* 3. About Me Section */}
-      <section id="about" className="py-20 md:py-32 px-6 md:px-12 max-w-6xl mx-auto w-full">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-center">
+      {/* 3. Side-by-Side About Me Section */}
+      <section id="about" className="py-24 md:py-36 px-8 md:px-16 max-w-7xl mx-auto w-full">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-16 lg:gap-20 items-center">
           <div className="lg:col-span-5 flex justify-center">
-            <div className="w-full max-w-[360px] aspect-[4/5] rounded-3xl bg-brand-sage-light flex flex-col items-center justify-center relative overflow-hidden shadow-sm border border-brand-sage/5">
+            <div className="w-full max-w-[380px] aspect-[4/5] rounded-3xl bg-brand-sage-light/20 flex flex-col items-center justify-center relative overflow-hidden shadow-md border border-brand-sage-light/25">
               {currentContent.aboutImageUrl ? (
                 <img
                   src={currentContent.aboutImageUrl}
@@ -517,12 +520,12 @@ export default function Home() {
                   className="w-full h-full object-cover rounded-3xl"
                 />
               ) : (
-                <div className="w-full h-full p-8 flex flex-col items-center justify-center">
+                <div className="w-full h-full p-10 flex flex-col items-center justify-center">
                   <svg
                     viewBox="0 0 100 120"
                     fill="none"
                     xmlns="http://www.w3.org/2000/svg"
-                    className="w-full h-full opacity-65 text-brand-sage/80 stroke-1.5"
+                    className="w-full h-full opacity-40 text-brand-sage/80 stroke-1.5"
                   >
                     <circle cx="50" cy="40" r="16" className="stroke-brand-sage/20 fill-brand-sage/5" />
                     <path
@@ -535,28 +538,28 @@ export default function Home() {
                 </div>
               )}
 
-              <div className="absolute bottom-6 inset-x-6 text-center z-10 bg-[#F4F1EA]/60 backdrop-blur-xs py-1.5 rounded-full border border-brand-sage/10">
-                <span className="text-[10px] uppercase font-bold tracking-widest text-brand-text">
+              <div className="absolute bottom-6 inset-x-6 text-center z-10 bg-brand-bg/60 backdrop-blur-xs py-2 rounded-full border border-brand-sage-light/20">
+                <span className="text-[10px] uppercase font-bold tracking-[0.2em] text-brand-text">
                   Elena • Founder of Elena Yoga
                 </span>
               </div>
             </div>
           </div>
 
-          <div className="lg:col-span-7 flex flex-col items-start gap-5">
-            <span className="text-[10px] uppercase tracking-widest text-brand-sage font-bold">
+          <div className="lg:col-span-7 flex flex-col items-start gap-6">
+            <span className="text-[10px] uppercase tracking-[0.25em] text-brand-sage font-bold">
               The Instructor
             </span>
-            <h2 className="text-3xl md:text-4xl font-serif text-brand-text tracking-wide font-normal">
+            <h2 className="text-3xl md:text-5xl font-serif text-brand-text tracking-wide font-normal">
               Hi, I am Elena
             </h2>
-            <div className="flex flex-col gap-4 text-sm text-brand-text/80 leading-relaxed max-w-xl font-normal whitespace-pre-line">
+            <div className="flex flex-col gap-5 text-sm text-brand-text/75 leading-relaxed max-w-2xl font-normal whitespace-pre-line tracking-wide">
               {currentContent.aboutBioText}
             </div>
-            <div className="mt-2">
+            <div className="mt-4">
               <a
                 href="#services"
-                className="text-xs font-bold uppercase tracking-widest text-brand-text hover:text-brand-sage transition-colors border-b border-brand-text pb-1 hover:border-brand-sage"
+                className="text-xs font-bold uppercase tracking-[0.2em] text-brand-text hover:text-brand-sage transition-colors border-b border-brand-text pb-1 hover:border-brand-sage"
               >
                 Explore Offerings
               </a>
@@ -566,32 +569,32 @@ export default function Home() {
       </section>
 
       {/* Divider */}
-      <div className="max-w-6xl mx-auto w-full px-6 md:px-12">
-        <div className="w-full h-px bg-brand-sage/10" />
+      <div className="max-w-7xl mx-auto w-full px-8 md:px-16">
+        <div className="w-full h-px bg-brand-sage-light/20" />
       </div>
 
-      {/* 4. Offerings Grid Section */}
-      <section id="services" className="py-20 md:py-32 px-6 md:px-12 max-w-6xl mx-auto w-full">
-        <div className="text-center flex flex-col items-center gap-4 mb-16">
-          <span className="text-[10px] uppercase tracking-widest text-brand-sage font-bold">
+      {/* 4. Offerings Grid Section (Shadowy Umber Cards) */}
+      <section id="services" className="py-24 md:py-36 px-8 md:px-16 max-w-7xl mx-auto w-full">
+        <div className="text-center flex flex-col items-center gap-4 mb-20">
+          <span className="text-[10px] uppercase tracking-[0.25em] text-brand-sage font-bold">
             Curated Programs
           </span>
-          <h2 className="text-3xl md:text-4xl font-serif text-brand-text tracking-wide font-normal">
+          <h2 className="text-3xl md:text-5xl font-serif text-brand-text tracking-wide font-normal">
             Bespoke Offerings
           </h2>
-          <p className="text-xs md:text-sm text-brand-text/65 leading-relaxed max-w-md">
+          <p className="text-xs md:text-sm text-brand-text/60 leading-relaxed max-w-lg tracking-wide">
             Quiet spaces and custom sequences created to align physical posture, mental pacing, and sensory stillness.
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-12">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-10 lg:gap-16">
           {currentContent.offerings.map((offering) => (
             <div
               key={offering.id}
-              className="border border-brand-sage/15 hover:border-brand-sage/30 bg-white/20 hover:bg-white/40 rounded-3xl overflow-hidden flex flex-col justify-between transition-all duration-300 group shadow-xs min-h-[380px]"
+              className="border border-brand-sage-light/35 bg-brand-sage-light/20 hover:bg-brand-sage-light/35 rounded-3xl overflow-hidden flex flex-col justify-between transition-all duration-300 group shadow-md min-h-[420px]"
             >
               <div
-                className="h-44 w-full bg-brand-sage-light shrink-0 relative overflow-hidden"
+                className="h-56 w-full bg-brand-sage-light/25 shrink-0 relative overflow-hidden"
                 style={{
                   backgroundImage: offering.image ? `url(${offering.image})` : "none",
                   backgroundSize: "cover",
@@ -599,26 +602,26 @@ export default function Home() {
                 }}
               >
                 {!offering.image && (
-                  <div className="absolute inset-0 bg-gradient-to-tr from-brand-sage/10 to-brand-sage-light" />
+                  <div className="absolute inset-0 bg-gradient-to-tr from-brand-sage/5 to-brand-sage-light/20" />
                 )}
-                <div className="absolute top-4 right-4 bg-[#F4F1EA] border border-brand-sage/10 px-3.5 py-1.5 rounded-full text-xs font-bold text-brand-sage shadow-sm font-mono">
+                <div className="absolute top-4 right-4 bg-brand-bg border border-brand-sage-light/30 px-4 py-2 rounded-full text-xs font-bold text-brand-sage shadow-sm font-mono tracking-wider">
                   ${offering.price} / hr
                 </div>
               </div>
 
-              <div className="p-6 md:p-8 flex-1 flex flex-col justify-between gap-6">
-                <div className="flex flex-col gap-3">
-                  <h3 className="text-xl md:text-2xl font-serif text-brand-text tracking-wide group-hover:text-brand-sage transition-colors">
+              <div className="p-8 md:p-10 flex-1 flex flex-col justify-between gap-8">
+                <div className="flex flex-col gap-4">
+                  <h3 className="text-xl md:text-3xl font-serif text-brand-text tracking-wide group-hover:text-brand-sage transition-colors leading-snug">
                     {offering.title}
                   </h3>
-                  <p className="text-xs md:text-sm text-brand-text/75 leading-relaxed font-normal">
+                  <p className="text-xs md:text-sm text-brand-text/70 leading-relaxed font-normal tracking-wide">
                     {offering.description}
                   </p>
                 </div>
                 <div>
                   <a
                     href="#contact"
-                    className="inline-block text-xs font-bold uppercase tracking-widest border-b border-brand-text group-hover:border-brand-sage group-hover:text-brand-sage pb-1 transition-colors"
+                    className="inline-block text-xs font-bold uppercase tracking-[0.2em] border-b border-brand-text group-hover:border-brand-sage group-hover:text-brand-sage pb-1 transition-colors"
                   >
                     Inquire Space
                   </a>
@@ -630,35 +633,35 @@ export default function Home() {
       </section>
 
       {/* Divider */}
-      <div className="max-w-6xl mx-auto w-full px-6 md:px-12">
-        <div className="w-full h-px bg-brand-sage/10" />
+      <div className="max-w-7xl mx-auto w-full px-8 md:px-16">
+        <div className="w-full h-px bg-brand-sage-light/20" />
       </div>
 
       {/* 5. Portfolio Gallery Section */}
-      <section id="portfolio" className="py-20 md:py-32 px-6 md:px-12 max-w-6xl mx-auto w-full">
-        <div className="text-center flex flex-col items-center gap-4 mb-12">
-          <span className="text-[10px] uppercase tracking-widest text-brand-sage font-bold">
+      <section id="portfolio" className="py-24 md:py-36 px-8 md:px-16 max-w-7xl mx-auto w-full">
+        <div className="text-center flex flex-col items-center gap-4 mb-16">
+          <span className="text-[10px] uppercase tracking-[0.25em] text-brand-sage font-bold">
             Visual Sanctuary
           </span>
-          <h2 className="text-3xl md:text-4xl font-serif text-brand-text tracking-wide font-normal">
+          <h2 className="text-3xl md:text-5xl font-serif text-brand-text tracking-wide font-normal">
             Portfolio Gallery
           </h2>
-          <p className="text-xs md:text-sm text-brand-text/65 leading-relaxed max-w-md">
+          <p className="text-xs md:text-sm text-brand-text/60 leading-relaxed max-w-lg tracking-wide">
             Glimpses into our physical studio environments, class alignments, and workshop gatherings.
           </p>
         </div>
 
-        <div className="flex justify-center gap-2 mb-10 overflow-x-auto pb-2 scrollbar-none">
+        <div className="flex justify-center gap-3 mb-12 overflow-x-auto pb-2 scrollbar-none">
           {["All", "Studio", "Classes", "Workshops"].map((filter) => {
             const active = activePortfolioFilter === filter;
             return (
               <button
                 key={filter}
                 onClick={() => setActivePortfolioFilter(filter)}
-                className={`px-5 py-2.5 rounded-full text-xs font-semibold uppercase tracking-wider transition-colors duration-350 cursor-pointer ${
+                className={`px-6 py-3 rounded-full text-xs font-bold uppercase tracking-[0.2em] transition-colors duration-300 cursor-pointer ${
                   active
-                    ? "bg-brand-sage text-[#F4F1EA]"
-                    : "bg-white/10 hover:bg-white/30 text-brand-text/70"
+                    ? "bg-brand-sage text-[#111112]"
+                    : "bg-brand-sage-light/20 hover:bg-brand-sage-light/35 text-brand-text/70"
                 }`}
               >
                 {filter}
@@ -667,16 +670,16 @@ export default function Home() {
           })}
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
           {filteredPortfolio.length === 0 ? (
-            <div className="col-span-full py-16 text-center text-brand-text/50 italic text-sm border border-dashed border-brand-sage/20 rounded-3xl">
+            <div className="col-span-full py-20 text-center text-brand-text/40 italic text-sm border border-dashed border-brand-sage-light/25 rounded-3xl">
               No photos loaded under this category yet.
             </div>
           ) : (
             filteredPortfolio.map((item) => (
               <div
                 key={item.id}
-                className="group relative aspect-square rounded-3xl overflow-hidden border border-brand-sage/10 bg-brand-sage-light shadow-xs transition-all duration-500 hover:-translate-y-1 hover:shadow-md cursor-pointer"
+                className="group relative aspect-square rounded-3xl overflow-hidden border border-brand-sage-light/20 bg-brand-sage-light/15 shadow-sm transition-all duration-500 hover:-translate-y-1.5 hover:shadow-lg cursor-pointer"
               >
                 {item.image ? (
                   <img
@@ -685,7 +688,7 @@ export default function Home() {
                     className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                   />
                 ) : (
-                  <div className="w-full h-full p-12 flex items-center justify-center opacity-40 text-brand-sage bg-gradient-to-tr from-brand-sage/15 to-transparent">
+                  <div className="w-full h-full p-14 flex items-center justify-center opacity-30 text-brand-sage bg-gradient-to-tr from-brand-sage-light/20 to-transparent">
                     <svg viewBox="0 0 100 120" fill="none" className="w-full h-full stroke-1.5">
                       <circle cx="50" cy="40" r="12" className="stroke-brand-sage/20" />
                       <path d="M50 100C50 70 50 45 50 35M50 85C45 80 32 78 35 70C38 62 48 68 50 68" stroke="currentColor" strokeLinecap="round" />
@@ -693,11 +696,11 @@ export default function Home() {
                   </div>
                 )}
 
-                <div className="absolute inset-0 bg-[#2B2625]/60 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-6 text-left">
-                  <span className="text-[9px] uppercase tracking-widest text-[#F4F1EA]/80 font-bold mb-1">
+                <div className="absolute inset-0 bg-[#111112]/70 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-8 text-left">
+                  <span className="text-[10px] uppercase tracking-[0.25em] text-[#E5E0D8]/80 font-bold mb-1.5">
                     {item.category}
                   </span>
-                  <h4 className="text-lg font-serif text-[#F4F1EA] tracking-wide leading-tight">
+                  <h4 className="text-xl font-serif text-[#E5E0D8] tracking-wide leading-tight font-normal">
                     {item.title}
                   </h4>
                 </div>
@@ -708,47 +711,46 @@ export default function Home() {
       </section>
 
       {/* Divider */}
-      <div className="max-w-6xl mx-auto w-full px-6 md:px-12">
-        <div className="w-full h-px bg-brand-sage/10" />
+      <div className="max-w-7xl mx-auto w-full px-8 md:px-16">
+        <div className="w-full h-px bg-brand-sage-light/20" />
       </div>
 
-      {/* 6. Testimonials Section (NEW) */}
-      <section id="testimonials" className="py-20 md:py-32 px-6 md:px-12 max-w-6xl mx-auto w-full">
-        <div className="text-center flex flex-col items-center gap-4 mb-16">
-          <span className="text-[10px] uppercase tracking-widest text-brand-sage font-bold">
+      {/* 6. Testimonials Section (Umber Border-Top Accent) */}
+      <section id="testimonials" className="py-24 md:py-36 px-8 md:px-16 max-w-7xl mx-auto w-full">
+        <div className="text-center flex flex-col items-center gap-4 mb-20">
+          <span className="text-[10px] uppercase tracking-[0.25em] text-brand-sage font-bold">
             Resonance
           </span>
-          <h2 className="text-3xl md:text-4xl font-serif text-brand-text tracking-wide font-normal">
+          <h2 className="text-3xl md:text-5xl font-serif text-brand-text tracking-wide font-normal">
             Client Testimonials
           </h2>
-          <p className="text-xs md:text-sm text-brand-text/65 leading-relaxed max-w-md">
+          <p className="text-xs md:text-sm text-brand-text/60 leading-relaxed max-w-lg tracking-wide">
             Words of gratitude and somatic experiences shared by students practicing within our spaces.
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-12">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-10 lg:gap-16">
           {currentContent.testimonials.map((test) => (
             <div
               key={test.id}
-              className="border border-brand-sage/10 bg-white/20 p-8 rounded-3xl flex flex-col justify-between gap-6 shadow-xs border-t-4 border-t-brand-sage"
+              className="border border-brand-sage-light/25 bg-brand-sage-light/20 p-10 rounded-3xl flex flex-col justify-between gap-8 shadow-sm border-t-4 border-t-brand-sage"
             >
-              <div className="flex flex-col gap-4">
-                {/* Visual Star Rating */}
-                <div className="flex gap-1 text-brand-sage text-sm font-bold">
+              <div className="flex flex-col gap-5">
+                <div className="flex gap-1 text-brand-sage text-sm font-bold tracking-widest">
                   {Array.from({ length: test.rating }).map((_, i) => (
                     <span key={i}>★</span>
                   ))}
                 </div>
-                <p className="text-sm italic text-brand-text/80 leading-relaxed font-normal">
+                <p className="text-sm italic text-brand-text/80 leading-relaxed font-normal tracking-wide">
                   &ldquo;{test.quote}&rdquo;
                 </p>
               </div>
 
-              <div className="flex justify-between items-center pt-2 border-t border-brand-sage/5">
-                <span className="text-xs font-serif font-bold text-brand-text">
+              <div className="flex justify-between items-center pt-4 border-t border-brand-sage-light/10">
+                <span className="text-xs font-serif font-bold text-brand-text tracking-wide">
                   {test.clientName}
                 </span>
-                <span className="text-[9px] uppercase tracking-wider text-brand-sage font-bold">
+                <span className="text-[9px] uppercase tracking-[0.2em] text-brand-sage font-bold">
                   {test.source}
                 </span>
               </div>
@@ -758,38 +760,37 @@ export default function Home() {
       </section>
 
       {/* Divider */}
-      <div className="max-w-6xl mx-auto w-full px-6 md:px-12">
-        <div className="w-full h-px bg-brand-sage/10" />
+      <div className="max-w-7xl mx-auto w-full px-8 md:px-16">
+        <div className="w-full h-px bg-brand-sage-light/20" />
       </div>
 
-      {/* 7. Blog / Journal Section (NEW) */}
-      <section id="journal" className="py-20 md:py-32 px-6 md:px-12 max-w-6xl mx-auto w-full">
-        <div className="text-center flex flex-col items-center gap-4 mb-16">
-          <span className="text-[10px] uppercase tracking-widest text-brand-sage font-bold">
+      {/* 7. Blog / Journal Section */}
+      <section id="journal" className="py-24 md:py-36 px-8 md:px-16 max-w-7xl mx-auto w-full">
+        <div className="text-center flex flex-col items-center gap-4 mb-20">
+          <span className="text-[10px] uppercase tracking-[0.25em] text-brand-sage font-bold">
             Insights
           </span>
-          <h2 className="text-3xl md:text-4xl font-serif text-brand-text tracking-wide font-normal">
+          <h2 className="text-3xl md:text-5xl font-serif text-brand-text tracking-wide font-normal">
             The Philosophy Journal
           </h2>
-          <p className="text-xs md:text-sm text-brand-text/65 leading-relaxed max-w-md">
+          <p className="text-xs md:text-sm text-brand-text/60 leading-relaxed max-w-lg tracking-wide">
             Essays, research notes, and reflections on somatic anatomy and mindful living.
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-12">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16">
           {currentContent.blogPosts.length === 0 ? (
-            <div className="col-span-full py-16 text-center text-brand-text/50 italic text-sm">
+            <div className="col-span-full py-20 text-center text-brand-text/40 italic text-sm">
               No journal articles published yet.
             </div>
           ) : (
             currentContent.blogPosts.map((post) => (
               <div
                 key={post.id}
-                className="border border-brand-sage/15 hover:border-brand-sage/30 bg-white/20 hover:bg-white/40 rounded-3xl overflow-hidden flex flex-col md:flex-row transition-all duration-300 group shadow-xs min-h-[260px]"
+                className="border border-brand-sage-light/25 hover:border-brand-sage-light/35 bg-brand-sage-light/20 hover:bg-brand-sage-light/30 rounded-3xl overflow-hidden flex flex-col sm:flex-row transition-all duration-300 group shadow-sm min-h-[280px]"
               >
-                {/* Featured Cover Photo */}
                 <div
-                  className="h-48 md:h-auto md:w-44 bg-brand-sage-light shrink-0 relative overflow-hidden"
+                  className="h-52 sm:h-auto sm:w-48 bg-brand-sage-light/25 shrink-0 relative overflow-hidden"
                   style={{
                     backgroundImage: post.featuredImage ? `url(${post.featuredImage})` : "none",
                     backgroundSize: "cover",
@@ -797,27 +798,26 @@ export default function Home() {
                   }}
                 >
                   {!post.featuredImage && (
-                    <div className="absolute inset-0 bg-gradient-to-tr from-brand-sage/10 to-brand-sage-light" />
+                    <div className="absolute inset-0 bg-gradient-to-tr from-brand-sage/5 to-brand-sage-light/20" />
                   )}
                 </div>
 
-                {/* Article summary details */}
-                <div className="p-6 md:p-8 flex-1 flex flex-col justify-between gap-4">
-                  <div className="flex flex-col gap-2.5">
-                    <span className="text-[9px] uppercase tracking-wider text-brand-sage font-bold font-mono">
+                <div className="p-8 flex-1 flex flex-col justify-between gap-6">
+                  <div className="flex flex-col gap-3.5">
+                    <span className="text-[9px] uppercase tracking-[0.25em] text-brand-sage font-bold font-mono">
                       {post.date}
                     </span>
-                    <h3 className="text-lg md:text-xl font-serif text-brand-text tracking-wide group-hover:text-brand-sage transition-colors leading-snug">
+                    <h3 className="text-xl font-serif text-brand-text tracking-wide group-hover:text-brand-sage transition-colors leading-snug font-normal">
                       {post.title}
                     </h3>
-                    <p className="text-xs text-brand-text/75 leading-relaxed font-normal line-clamp-2">
+                    <p className="text-xs text-brand-text/70 leading-relaxed font-normal line-clamp-2 tracking-wide">
                       {post.excerpt}
                     </p>
                   </div>
                   <div>
                     <button
                       onClick={() => setActivePost(post)}
-                      className="text-xs font-bold uppercase tracking-widest text-brand-text hover:text-brand-sage transition-colors border-b border-brand-text pb-0.5 hover:border-brand-sage cursor-pointer"
+                      className="text-xs font-bold uppercase tracking-[0.2em] text-brand-text hover:text-brand-sage transition-colors border-b border-brand-text pb-0.5 hover:border-brand-sage cursor-pointer"
                     >
                       Read Post
                     </button>
@@ -830,80 +830,80 @@ export default function Home() {
       </section>
 
       {/* Divider */}
-      <div className="max-w-6xl mx-auto w-full px-6 md:px-12">
-        <div className="w-full h-px bg-brand-sage/10" />
+      <div className="max-w-7xl mx-auto w-full px-8 md:px-16">
+        <div className="w-full h-px bg-brand-sage-light/20" />
       </div>
 
       {/* 8. Minimal Contact Form Section */}
-      <section id="contact" className="py-20 md:py-32 px-6 md:px-12 max-w-md mx-auto w-full">
-        <div className="text-center flex flex-col items-center gap-4 mb-10">
-          <span className="text-[10px] uppercase tracking-widest text-brand-sage font-bold">
+      <section id="contact" className="py-24 md:py-36 px-8 md:px-16 max-w-lg mx-auto w-full">
+        <div className="text-center flex flex-col items-center gap-4 mb-12">
+          <span className="text-[10px] uppercase tracking-[0.25em] text-brand-sage font-bold">
             Begin Journey
           </span>
-          <h2 className="text-2xl md:text-3xl font-serif text-brand-text tracking-wide font-normal">
+          <h2 className="text-2xl md:text-4xl font-serif text-brand-text tracking-wide font-normal">
             Book a Session
           </h2>
-          <p className="text-xs text-brand-text/65 leading-relaxed">
+          <p className="text-xs text-brand-text/60 leading-relaxed tracking-wide">
             Leave your details below, and Elena will get back to coordinate your custom session within 24 hours.
           </p>
         </div>
 
         {!inquirySubmitted ? (
-          <form onSubmit={handleInquirySubmit} className="flex flex-col gap-4">
-            <div className="flex flex-col gap-1">
-              <label className="text-[10px] uppercase tracking-widest font-semibold text-brand-text/60">Name</label>
+          <form onSubmit={handleInquirySubmit} className="flex flex-col gap-5">
+            <div className="flex flex-col gap-2">
+              <label className="text-[10px] uppercase tracking-[0.25em] font-semibold text-brand-text/60">Name</label>
               <input
                 type="text"
                 required
                 name="name"
                 value={formData.name}
                 onChange={handleInputChange}
-                className="px-4 py-3 bg-[#E5E1D5]/20 border border-brand-sage/15 focus:border-brand-sage focus:outline-none rounded-xl text-xs md:text-sm text-brand-text"
+                className="px-5 py-3.5 bg-brand-sage-light/20 border border-brand-sage-light/35 focus:border-brand-sage focus:outline-none rounded-xl text-xs md:text-sm text-brand-text tracking-wide"
                 placeholder="Your Name"
               />
             </div>
-            <div className="flex flex-col gap-1">
-              <label className="text-[10px] uppercase tracking-widest font-semibold text-brand-text/60">Email</label>
+            <div className="flex flex-col gap-2">
+              <label className="text-[10px] uppercase tracking-[0.25em] font-semibold text-brand-text/60">Email</label>
               <input
                 type="email"
                 required
                 name="email"
                 value={formData.email}
                 onChange={handleInputChange}
-                className="px-4 py-3 bg-[#E5E1D5]/20 border border-brand-sage/15 focus:border-brand-sage focus:outline-none rounded-xl text-xs md:text-sm text-brand-text"
+                className="px-5 py-3.5 bg-brand-sage-light/20 border border-brand-sage-light/35 focus:border-brand-sage focus:outline-none rounded-xl text-xs md:text-sm text-brand-text tracking-wide"
                 placeholder="yourname@domain.com"
               />
             </div>
-            <div className="flex flex-col gap-1">
-              <label className="text-[10px] uppercase tracking-widest font-semibold text-brand-text/60">Message or Intentions</label>
+            <div className="flex flex-col gap-2">
+              <label className="text-[10px] uppercase tracking-[0.25em] font-semibold text-brand-text/60">Message or Intentions</label>
               <textarea
                 name="notes"
                 value={formData.notes}
                 onChange={handleInputChange}
                 rows={4}
-                className="px-4 py-3 bg-[#E5E1D5]/20 border border-brand-sage/15 focus:border-brand-sage focus:outline-none rounded-xl text-xs md:text-sm text-brand-text resize-none"
+                className="px-5 py-3.5 bg-brand-sage-light/20 border border-brand-sage-light/35 focus:border-brand-sage focus:outline-none rounded-xl text-xs md:text-sm text-brand-text resize-none tracking-wide"
                 placeholder="Any posture goals or injuries..."
               />
             </div>
             <button
               type="submit"
-              className="w-full mt-2 py-4 bg-brand-sage hover:bg-brand-sage-hover text-[#F4F1EA] text-xs font-bold uppercase tracking-wider transition-colors duration-300 rounded-xl cursor-pointer"
+              className="w-full mt-2 py-4 bg-brand-sage hover:bg-brand-sage-hover text-[#111112] text-xs font-bold uppercase tracking-[0.2em] transition-colors duration-300 rounded-xl cursor-pointer"
             >
               Send Request
             </button>
           </form>
         ) : (
-          <div className="text-center py-6 flex flex-col items-center gap-4">
-            <div className="w-10 h-10 rounded-full border border-brand-sage flex items-center justify-center text-brand-sage text-sm font-bold">
+          <div className="text-center py-8 flex flex-col items-center gap-5 border border-brand-sage-light/35 rounded-3xl bg-brand-sage-light/20 p-8">
+            <div className="w-12 h-12 rounded-full border border-brand-sage flex items-center justify-center text-brand-sage text-sm font-bold">
               ✓
             </div>
-            <h4 className="text-lg font-serif text-brand-text">Request Transmitted</h4>
-            <p className="text-xs text-brand-text/70 max-w-xs leading-relaxed">
+            <h4 className="text-lg font-serif text-brand-text tracking-wide">Request Transmitted</h4>
+            <p className="text-xs text-brand-text/65 max-w-sm leading-relaxed tracking-wide">
               Thank you, **{formData.name}**. Elena has received your request and will reach out to **{formData.email}** soon.
             </p>
             <button
               onClick={resetForm}
-              className="mt-2 text-xs font-bold uppercase tracking-widest text-brand-sage hover:underline cursor-pointer"
+              className="mt-2 text-xs font-bold uppercase tracking-[0.2em] text-brand-sage hover:underline cursor-pointer"
             >
               Reset Form
             </button>
@@ -911,16 +911,16 @@ export default function Home() {
         )}
       </section>
 
-      {/* 9. Collapsible Admin Panel Modal */}
+      {/* 9. Collapsible Admin Panel Modal (Overhauled in Dark Aesthetic) */}
       {isAdminOpen && editForm && (
-        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-[#F4F1EA] border border-brand-sage/20 rounded-3xl max-w-2xl w-full h-[85vh] flex flex-col relative overflow-hidden shadow-2xl">
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-md z-50 flex items-center justify-center p-4">
+          <div className="bg-[#111112] border border-brand-sage-light/30 rounded-3xl max-w-2xl w-full h-[85vh] flex flex-col relative overflow-hidden shadow-2xl">
             
             {/* Header */}
-            <div className="p-6 border-b border-brand-sage/15 flex justify-between items-center shrink-0">
+            <div className="p-6 border-b border-brand-sage-light/20 flex justify-between items-center shrink-0">
               <div>
-                <span className="text-[9px] uppercase tracking-widest text-brand-sage font-bold">Sanctuary Database</span>
-                <h4 className="text-xl font-serif text-brand-text mt-0.5">Control Center Console</h4>
+                <span className="text-[9px] uppercase tracking-[0.3em] text-brand-sage font-bold">Sanctuary Database</span>
+                <h4 className="text-xl font-serif text-brand-text mt-0.5 tracking-wider">Control Center Console</h4>
               </div>
               <button
                 onClick={() => {
@@ -934,7 +934,7 @@ export default function Home() {
             </div>
 
             {/* Inner Dashboard Navigation tabs */}
-            <div className="flex overflow-x-auto border-b border-brand-sage/10 bg-brand-sage-light/35 shrink-0 px-6 gap-2 scrollbar-none">
+            <div className="flex overflow-x-auto border-b border-brand-sage-light/10 bg-brand-sage-light/20 shrink-0 px-6 gap-2 scrollbar-none">
               {[
                 { id: "general", label: "Copy & Banners" },
                 { id: "offerings", label: "Yoga Classes" },
@@ -946,7 +946,7 @@ export default function Home() {
                   key={tab.id}
                   type="button"
                   onClick={() => setAdminTab(tab.id as any)}
-                  className={`py-3.5 px-4 text-xs font-semibold uppercase tracking-wider border-b-2 transition-all cursor-pointer shrink-0 ${
+                  className={`py-3.5 px-4 text-xs font-semibold uppercase tracking-[0.15em] border-b-2 transition-all cursor-pointer shrink-0 ${
                     adminTab === tab.id
                       ? "border-brand-sage text-brand-text font-bold"
                       : "border-transparent text-brand-text/50 hover:text-brand-text"
@@ -963,52 +963,53 @@ export default function Home() {
               {/* Tab 1: General Copy */}
               {adminTab === "general" && (
                 <div className="flex flex-col gap-5">
-                  <div className="flex flex-col gap-1.5">
-                    <label className="text-[10px] uppercase tracking-widest font-semibold text-brand-text/70">Hero Title</label>
+                  <div className="flex flex-col gap-2">
+                    <label className="text-[10px] uppercase tracking-[0.25em] font-semibold text-brand-text/70">Hero Title</label>
                     <input
                       type="text"
                       required
                       value={editForm.heroTitle}
                       onChange={(e) => handleAdminChange(e, "heroTitle")}
-                      className="px-4 py-3 bg-[#E5E1D5]/20 border border-brand-sage/15 focus:border-brand-sage focus:outline-none rounded-xl text-xs md:text-sm text-brand-text"
+                      className="px-4 py-3 bg-brand-sage-light/25 border border-brand-sage-light/30 focus:border-brand-sage focus:outline-none rounded-xl text-xs md:text-sm text-brand-text"
                     />
                   </div>
 
-                  <div className="flex flex-col gap-1.5">
-                    <label className="text-[10px] uppercase tracking-widest font-semibold text-brand-text/70">Hero Subtitle</label>
+                  <div className="flex flex-col gap-2">
+                    <label className="text-[10px] uppercase tracking-[0.25em] font-semibold text-brand-text/70">Hero Subtitle</label>
                     <textarea
                       required
                       rows={3}
                       value={editForm.heroSubtitle}
                       onChange={(e) => handleAdminChange(e, "heroSubtitle")}
-                      className="px-4 py-3 bg-[#E5E1D5]/20 border border-brand-sage/15 focus:border-brand-sage focus:outline-none rounded-xl text-xs md:text-sm text-brand-text resize-none"
+                      className="px-4 py-3 bg-brand-sage-light/25 border border-brand-sage-light/30 focus:border-brand-sage focus:outline-none rounded-xl text-xs md:text-sm text-brand-text resize-none"
                     />
                   </div>
 
-                  <div className="flex flex-col gap-1.5">
-                    <label className="text-[10px] uppercase tracking-widest font-semibold text-brand-text/70">About Bio Text</label>
+                  <div className="flex flex-col gap-2">
+                    <label className="text-[10px] uppercase tracking-[0.25em] font-semibold text-brand-text/70">About Bio Text</label>
                     <textarea
                       required
                       rows={6}
                       value={editForm.aboutBioText}
                       onChange={(e) => handleAdminChange(e, "aboutBioText")}
-                      className="px-4 py-3 bg-[#E5E1D5]/20 border border-brand-sage/15 focus:border-brand-sage focus:outline-none rounded-xl text-xs md:text-sm text-brand-text resize-none"
+                      className="px-4 py-3 bg-brand-sage-light/25 border border-brand-sage-light/30 focus:border-brand-sage focus:outline-none rounded-xl text-xs md:text-sm text-brand-text resize-none"
                     />
                   </div>
 
-                  <div className="border-t border-brand-sage/15 pt-5 flex flex-col gap-4">
-                    <span className="text-[10px] uppercase tracking-widest font-bold text-brand-sage">Homepage Banners</span>
+                  <div className="border-t border-brand-sage-light/20 pt-5 flex flex-col gap-4">
+                    <span className="text-[10px] uppercase tracking-[0.25em] font-bold text-brand-sage">Homepage Banners</span>
+                    
                     <div className="flex flex-col gap-2">
-                      <label className="text-[10px] uppercase tracking-widest font-semibold text-brand-text/70">Hero Background</label>
+                      <label className="text-[10px] uppercase tracking-[0.25em] font-semibold text-brand-text/70">Hero Background</label>
                       <div className="flex items-center gap-4">
                         <input
                           type="file"
                           accept="image/*"
                           onChange={handleHeroFileChange}
-                          className="text-xs text-brand-text/65 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-brand-sage file:text-[#F4F1EA] hover:file:bg-brand-sage-hover"
+                          className="text-xs text-brand-text/65 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-brand-sage file:text-[#111112] hover:file:bg-brand-sage-hover"
                         />
                         {(heroPreview || currentContent.heroImageUrl) && (
-                          <div className="w-12 h-12 rounded-lg border border-brand-sage/10 overflow-hidden shrink-0">
+                          <div className="w-12 h-12 rounded-lg border border-brand-sage-light/30 overflow-hidden shrink-0">
                             <img src={heroPreview || currentContent.heroImageUrl} alt="Preview" className="w-full h-full object-cover" />
                           </div>
                         )}
@@ -1016,16 +1017,16 @@ export default function Home() {
                     </div>
 
                     <div className="flex flex-col gap-2">
-                      <label className="text-[10px] uppercase tracking-widest font-semibold text-brand-text/70">About Profile Picture</label>
+                      <label className="text-[10px] uppercase tracking-[0.25em] font-semibold text-brand-text/70">About Profile Picture</label>
                       <div className="flex items-center gap-4">
                         <input
                           type="file"
                           accept="image/*"
                           onChange={handleAboutFileChange}
-                          className="text-xs text-brand-text/65 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-brand-sage file:text-[#F4F1EA] hover:file:bg-brand-sage-hover"
+                          className="text-xs text-brand-text/65 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-brand-sage file:text-[#111112] hover:file:bg-brand-sage-hover"
                         />
                         {(aboutPreview || currentContent.aboutImageUrl) && (
-                          <div className="w-12 h-12 rounded-lg border border-brand-sage/10 overflow-hidden shrink-0">
+                          <div className="w-12 h-12 rounded-lg border border-brand-sage-light/30 overflow-hidden shrink-0">
                             <img src={aboutPreview || currentContent.aboutImageUrl} alt="Preview" className="w-full h-full object-cover" />
                           </div>
                         )}
@@ -1035,15 +1036,15 @@ export default function Home() {
                 </div>
               )}
 
-              {/* Tab 2: Offerings CRUD */}
+              {/* Tab 2: Yoga Classes / Offerings CRUD */}
               {adminTab === "offerings" && (
                 <div className="flex flex-col gap-6">
                   <div className="flex justify-between items-center">
-                    <span className="text-[10px] uppercase tracking-widest font-bold text-brand-sage">Offerings List ({editForm.offerings.length})</span>
+                    <span className="text-[10px] uppercase tracking-[0.25em] font-bold text-brand-sage">Offerings List ({editForm.offerings.length})</span>
                     <button
                       type="button"
                       onClick={handleAddOffering}
-                      className="px-4 py-2 bg-brand-sage text-[#F4F1EA] text-[10px] font-bold uppercase tracking-widest rounded-full hover:bg-brand-sage-hover cursor-pointer"
+                      className="px-4 py-2 bg-brand-sage text-[#111112] text-[10px] font-bold uppercase tracking-[0.15em] rounded-full hover:bg-brand-sage-hover cursor-pointer"
                     >
                       + Add New Class
                     </button>
@@ -1053,60 +1054,60 @@ export default function Home() {
                     {editForm.offerings.map((offering, index) => {
                       const hasLocalPreview = offeringPreviews[offering.id];
                       return (
-                        <div key={offering.id} className="border border-brand-sage/15 rounded-2xl p-5 bg-[#E5E1D5]/10 flex flex-col gap-4 relative">
+                        <div key={offering.id} className="border border-brand-sage-light/25 rounded-2xl p-6 bg-brand-sage-light/20 flex flex-col gap-4 relative">
                           <button
                             type="button"
                             onClick={() => handleDeleteOffering(offering.id)}
-                            className="absolute top-4 right-4 text-xs font-bold text-rose-600 hover:text-rose-800 uppercase cursor-pointer"
+                            className="absolute top-4 right-4 text-xs font-bold text-rose-500 hover:text-rose-700 uppercase cursor-pointer"
                           >
                             ✕ Remove
                           </button>
 
                           <div className="grid grid-cols-3 gap-4">
-                            <div className="col-span-2 flex flex-col gap-1">
-                              <span className="text-[9px] uppercase font-bold text-brand-text/50">Class Title</span>
+                            <div className="col-span-2 flex flex-col gap-1.5">
+                              <span className="text-[9px] uppercase tracking-widest font-bold text-brand-text/50">Class Title</span>
                               <input
                                 type="text"
                                 required
                                 value={offering.title}
                                 onChange={(e) => handleOfferingChange(index, "title", e.target.value)}
-                                className="px-3 py-2 bg-[#F4F1EA] border border-brand-sage/10 rounded-lg text-xs text-brand-text"
+                                className="px-3 py-2 bg-[#111112] border border-brand-sage-light/20 rounded-lg text-xs text-brand-text"
                               />
                             </div>
-                            <div className="flex flex-col gap-1">
-                              <span className="text-[9px] uppercase font-bold text-brand-text/50">Hourly Rate ($)</span>
+                            <div className="flex flex-col gap-1.5">
+                              <span className="text-[9px] uppercase tracking-widest font-bold text-brand-text/50">Hourly Rate ($)</span>
                               <input
                                 type="number"
                                 required
                                 value={offering.price}
                                 onChange={(e) => handleOfferingChange(index, "price", parseInt(e.target.value) || 0)}
-                                className="px-3 py-2 bg-[#F4F1EA] border border-brand-sage/10 rounded-lg text-xs text-brand-text"
+                                className="px-3 py-2 bg-[#111112] border border-brand-sage-light/20 rounded-lg text-xs text-brand-text"
                               />
                             </div>
                           </div>
 
-                          <div className="flex flex-col gap-1">
-                            <span className="text-[9px] uppercase font-bold text-brand-text/50">Description</span>
+                          <div className="flex flex-col gap-1.5">
+                            <span className="text-[9px] uppercase tracking-widest font-bold text-brand-text/50">Description</span>
                             <textarea
                               required
                               rows={2}
                               value={offering.description}
                               onChange={(e) => handleOfferingChange(index, "description", e.target.value)}
-                              className="px-3 py-2 bg-[#F4F1EA] border border-brand-sage/10 rounded-lg text-xs text-brand-text resize-none"
+                              className="px-3 py-2 bg-[#111112] border border-brand-sage-light/20 rounded-lg text-xs text-brand-text resize-none"
                             />
                           </div>
 
-                          <div className="flex flex-col gap-1 pt-2">
-                            <span className="text-[9px] uppercase font-bold text-brand-text/50">Class Card Photo</span>
+                          <div className="flex flex-col gap-1.5 pt-2">
+                            <span className="text-[9px] uppercase tracking-widest font-bold text-brand-text/50">Class Card Photo</span>
                             <div className="flex items-center gap-4">
                               <input
                                 type="file"
                                 accept="image/*"
                                 onChange={(e) => handleOfferingFileChange(index, e.target.files?.[0] || null)}
-                                className="text-[10px] text-brand-text/60 file:mr-3 file:py-1 file:px-3 file:rounded-full file:border-0 file:text-[9px] file:font-semibold file:bg-brand-sage file:text-[#F4F1EA]"
+                                className="text-[10px] text-brand-text/60 file:mr-3 file:py-1 file:px-3 file:rounded-full file:border-0 file:text-[9px] file:font-semibold file:bg-brand-sage file:text-[#111112]"
                               />
                               {(hasLocalPreview || offering.image) && (
-                                <div className="w-10 h-10 rounded-lg border border-brand-sage/10 overflow-hidden shrink-0">
+                                <div className="w-10 h-10 rounded-lg border border-brand-sage-light/30 overflow-hidden shrink-0">
                                   <img src={hasLocalPreview || offering.image} alt="Preview" className="w-full h-full object-cover" />
                                 </div>
                               )}
@@ -1122,26 +1123,26 @@ export default function Home() {
               {/* Tab 3: Portfolio CRUD */}
               {adminTab === "portfolio" && (
                 <div className="flex flex-col gap-6">
-                  <div className="border border-brand-sage/20 rounded-2xl p-5 bg-[#E5E1D5]/20 flex flex-col gap-4">
-                    <span className="text-[10px] uppercase tracking-widest font-bold text-brand-sage">Add Photo to Gallery</span>
+                  <div className="border border-brand-sage-light/25 rounded-2xl p-6 bg-brand-sage-light/25 flex flex-col gap-4">
+                    <span className="text-[10px] uppercase tracking-[0.25em] font-bold text-brand-sage">Add Photo to Gallery</span>
                     <div className="grid grid-cols-2 gap-4">
-                      <div className="flex flex-col gap-1">
-                        <label className="text-[9px] uppercase font-bold text-brand-text/60">Photo Title</label>
+                      <div className="flex flex-col gap-1.5">
+                        <label className="text-[9px] uppercase tracking-widest font-bold text-brand-text/50">Photo Title</label>
                         <input
                           type="text"
                           value={newPortTitle}
                           onChange={(e) => setNewPortTitle(e.target.value)}
                           placeholder="e.g. Studio Sunrise"
-                          className="px-3 py-2 bg-[#F4F1EA] border border-brand-sage/10 rounded-lg text-xs text-brand-text"
+                          className="px-3 py-2 bg-[#111112] border border-brand-sage-light/20 rounded-lg text-xs text-brand-text"
                         />
                       </div>
 
-                      <div className="flex flex-col gap-1">
-                        <label className="text-[9px] uppercase font-bold text-brand-text/60">Tag Category</label>
+                      <div className="flex flex-col gap-1.5">
+                        <label className="text-[9px] uppercase tracking-widest font-bold text-brand-text/50">Tag Category</label>
                         <select
                           value={newPortCategory}
                           onChange={(e) => setNewPortCategory(e.target.value)}
-                          className="px-3 py-2 bg-[#F4F1EA] border border-brand-sage/10 rounded-lg text-xs text-brand-text"
+                          className="px-3 py-2 bg-[#111112] border border-brand-sage-light/20 rounded-lg text-xs text-brand-text"
                         >
                           <option value="Studio">Studio</option>
                           <option value="Classes">Classes</option>
@@ -1150,17 +1151,17 @@ export default function Home() {
                       </div>
                     </div>
 
-                    <div className="flex flex-col gap-1.5 pt-2">
-                      <label className="text-[9px] uppercase font-bold text-brand-text/60">Select Image File</label>
+                    <div className="flex flex-col gap-2 pt-2">
+                      <label className="text-[9px] uppercase tracking-widest font-bold text-brand-text/50">Select Image File</label>
                       <div className="flex items-center gap-4">
                         <input
                           type="file"
                           accept="image/*"
                           onChange={handleNewPortFileChange}
-                          className="text-[10px] text-brand-text/60 file:mr-3 file:py-1 file:px-3 file:rounded-full file:border-0 file:text-[9px] file:font-semibold file:bg-brand-sage file:text-[#F4F1EA]"
+                          className="text-[10px] text-brand-text/60 file:mr-3 file:py-1 file:px-3 file:rounded-full file:border-0 file:text-[9px] file:font-semibold file:bg-brand-sage file:text-[#111112]"
                         />
                         {newPortPreview && (
-                          <div className="w-10 h-10 rounded-lg border border-brand-sage/10 overflow-hidden shrink-0">
+                          <div className="w-10 h-10 rounded-lg border border-brand-sage-light/30 overflow-hidden shrink-0">
                             <img src={newPortPreview} alt="Preview" className="w-full h-full object-cover" />
                           </div>
                         )}
@@ -1171,21 +1172,21 @@ export default function Home() {
                       type="button"
                       disabled={!newPortTitle || !newPortFile}
                       onClick={handleAddPortfolioItem}
-                      className="mt-2 py-3 bg-brand-sage hover:bg-brand-sage-hover text-[#F4F1EA] text-[10px] font-bold uppercase tracking-wider rounded-xl cursor-pointer disabled:opacity-40"
+                      className="mt-2 py-3 bg-brand-sage hover:bg-brand-sage-hover text-[#111112] text-[10px] font-bold uppercase tracking-[0.2em] rounded-xl cursor-pointer disabled:opacity-40"
                     >
                       Queue Photo Addition
                     </button>
                   </div>
 
                   <div className="flex flex-col gap-4">
-                    <span className="text-[10px] uppercase tracking-widest font-bold text-brand-sage">Existing Photos</span>
+                    <span className="text-[10px] uppercase tracking-[0.25em] font-bold text-brand-sage">Existing Photos</span>
                     <div className="grid grid-cols-2 gap-4">
                       {editForm.portfolio.map((item) => {
                         const localPreview = portfolioPreviews[item.id];
                         return (
-                          <div key={item.id} className="border border-brand-sage/10 rounded-xl p-3 bg-[#F4F1EA] flex items-center justify-between gap-3 shadow-2xs">
+                          <div key={item.id} className="border border-brand-sage-light/20 rounded-xl p-4 bg-[#111112] flex items-center justify-between gap-4 shadow-sm animate-fade-in">
                             <div className="flex items-center gap-3 min-w-0">
-                              <div className="w-12 h-12 rounded-lg border border-brand-sage/10 overflow-hidden shrink-0 bg-brand-sage-light">
+                              <div className="w-12 h-12 rounded-lg border border-brand-sage-light/35 overflow-hidden shrink-0 bg-brand-sage-light/15">
                                 {(localPreview || item.image) ? (
                                   <img src={localPreview || item.image} alt="Thumb" className="w-full h-full object-cover" />
                                 ) : (
@@ -1200,7 +1201,7 @@ export default function Home() {
                             <button
                               type="button"
                               onClick={() => handleDeletePortfolioItem(item.id)}
-                              className="text-[10px] font-bold text-rose-600 hover:text-rose-800 uppercase shrink-0 cursor-pointer"
+                              className="text-[10px] font-bold text-rose-500 hover:text-rose-700 uppercase shrink-0 cursor-pointer"
                             >
                               Delete
                             </button>
@@ -1212,29 +1213,29 @@ export default function Home() {
                 </div>
               )}
 
-              {/* Tab 4: Testimonials CRUD (NEW) */}
+              {/* Tab 4: Testimonials CRUD */}
               {adminTab === "testimonials" && (
                 <div className="flex flex-col gap-6">
-                  <div className="border border-brand-sage/20 rounded-2xl p-5 bg-[#E5E1D5]/20 flex flex-col gap-4">
-                    <span className="text-[10px] uppercase tracking-widest font-bold text-brand-sage">Add Client Review</span>
+                  <div className="border border-brand-sage-light/25 rounded-2xl p-6 bg-brand-sage-light/25 flex flex-col gap-4">
+                    <span className="text-[10px] uppercase tracking-[0.25em] font-bold text-brand-sage">Add Client Review</span>
                     
                     <div className="grid grid-cols-3 gap-4">
-                      <div className="col-span-2 flex flex-col gap-1">
-                        <label className="text-[9px] uppercase font-bold text-brand-text/60">Client Name</label>
+                      <div className="col-span-2 flex flex-col gap-1.5">
+                        <label className="text-[9px] uppercase tracking-widest font-bold text-brand-text/50">Client Name</label>
                         <input
                           type="text"
                           value={newTestName}
                           onChange={(e) => setNewTestName(e.target.value)}
                           placeholder="e.g. Jane Foster"
-                          className="px-3 py-2 bg-[#F4F1EA] border border-brand-sage/10 rounded-lg text-xs text-brand-text"
+                          className="px-3 py-2 bg-[#111112] border border-brand-sage-light/20 rounded-lg text-xs text-brand-text"
                         />
                       </div>
-                      <div className="flex flex-col gap-1">
-                        <label className="text-[9px] uppercase font-bold text-brand-text/60">Rating (Stars)</label>
+                      <div className="flex flex-col gap-1.5">
+                        <label className="text-[9px] uppercase tracking-widest font-bold text-brand-text/50">Rating (Stars)</label>
                         <select
                           value={newTestRating}
                           onChange={(e) => setNewTestRating(parseInt(e.target.value) || 5)}
-                          className="px-3 py-2 bg-[#F4F1EA] border border-brand-sage/10 rounded-lg text-xs text-brand-text"
+                          className="px-3 py-2 bg-[#111112] border border-brand-sage-light/20 rounded-lg text-xs text-brand-text"
                         >
                           <option value="5">5 Stars</option>
                           <option value="4">4 Stars</option>
@@ -1243,25 +1244,25 @@ export default function Home() {
                       </div>
                     </div>
 
-                    <div className="flex flex-col gap-1">
-                      <label className="text-[9px] uppercase font-bold text-brand-text/60">Client Quote</label>
+                    <div className="flex flex-col gap-1.5">
+                      <label className="text-[9px] uppercase tracking-widest font-bold text-brand-text/50">Client Quote</label>
                       <textarea
                         value={newTestQuote}
                         onChange={(e) => setNewTestQuote(e.target.value)}
                         placeholder="Type review quote..."
                         rows={3}
-                        className="px-3 py-2 bg-[#F4F1EA] border border-brand-sage/10 rounded-lg text-xs text-brand-text resize-none"
+                        className="px-3 py-2 bg-[#111112] border border-brand-sage-light/20 rounded-lg text-xs text-brand-text resize-none"
                       />
                     </div>
 
-                    <div className="flex flex-col gap-1">
-                      <label className="text-[9px] uppercase font-bold text-brand-text/60">Inquiry Context / Source</label>
+                    <div className="flex flex-col gap-1.5">
+                      <label className="text-[9px] uppercase tracking-widest font-bold text-brand-text/50">Inquiry Context / Source</label>
                       <input
                         type="text"
                         value={newTestSource}
                         onChange={(e) => setNewTestSource(e.target.value)}
                         placeholder="e.g. Private Alignment Client"
-                        className="px-3 py-2 bg-[#F4F1EA] border border-brand-sage/10 rounded-lg text-xs text-brand-text"
+                        className="px-3 py-2 bg-[#111112] border border-brand-sage-light/20 rounded-lg text-xs text-brand-text"
                       />
                     </div>
 
@@ -1269,17 +1270,17 @@ export default function Home() {
                       type="button"
                       disabled={!newTestName || !newTestQuote}
                       onClick={handleAddTestimonial}
-                      className="mt-2 py-3 bg-brand-sage hover:bg-brand-sage-hover text-[#F4F1EA] text-[10px] font-bold uppercase tracking-wider rounded-xl cursor-pointer disabled:opacity-40"
+                      className="mt-2 py-3 bg-brand-sage hover:bg-brand-sage-hover text-[#111112] text-[10px] font-bold uppercase tracking-[0.2em] rounded-xl cursor-pointer disabled:opacity-40"
                     >
                       Queue Review Addition
                     </button>
                   </div>
 
                   <div className="flex flex-col gap-4">
-                    <span className="text-[10px] uppercase tracking-widest font-bold text-brand-sage">Existing Testimonials</span>
+                    <span className="text-[10px] uppercase tracking-[0.25em] font-bold text-brand-sage">Existing Testimonials</span>
                     <div className="flex flex-col gap-3">
                       {editForm.testimonials.map((test) => (
-                        <div key={test.id} className="border border-brand-sage/10 rounded-xl p-4 bg-[#F4F1EA] flex justify-between items-start gap-4">
+                        <div key={test.id} className="border border-brand-sage-light/20 rounded-xl p-4 bg-[#111112] flex justify-between items-start gap-4">
                           <div className="flex-1 text-xs">
                             <span className="font-semibold block text-brand-text">{test.clientName} ({test.rating}★)</span>
                             <span className="text-[9px] text-brand-sage block font-bold mt-0.5">{test.source}</span>
@@ -1288,7 +1289,7 @@ export default function Home() {
                           <button
                             type="button"
                             onClick={() => handleDeleteTestimonial(test.id)}
-                            className="text-[10px] font-bold text-rose-600 hover:text-rose-800 uppercase shrink-0 cursor-pointer"
+                            className="text-[10px] font-bold text-rose-500 hover:text-rose-700 uppercase shrink-0 cursor-pointer"
                           >
                             Delete
                           </button>
@@ -1299,56 +1300,56 @@ export default function Home() {
                 </div>
               )}
 
-              {/* Tab 5: Blog Posts CRUD (NEW) */}
+              {/* Tab 5: Blog Posts CRUD */}
               {adminTab === "blog" && (
                 <div className="flex flex-col gap-6">
-                  <div className="border border-brand-sage/20 rounded-2xl p-5 bg-[#E5E1D5]/20 flex flex-col gap-4">
-                    <span className="text-[10px] uppercase tracking-widest font-bold text-brand-sage">Publish Blog Post</span>
+                  <div className="border border-brand-sage-light/25 rounded-2xl p-6 bg-brand-sage-light/25 flex flex-col gap-4">
+                    <span className="text-[10px] uppercase tracking-[0.25em] font-bold text-brand-sage">Publish Blog Post</span>
                     
-                    <div className="flex flex-col gap-1">
-                      <label className="text-[9px] uppercase font-bold text-brand-text/60">Article Title</label>
+                    <div className="flex flex-col gap-1.5">
+                      <label className="text-[9px] uppercase tracking-widest font-bold text-brand-text/50">Article Title</label>
                       <input
                         type="text"
                         value={newBlogTitle}
                         onChange={(e) => setNewBlogTitle(e.target.value)}
                         placeholder="e.g. Diaphragm Control & Nervous Systems"
-                        className="px-3 py-2 bg-[#F4F1EA] border border-brand-sage/10 rounded-lg text-xs text-brand-text"
+                        className="px-3 py-2 bg-[#111112] border border-brand-sage-light/20 rounded-lg text-xs text-brand-text"
                       />
                     </div>
 
-                    <div className="flex flex-col gap-1">
-                      <label className="text-[9px] uppercase font-bold text-[#2B2625]/80">Article Excerpt</label>
+                    <div className="flex flex-col gap-1.5">
+                      <label className="text-[9px] uppercase tracking-widest font-bold text-brand-text/50">Excerpt</label>
                       <input
                         type="text"
                         value={newBlogExcerpt}
                         onChange={(e) => setNewBlogExcerpt(e.target.value)}
-                        placeholder="Brief summary of the article..."
-                        className="px-3 py-2 bg-[#F4F1EA] border border-brand-sage/10 rounded-lg text-xs text-brand-text"
+                        placeholder="Brief summary..."
+                        className="px-3 py-2 bg-[#111112] border border-brand-sage-light/20 rounded-lg text-xs text-brand-text"
                       />
                     </div>
 
-                    <div className="flex flex-col gap-1">
-                      <label className="text-[9px] uppercase font-bold text-brand-text/60">Full Body Content</label>
+                    <div className="flex flex-col gap-1.5">
+                      <label className="text-[9px] uppercase tracking-widest font-bold text-brand-text/50">Full Body Content</label>
                       <textarea
                         value={newBlogContent}
                         onChange={(e) => setNewBlogContent(e.target.value)}
                         placeholder="Write article details here..."
                         rows={6}
-                        className="px-3 py-2 bg-[#F4F1EA] border border-brand-sage/10 rounded-lg text-xs text-brand-text resize-none"
+                        className="px-3 py-2 bg-[#111112] border border-brand-sage-light/20 rounded-lg text-xs text-brand-text resize-none"
                       />
                     </div>
 
-                    <div className="flex flex-col gap-1.5 pt-2">
-                      <label className="text-[9px] uppercase font-bold text-brand-text/60">Featured Cover Image</label>
+                    <div className="flex flex-col gap-2 pt-2">
+                      <label className="text-[9px] uppercase tracking-widest font-bold text-brand-text/50">Featured Cover Image</label>
                       <div className="flex items-center gap-4">
                         <input
                           type="file"
                           accept="image/*"
                           onChange={handleNewBlogFileChange}
-                          className="text-[10px] text-brand-text/60 file:mr-3 file:py-1 file:px-3 file:rounded-full file:border-0 file:text-[9px] file:font-semibold file:bg-brand-sage file:text-[#F4F1EA]"
+                          className="text-[10px] text-brand-text/60 file:mr-3 file:py-1 file:px-3 file:rounded-full file:border-0 file:text-[9px] file:font-semibold file:bg-brand-sage file:text-[#111112]"
                         />
                         {newBlogPreview && (
-                          <div className="w-10 h-10 rounded-lg border border-brand-sage/10 overflow-hidden shrink-0">
+                          <div className="w-10 h-10 rounded-lg border border-brand-sage-light/30 overflow-hidden shrink-0">
                             <img src={newBlogPreview} alt="Preview" className="w-full h-full object-cover" />
                           </div>
                         )}
@@ -1359,21 +1360,21 @@ export default function Home() {
                       type="button"
                       disabled={!newBlogTitle || !newBlogContent}
                       onClick={handleAddBlogPost}
-                      className="mt-2 py-3 bg-brand-sage hover:bg-brand-sage-hover text-[#F4F1EA] text-[10px] font-bold uppercase tracking-wider rounded-xl cursor-pointer disabled:opacity-40"
+                      className="mt-2 py-3 bg-brand-sage hover:bg-brand-sage-hover text-[#111112] text-[10px] font-bold uppercase tracking-[0.2em] rounded-xl cursor-pointer disabled:opacity-40"
                     >
                       Queue Article Publication
                     </button>
                   </div>
 
                   <div className="flex flex-col gap-4">
-                    <span className="text-[10px] uppercase tracking-widest font-bold text-brand-sage">Published Articles</span>
+                    <span className="text-[10px] uppercase tracking-[0.25em] font-bold text-brand-sage">Published Articles</span>
                     <div className="grid grid-cols-2 gap-4">
                       {editForm.blogPosts.map((post) => {
                         const localPreview = blogPreviews[post.id];
                         return (
-                          <div key={post.id} className="border border-brand-sage/10 rounded-xl p-3 bg-[#F4F1EA] flex items-center justify-between gap-3 shadow-2xs">
+                          <div key={post.id} className="border border-brand-sage-light/20 rounded-xl p-4 bg-[#111112] flex items-center justify-between gap-4 shadow-sm">
                             <div className="flex items-center gap-3 min-w-0">
-                              <div className="w-12 h-12 rounded-lg border border-brand-sage/10 overflow-hidden shrink-0 bg-brand-sage-light">
+                              <div className="w-12 h-12 rounded-lg border border-brand-sage-light/35 overflow-hidden shrink-0 bg-brand-sage-light/15">
                                 {(localPreview || post.featuredImage) ? (
                                   <img src={localPreview || post.featuredImage} alt="Thumb" className="w-full h-full object-cover" />
                                 ) : (
@@ -1388,7 +1389,7 @@ export default function Home() {
                             <button
                               type="button"
                               onClick={() => handleDeleteBlogPost(post.id)}
-                              className="text-[10px] font-bold text-rose-600 hover:text-rose-800 uppercase shrink-0 cursor-pointer"
+                              className="text-[10px] font-bold text-rose-500 hover:text-rose-700 uppercase shrink-0 cursor-pointer"
                             >
                               Delete
                             </button>
@@ -1401,13 +1402,13 @@ export default function Home() {
               )}
 
               {/* Status and Action controls */}
-              <div className="border-t border-brand-sage/15 pt-5 shrink-0">
+              <div className="border-t border-brand-sage-light/20 pt-5 shrink-0">
                 {saveStatus.type && (
                   <div
                     className={`p-4 rounded-xl text-xs leading-normal mb-4 ${
                       saveStatus.type === "success"
-                        ? "bg-emerald-500/10 text-emerald-800 border border-emerald-500/20"
-                        : "bg-rose-500/10 text-rose-800 border border-rose-500/20"
+                        ? "bg-emerald-500/10 text-emerald-300 border border-emerald-500/20"
+                        : "bg-rose-500/10 text-rose-300 border border-rose-500/20"
                     }`}
                   >
                     <span className="font-bold block mb-0.5">
@@ -1420,7 +1421,7 @@ export default function Home() {
                 <button
                   type="submit"
                   disabled={isSaving}
-                  className="w-full py-4 bg-brand-text hover:bg-[#1a1716] text-[#F4F1EA] text-xs font-bold uppercase tracking-wider transition-colors duration-300 rounded-xl cursor-pointer disabled:opacity-40 shadow-sm"
+                  className="w-full py-4 bg-brand-sage hover:bg-brand-sage-hover text-[#111112] text-xs font-bold uppercase tracking-[0.2em] transition-colors duration-300 rounded-xl cursor-pointer disabled:opacity-40 shadow-sm"
                 >
                   {isSaving ? "Saving & Uploading Assets to Vercel Blob..." : "Commit All Changes & Sync Vercel Blob"}
                 </button>
@@ -1430,52 +1431,52 @@ export default function Home() {
         </div>
       )}
 
-      {/* 10. Client Blog Post Reader Modal (NEW) */}
+      {/* 10. Client Blog Post Reader Modal (Overhauled in Dark Aesthetic) */}
       {activePost && (
-        <div className="fixed inset-0 bg-black/45 backdrop-blur-xs z-50 flex items-center justify-center p-4">
-          <div className="bg-[#F4F1EA] border border-brand-sage/20 rounded-3xl max-w-2xl w-full h-[80vh] flex flex-col relative overflow-hidden shadow-2xl">
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-center justify-center p-4">
+          <div className="bg-[#111112] border border-brand-sage-light/35 rounded-3xl max-w-2xl w-full h-[80vh] flex flex-col relative overflow-hidden shadow-2xl">
             {/* Header controls */}
-            <div className="p-5 border-b border-brand-sage/10 flex justify-between items-center shrink-0 bg-[#E5E1D5]/20">
-              <span className="text-[10px] uppercase font-bold tracking-widest text-brand-sage font-mono">{activePost.date}</span>
+            <div className="p-5 border-b border-brand-sage-light/20 flex justify-between items-center shrink-0 bg-brand-sage-light/10">
+              <span className="text-[10px] uppercase font-bold tracking-[0.25em] text-brand-sage font-mono">{activePost.date}</span>
               <button
                 onClick={() => setActivePost(null)}
-                className="w-8 h-8 rounded-full bg-brand-sage/10 text-brand-text hover:bg-brand-sage hover:text-[#F4F1EA] flex items-center justify-center text-xs transition-colors cursor-pointer"
+                className="w-8 h-8 rounded-full bg-brand-sage-light/20 text-brand-text hover:bg-brand-sage hover:text-[#111112] flex items-center justify-center text-xs transition-colors cursor-pointer"
               >
                 ✕
               </button>
             </div>
 
             {/* Content body */}
-            <div className="flex-1 overflow-y-auto p-6 md:p-10 text-left">
-              <h1 className="text-3xl font-serif text-brand-text leading-snug tracking-wide mb-6">
+            <div className="flex-1 overflow-y-auto p-8 md:p-12 text-left">
+              <h1 className="text-3xl md:text-4xl font-serif text-brand-text leading-snug tracking-wide mb-8">
                 {activePost.title}
               </h1>
 
               {/* Cover Banner */}
               {activePost.featuredImage && (
-                <div className="w-full h-64 rounded-2xl overflow-hidden border border-brand-sage/10 mb-8 shrink-0">
+                <div className="w-full h-72 rounded-2xl overflow-hidden border border-brand-sage-light/20 mb-10 shrink-0">
                   <img src={activePost.featuredImage} alt={activePost.title} className="w-full h-full object-cover" />
                 </div>
               )}
 
               {/* Article text body */}
-              <div className="text-sm md:text-base text-brand-text/80 leading-relaxed font-normal whitespace-pre-line flex flex-col gap-4">
+              <div className="text-sm md:text-base text-brand-text/80 leading-relaxed font-normal whitespace-pre-line flex flex-col gap-5 tracking-wide">
                 {activePost.content}
               </div>
 
-              <div className="flex items-center justify-center gap-2.5 my-12 text-brand-sage/35">
-                <div className="w-8 h-px bg-brand-sage/20" />
+              <div className="flex items-center justify-center gap-3 my-12 text-brand-sage/35">
+                <div className="w-10 h-px bg-brand-sage-light/20" />
                 <span className="text-xs">✦</span>
-                <div className="w-8 h-px bg-brand-sage/20" />
+                <div className="w-10 h-px bg-brand-sage-light/20" />
               </div>
             </div>
           </div>
         </div>
       )}
 
-      {/* Footer */}
-      <footer className="border-t border-brand-sage/10 py-10 mt-auto text-center text-[10px] text-brand-text/50 uppercase tracking-widest bg-transparent">
-        <div className="max-w-6xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-4">
+      {/* Footer (Cinematic spacing) */}
+      <footer className="border-t border-brand-sage-light/20 py-12 mt-auto text-center text-[10px] text-brand-text/45 uppercase tracking-[0.25em] bg-transparent">
+        <div className="max-w-7xl mx-auto px-8 flex flex-col md:flex-row justify-between items-center gap-6">
           <span>© {new Date().getFullYear()} Elena Yoga. All rights reserved.</span>
           <span>Peace • Alignment • Somatic Wisdom</span>
         </div>
