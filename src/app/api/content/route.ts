@@ -69,6 +69,9 @@ const DEFAULT_CONTENT: YogaContent = {
       content: "In the modern tempo, our bodies are continuously registering micro-signals of threat. The sound of a notification, the haste of a schedule, the posture of sitting—all translate into a persistent sympathetic buzz. Yin Yoga operates as an intentional counter-signal.\n\nBy maintaining static postures for minutes at a time, we bypass the superficial muscle fibers and target the deep fascial nets. Fascia is highly innervated, holding a significant portion of our sensory nerve endings. When we yield into gravity without force, we slowly change the mechanical tension in these tissues.\n\nThis gentle, sustained traction stimulates the mechanoreceptors in our joints and fascia. They transmit signals to the vagus nerve, which in turn commands the amygdala to stand down. Heart rate slows, digestion active, and the body shifts from defensive posture to restorative cellular repair.",
       featuredImage: "",
       date: "July 9, 2026",
+      category: "Philosophy",
+      readTime: "5 min read",
+      likes: 12,
     },
   ],
 };
@@ -90,6 +93,14 @@ export async function GET() {
         if (!data.portfolio) data.portfolio = DEFAULT_CONTENT.portfolio;
         if (!data.testimonials) data.testimonials = DEFAULT_CONTENT.testimonials;
         if (!data.blogPosts) data.blogPosts = DEFAULT_CONTENT.blogPosts;
+
+        // Apply metadata defaults to blog posts
+        data.blogPosts = data.blogPosts.map((post) => ({
+          ...post,
+          category: post.category || "Philosophy",
+          readTime: post.readTime || "5 min read",
+          likes: typeof post.likes === "number" ? post.likes : 0,
+        }));
 
         return NextResponse.json(data);
       }
@@ -148,6 +159,14 @@ export async function POST(request: NextRequest) {
         }
       }
     }
+
+    // Force default properties on all blogs before save
+    contentData.blogPosts = contentData.blogPosts.map((post) => ({
+      ...post,
+      category: post.category || "Philosophy",
+      readTime: post.readTime || "5 min read",
+      likes: typeof post.likes === "number" ? post.likes : 0,
+    }));
 
     const contentBlob = await put("yoga-content.json", JSON.stringify(contentData), {
       access: "public",

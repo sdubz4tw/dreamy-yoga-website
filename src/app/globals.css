@@ -1,11 +1,11 @@
 @import "tailwindcss";
 
 :root {
-  --background: #111112;
-  --foreground: #E5E0D8;
+  --background: #0B0807;
+  --foreground: #F3EFEA;
   --sage-accent: #8C7A6B; /* Warm Earth-Gold */
   --sage-accent-hover: #79685A;
-  --sage-accent-light: #4E433A; /* Shadowy Umber */
+  --sage-accent-light: #161210; /* Shadowy Umber Card Background */
 }
 
 @theme {
@@ -20,6 +20,8 @@
 
 body {
   background-color: var(--background);
+  background-image: radial-gradient(circle at top left, rgba(140, 122, 107, 0.12) 0%, rgba(11, 8, 7, 0) 65%);
+  background-attachment: fixed;
   color: var(--foreground);
   font-family: var(--font-sans);
   min-height: 100vh;

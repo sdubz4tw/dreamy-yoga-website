@@ -35,6 +35,9 @@ export interface BlogPostItem {
   content: string; // Main post body
   featuredImage: string; // Vercel Blob URL or empty
   date: string;
+  category?: string;  // NEW
+  readTime?: string;  // NEW
+  likes?: number;     // NEW
 }
 
 export interface YogaContent {

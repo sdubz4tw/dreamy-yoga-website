@@ -21,6 +21,10 @@ export default function Home() {
   // Client Blog Post reader modal state
   const [activePost, setActivePost] = useState<BlogPostItem | null>(null);
 
+  // Client like states (local overrides)
+  const [likedPosts, setLikedPosts] = useState<Record<string, boolean>>({});
+  const [postLikes, setPostLikes] = useState<Record<string, number>>({});
+
   // Admin file upload states
   const [heroFile, setHeroFile] = useState<File | null>(null);
   const [aboutFile, setAboutFile] = useState<File | null>(null);
@@ -53,6 +57,8 @@ export default function Home() {
   const [newBlogTitle, setNewBlogTitle] = useState("");
   const [newBlogExcerpt, setNewBlogExcerpt] = useState("");
   const [newBlogContent, setNewBlogContent] = useState("");
+  const [newBlogCategory, setNewBlogCategory] = useState("Philosophy");
+  const [newBlogReadTime, setNewBlogReadTime] = useState("5 min read");
   const [newBlogFile, setNewBlogFile] = useState<File | null>(null);
   const [newBlogPreview, setNewBlogPreview] = useState("");
 
@@ -73,6 +79,14 @@ export default function Home() {
       .then((data: YogaContent) => {
         setContent(data);
         setEditForm(data);
+        
+        // Initialize likes cache
+        const initialLikes: Record<string, number> = {};
+        data.blogPosts?.forEach((post) => {
+          initialLikes[post.id] = post.likes || 0;
+        });
+        setPostLikes(initialLikes);
+        
         setIsLoading(false);
       })
       .catch((err) => {
@@ -275,7 +289,13 @@ export default function Home() {
       content: newBlogContent,
       featuredImage: "",
       date: formattedDate,
+      category: newBlogCategory || "Philosophy",
+      readTime: newBlogReadTime || "5 min read",
+      likes: 0,
     };
+
+    // Update local post likes mapping
+    setPostLikes((prev) => ({ ...prev, [newId]: 0 }));
 
     if (newBlogFile) {
       setBlogFiles((prev) => ({ ...prev, [newId]: newBlogFile }));
@@ -290,6 +310,8 @@ export default function Home() {
     setNewBlogTitle("");
     setNewBlogExcerpt("");
     setNewBlogContent("");
+    setNewBlogCategory("Philosophy");
+    setNewBlogReadTime("5 min read");
     setNewBlogFile(null);
     setNewBlogPreview("");
   };
@@ -304,6 +326,37 @@ export default function Home() {
       const updatedFiles = { ...blogFiles };
       delete updatedFiles[id];
       setBlogFiles(updatedFiles);
+    }
+  };
+
+  // Interactive like clicks handling
+  const handleLikeToggle = (postId: string) => {
+    const isLiked = likedPosts[postId];
+    const currentVal = postLikes[postId] || 0;
+    const newVal = isLiked ? Math.max(0, currentVal - 1) : currentVal + 1;
+
+    setLikedPosts((prev) => ({ ...prev, [postId]: !isLiked }));
+    setPostLikes((prev) => ({ ...prev, [postId]: newVal }));
+
+    if (content) {
+      const updatedBlogPosts = content.blogPosts.map((post) => {
+        if (post.id === postId) {
+          return { ...post, likes: newVal };
+        }
+        return post;
+      });
+
+      const updatedContent = { ...content, blogPosts: updatedBlogPosts };
+      setContent(updatedContent);
+      setEditForm(updatedContent);
+
+      // Async sync database JSON
+      const dataPayload = new FormData();
+      dataPayload.append("content", JSON.stringify(updatedContent));
+      fetch("/api/content", {
+        method: "POST",
+        body: dataPayload,
+      }).catch((err) => console.warn("Failed to sync like count to database:", err));
     }
   };
 
@@ -390,7 +443,7 @@ export default function Home() {
     return (
       <div className="flex-1 flex flex-col items-center justify-center min-h-screen bg-brand-bg">
         <div className="flex flex-col items-center gap-6 animate-pulse">
-          <span className="font-serif text-3xl tracking-[0.2em] text-brand-text font-light">✦ ELENA</span>
+          <span className="font-serif text-3xl tracking-[0.2em] text-[#F3EFEA] font-light">✦ ELENA</span>
           <div className="w-16 h-0.5 bg-brand-sage/40" />
           <span className="text-[10px] tracking-widest uppercase text-brand-sage">Entering Sanctuary...</span>
         </div>
@@ -402,8 +455,8 @@ export default function Home() {
   if (!currentContent) {
     return (
       <div className="flex-1 flex flex-col items-center justify-center min-h-screen bg-brand-bg p-8 text-center">
-        <h1 className="text-2xl font-serif text-brand-text mb-3 tracking-wide">Sanctuary Disconnected</h1>
-        <p className="text-sm text-brand-text/60 mb-6 max-w-sm">Failed to connect to layout content engine.</p>
+        <h1 className="text-2xl font-serif text-[#F3EFEA] mb-3 tracking-wide">Sanctuary Disconnected</h1>
+        <p className="text-sm text-[#F3EFEA]/60 mb-6 max-w-sm">Failed to connect to layout content engine.</p>
         <button
           onClick={() => window.location.reload()}
           className="px-6 py-2.5 bg-brand-sage hover:bg-brand-sage-hover text-[#111112] text-xs font-bold uppercase rounded-full tracking-wider"
@@ -419,9 +472,9 @@ export default function Home() {
   });
 
   return (
-    <div className="flex-1 flex flex-col font-sans bg-brand-bg text-brand-text">
+    <div className="flex-1 flex flex-col font-sans bg-transparent">
       {/* 1. Navigation Bar (Cinematic Spacing) */}
-      <header className="w-full border-b border-brand-sage-light/20 py-7 px-8 md:px-16 bg-brand-bg/85 backdrop-blur-md sticky top-0 z-30">
+      <header className="w-full border-b border-brand-sage-light/20 py-7 px-8 md:px-16 bg-brand-bg/80 backdrop-blur-md sticky top-0 z-30">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           <a href="#" className="font-serif text-xl md:text-2xl tracking-[0.25em] text-brand-text font-semibold uppercase">
             Elena Yoga
@@ -465,7 +518,7 @@ export default function Home() {
         </div>
       </header>
 
-      {/* 2. Cinematic Hero Section (Spacious Padding) */}
+      {/* 2. Cinematic Hero Section */}
       <section
         className="relative py-36 md:py-52 px-8 md:px-16 flex flex-col items-center text-center justify-center overflow-hidden min-h-[70vh]"
         style={{
@@ -479,7 +532,7 @@ export default function Home() {
         )}
 
         {!currentContent.heroImageUrl && (
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[700px] rounded-full bg-brand-sage-light/10 blur-3xl -z-10 pointer-events-none" />
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[700px] rounded-full bg-brand-sage-light/5 blur-3xl -z-10 pointer-events-none" />
         )}
 
         <div className="max-w-4xl flex flex-col items-center gap-8 md:gap-10 z-10">
@@ -512,7 +565,7 @@ export default function Home() {
       <section id="about" className="py-24 md:py-36 px-8 md:px-16 max-w-7xl mx-auto w-full">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-16 lg:gap-20 items-center">
           <div className="lg:col-span-5 flex justify-center">
-            <div className="w-full max-w-[380px] aspect-[4/5] rounded-3xl bg-brand-sage-light/20 flex flex-col items-center justify-center relative overflow-hidden shadow-md border border-brand-sage-light/25">
+            <div className="w-full max-w-[380px] aspect-[4/5] rounded-3xl bg-brand-sage-light/10 flex flex-col items-center justify-center relative overflow-hidden shadow-md border border-brand-sage-light/20">
               {currentContent.aboutImageUrl ? (
                 <img
                   src={currentContent.aboutImageUrl}
@@ -573,7 +626,7 @@ export default function Home() {
         <div className="w-full h-px bg-brand-sage-light/20" />
       </div>
 
-      {/* 4. Offerings Grid Section (Shadowy Umber Cards) */}
+      {/* 4. Offerings Grid Section */}
       <section id="services" className="py-24 md:py-36 px-8 md:px-16 max-w-7xl mx-auto w-full">
         <div className="text-center flex flex-col items-center gap-4 mb-20">
           <span className="text-[10px] uppercase tracking-[0.25em] text-brand-sage font-bold">
@@ -591,10 +644,10 @@ export default function Home() {
           {currentContent.offerings.map((offering) => (
             <div
               key={offering.id}
-              className="border border-brand-sage-light/35 bg-brand-sage-light/20 hover:bg-brand-sage-light/35 rounded-3xl overflow-hidden flex flex-col justify-between transition-all duration-300 group shadow-md min-h-[420px]"
+              className="border border-brand-sage-light/35 bg-[#161210] hover:bg-[#161210]/80 rounded-3xl overflow-hidden flex flex-col justify-between transition-all duration-300 group shadow-md min-h-[420px]"
             >
               <div
-                className="h-56 w-full bg-brand-sage-light/25 shrink-0 relative overflow-hidden"
+                className="h-56 w-full bg-[#161210]/50 shrink-0 relative overflow-hidden"
                 style={{
                   backgroundImage: offering.image ? `url(${offering.image})` : "none",
                   backgroundSize: "cover",
@@ -611,7 +664,7 @@ export default function Home() {
 
               <div className="p-8 md:p-10 flex-1 flex flex-col justify-between gap-8">
                 <div className="flex flex-col gap-4">
-                  <h3 className="text-xl md:text-3xl font-serif text-brand-text tracking-wide group-hover:text-brand-sage transition-colors leading-snug">
+                  <h3 className="text-xl md:text-3xl font-serif text-brand-text tracking-wide group-hover:text-brand-sage transition-colors leading-snug font-normal">
                     {offering.title}
                   </h3>
                   <p className="text-xs md:text-sm text-brand-text/70 leading-relaxed font-normal tracking-wide">
@@ -715,7 +768,7 @@ export default function Home() {
         <div className="w-full h-px bg-brand-sage-light/20" />
       </div>
 
-      {/* 6. Testimonials Section (Umber Border-Top Accent) */}
+      {/* 6. Testimonials Section */}
       <section id="testimonials" className="py-24 md:py-36 px-8 md:px-16 max-w-7xl mx-auto w-full">
         <div className="text-center flex flex-col items-center gap-4 mb-20">
           <span className="text-[10px] uppercase tracking-[0.25em] text-brand-sage font-bold">
@@ -733,7 +786,7 @@ export default function Home() {
           {currentContent.testimonials.map((test) => (
             <div
               key={test.id}
-              className="border border-brand-sage-light/25 bg-brand-sage-light/20 p-10 rounded-3xl flex flex-col justify-between gap-8 shadow-sm border-t-4 border-t-brand-sage"
+              className="border border-[#26201C] bg-[#161210] p-10 rounded-3xl flex flex-col justify-between gap-8 shadow-sm border-t-4 border-t-brand-sage"
             >
               <div className="flex flex-col gap-5">
                 <div className="flex gap-1 text-brand-sage text-sm font-bold tracking-widest">
@@ -764,7 +817,7 @@ export default function Home() {
         <div className="w-full h-px bg-brand-sage-light/20" />
       </div>
 
-      {/* 7. Blog / Journal Section */}
+      {/* 7. Blog / Journal Section (Editorial Overlay Grid Overhaul) */}
       <section id="journal" className="py-24 md:py-36 px-8 md:px-16 max-w-7xl mx-auto w-full">
         <div className="text-center flex flex-col items-center gap-4 mb-20">
           <span className="text-[10px] uppercase tracking-[0.25em] text-brand-sage font-bold">
@@ -778,53 +831,91 @@ export default function Home() {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16">
+        {/* Spacious Rounded card panel wrapping the blog layout */}
+        <div className="bg-[#110D0B]/85 border border-[#26201C] p-6 md:p-12 lg:p-16 rounded-3xl flex flex-col gap-10">
           {currentContent.blogPosts.length === 0 ? (
-            <div className="col-span-full py-20 text-center text-brand-text/40 italic text-sm">
+            <div className="py-20 text-center text-[#8E847C] italic text-sm">
               No journal articles published yet.
             </div>
           ) : (
-            currentContent.blogPosts.map((post) => (
-              <div
-                key={post.id}
-                className="border border-brand-sage-light/25 hover:border-brand-sage-light/35 bg-brand-sage-light/20 hover:bg-brand-sage-light/30 rounded-3xl overflow-hidden flex flex-col sm:flex-row transition-all duration-300 group shadow-sm min-h-[280px]"
-              >
-                <div
-                  className="h-52 sm:h-auto sm:w-48 bg-brand-sage-light/25 shrink-0 relative overflow-hidden"
-                  style={{
-                    backgroundImage: post.featuredImage ? `url(${post.featuredImage})` : "none",
-                    backgroundSize: "cover",
-                    backgroundPosition: "center",
-                  }}
-                >
-                  {!post.featuredImage && (
-                    <div className="absolute inset-0 bg-gradient-to-tr from-brand-sage/5 to-brand-sage-light/20" />
-                  )}
-                </div>
+            currentContent.blogPosts.map((post) => {
+              const activeLikes = postLikes[post.id] !== undefined ? postLikes[post.id] : (post.likes || 0);
+              const hasLiked = !!likedPosts[post.id];
 
-                <div className="p-8 flex-1 flex flex-col justify-between gap-6">
-                  <div className="flex flex-col gap-3.5">
-                    <span className="text-[9px] uppercase tracking-[0.25em] text-brand-sage font-bold font-mono">
-                      {post.date}
-                    </span>
-                    <h3 className="text-xl font-serif text-brand-text tracking-wide group-hover:text-brand-sage transition-colors leading-snug font-normal">
-                      {post.title}
-                    </h3>
-                    <p className="text-xs text-brand-text/70 leading-relaxed font-normal line-clamp-2 tracking-wide">
-                      {post.excerpt}
-                    </p>
+              return (
+                /* Full-width Stacked Row card */
+                <div
+                  key={post.id}
+                  className="bg-[#161210] border border-[#26201C] p-8 md:p-10 rounded-3xl flex flex-col lg:flex-row gap-8 lg:gap-12 transition-all duration-350 hover:border-brand-sage/40 group shadow-sm items-stretch relative"
+                >
+                  {/* Left Column: Featured Cover Photo */}
+                  <div
+                    className="w-full lg:w-80 h-52 lg:h-auto rounded-2xl overflow-hidden shrink-0 relative bg-brand-sage-light/10"
+                    style={{
+                      backgroundImage: post.featuredImage ? `url(${post.featuredImage})` : "none",
+                      backgroundSize: "cover",
+                      backgroundPosition: "center",
+                    }}
+                  >
+                    {!post.featuredImage && (
+                      <div className="absolute inset-0 bg-gradient-to-tr from-brand-sage/5 to-brand-sage-light/20" />
+                    )}
                   </div>
-                  <div>
-                    <button
-                      onClick={() => setActivePost(post)}
-                      className="text-xs font-bold uppercase tracking-[0.2em] text-brand-text hover:text-brand-sage transition-colors border-b border-brand-text pb-0.5 hover:border-brand-sage cursor-pointer"
-                    >
-                      Read Post
-                    </button>
+
+                  {/* Right Column: Article Details */}
+                  <div className="flex-1 flex flex-col justify-between gap-6 relative text-left">
+                    <div className="flex flex-col gap-3.5">
+                      {/* Metadata row (Taupe Color #8E847C) */}
+                      <div className="flex items-center gap-2.5 text-[9px] uppercase tracking-[0.25em] text-[#8E847C] font-semibold font-mono">
+                        <span>{post.category || "Philosophy"}</span>
+                        <span>•</span>
+                        <span>{post.date}</span>
+                        <span>•</span>
+                        <span>{post.readTime || "5 min read"}</span>
+                      </div>
+
+                      {/* Post Title (Striking Serif Off-White #F3EFEA) */}
+                      <h3 className="text-2xl md:text-3xl font-serif text-[#F3EFEA] tracking-wide leading-snug group-hover:text-brand-sage transition-colors font-normal">
+                        {post.title}
+                      </h3>
+
+                      <p className="text-xs md:text-sm text-brand-text/70 leading-relaxed font-normal tracking-wide">
+                        {post.excerpt}
+                      </p>
+                    </div>
+
+                    <div className="flex justify-between items-center pt-4 border-t border-[#26201C]">
+                      <button
+                        onClick={() => setActivePost(post)}
+                        className="text-xs font-bold uppercase tracking-[0.2em] text-[#F3EFEA] hover:text-brand-sage transition-colors border-b border-[#F3EFEA] pb-0.5 hover:border-brand-sage cursor-pointer"
+                      >
+                        Read Post
+                      </button>
+
+                      {/* Minimalist Heart/Like counter component */}
+                      <button
+                        onClick={() => handleLikeToggle(post.id)}
+                        className={`flex items-center gap-2 px-3 py-1.5 rounded-full border transition-all duration-300 cursor-pointer ${
+                          hasLiked
+                            ? "bg-brand-sage/15 border-brand-sage text-brand-sage"
+                            : "border-brand-sage-light/30 text-[#8E847C] hover:border-brand-sage/40 hover:text-[#F3EFEA]"
+                        }`}
+                      >
+                        <svg
+                          viewBox="0 0 24 24"
+                          className={`w-3.5 h-3.5 fill-current transition-transform duration-300 ${
+                            hasLiked ? "scale-110" : ""
+                          }`}
+                        >
+                          <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
+                        </svg>
+                        <span className="text-[10px] font-mono font-bold">{activeLikes}</span>
+                      </button>
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))
+              );
+            })
           )}
         </div>
       </section>
@@ -911,7 +1002,7 @@ export default function Home() {
         )}
       </section>
 
-      {/* 9. Collapsible Admin Panel Modal (Overhauled in Dark Aesthetic) */}
+      {/* 9. Collapsible Admin Panel Modal */}
       {isAdminOpen && editForm && (
         <div className="fixed inset-0 bg-black/70 backdrop-blur-md z-50 flex items-center justify-center p-4">
           <div className="bg-[#111112] border border-brand-sage-light/30 rounded-3xl max-w-2xl w-full h-[85vh] flex flex-col relative overflow-hidden shadow-2xl">
@@ -1300,7 +1391,7 @@ export default function Home() {
                 </div>
               )}
 
-              {/* Tab 5: Blog Posts CRUD */}
+              {/* Tab 5: Blog Posts CRUD (Enhanced with Category and Read Time) */}
               {adminTab === "blog" && (
                 <div className="flex flex-col gap-6">
                   <div className="border border-brand-sage-light/25 rounded-2xl p-6 bg-brand-sage-light/25 flex flex-col gap-4">
@@ -1317,8 +1408,31 @@ export default function Home() {
                       />
                     </div>
 
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="flex flex-col gap-1.5">
+                        <label className="text-[9px] uppercase tracking-widest font-bold text-brand-text/50">Category Tag</label>
+                        <input
+                          type="text"
+                          value={newBlogCategory}
+                          onChange={(e) => setNewBlogCategory(e.target.value)}
+                          placeholder="e.g. Philosophy"
+                          className="px-3 py-2 bg-[#111112] border border-brand-sage-light/20 rounded-lg text-xs text-brand-text"
+                        />
+                      </div>
+                      <div className="flex flex-col gap-1.5">
+                        <label className="text-[9px] uppercase tracking-widest font-bold text-brand-text/50">Read Time</label>
+                        <input
+                          type="text"
+                          value={newBlogReadTime}
+                          onChange={(e) => setNewBlogReadTime(e.target.value)}
+                          placeholder="e.g. 5 min read"
+                          className="px-3 py-2 bg-[#111112] border border-brand-sage-light/20 rounded-lg text-xs text-brand-text"
+                        />
+                      </div>
+                    </div>
+
                     <div className="flex flex-col gap-1.5">
-                      <label className="text-[9px] uppercase tracking-widest font-bold text-brand-text/50">Excerpt</label>
+                      <label className="text-[9px] uppercase tracking-widest font-bold text-brand-text/50">Excerpt Summary</label>
                       <input
                         type="text"
                         value={newBlogExcerpt}
@@ -1372,7 +1486,7 @@ export default function Home() {
                       {editForm.blogPosts.map((post) => {
                         const localPreview = blogPreviews[post.id];
                         return (
-                          <div key={post.id} className="border border-brand-sage-light/20 rounded-xl p-4 bg-[#111112] flex items-center justify-between gap-4 shadow-sm">
+                          <div key={post.id} className="border border-brand-sage-light/20 rounded-xl p-3 bg-[#111112] flex items-center justify-between gap-3 shadow-sm">
                             <div className="flex items-center gap-3 min-w-0">
                               <div className="w-12 h-12 rounded-lg border border-brand-sage-light/35 overflow-hidden shrink-0 bg-brand-sage-light/15">
                                 {(localPreview || post.featuredImage) ? (
@@ -1431,7 +1545,7 @@ export default function Home() {
         </div>
       )}
 
-      {/* 10. Client Blog Post Reader Modal (Overhauled in Dark Aesthetic) */}
+      {/* 10. Client Blog Post Reader Modal */}
       {activePost && (
         <div className="fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-center justify-center p-4">
           <div className="bg-[#111112] border border-brand-sage-light/35 rounded-3xl max-w-2xl w-full h-[80vh] flex flex-col relative overflow-hidden shadow-2xl">
@@ -1448,13 +1562,13 @@ export default function Home() {
 
             {/* Content body */}
             <div className="flex-1 overflow-y-auto p-8 md:p-12 text-left">
-              <h1 className="text-3xl md:text-4xl font-serif text-brand-text leading-snug tracking-wide mb-8">
+              <h1 className="text-3xl md:text-4xl font-serif text-[#F3EFEA] leading-snug tracking-wide mb-8">
                 {activePost.title}
               </h1>
 
               {/* Cover Banner */}
               {activePost.featuredImage && (
-                <div className="w-full h-72 rounded-2xl overflow-hidden border border-brand-sage-light/20 mb-10 shrink-0">
+                <div className="w-full h-72 rounded-2xl overflow-hidden border border-[#26201C] mb-10 shrink-0">
                   <img src={activePost.featuredImage} alt={activePost.title} className="w-full h-full object-cover" />
                 </div>
               )}
@@ -1474,7 +1588,7 @@ export default function Home() {
         </div>
       )}
 
-      {/* Footer (Cinematic spacing) */}
+      {/* Footer */}
       <footer className="border-t border-brand-sage-light/20 py-12 mt-auto text-center text-[10px] text-brand-text/45 uppercase tracking-[0.25em] bg-transparent">
         <div className="max-w-7xl mx-auto px-8 flex flex-col md:flex-row justify-between items-center gap-6">
           <span>© {new Date().getFullYear()} Elena Yoga. All rights reserved.</span>
