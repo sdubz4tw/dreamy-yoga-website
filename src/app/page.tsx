@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { YogaContent } from "@/types";
+import { YogaContent, OfferingItem, PortfolioItem } from "@/types";
 
 export default function Home() {
   const [content, setContent] = useState<YogaContent | null>(null);
@@ -10,6 +10,7 @@ export default function Home() {
 
   // Admin panel open state
   const [isAdminOpen, setIsAdminOpen] = useState(false);
+  const [adminTab, setAdminTab] = useState<"general" | "offerings" | "portfolio">("general");
   const [editForm, setEditForm] = useState<YogaContent | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [saveStatus, setSaveStatus] = useState<{ type: "success" | "error" | null; msg: string }>({
@@ -17,11 +18,27 @@ export default function Home() {
     msg: "",
   });
 
-  // Admin file uploads states
+  // Admin file upload states
   const [heroFile, setHeroFile] = useState<File | null>(null);
   const [aboutFile, setAboutFile] = useState<File | null>(null);
   const [heroPreview, setHeroPreview] = useState<string>("");
   const [aboutPreview, setAboutPreview] = useState<string>("");
+
+  // Dynamic lists file states: maps itemId -> File object
+  const [offeringFiles, setOfferingFiles] = useState<Record<string, File>>({});
+  const [offeringPreviews, setOfferingPreviews] = useState<Record<string, string>>({});
+
+  const [portfolioFiles, setPortfolioFiles] = useState<Record<string, File>>({});
+  const [portfolioPreviews, setPortfolioPreviews] = useState<Record<string, string>>({});
+
+  // New portfolio item input form state
+  const [newPortTitle, setNewPortTitle] = useState("");
+  const [newPortCategory, setNewPortCategory] = useState("Classes");
+  const [newPortFile, setNewPortFile] = useState<File | null>(null);
+  const [newPortPreview, setNewPortPreview] = useState("");
+
+  // Portfolio client filter state
+  const [activePortfolioFilter, setActivePortfolioFilter] = useState("All");
 
   // Client Inquiry State
   const [inquirySubmitted, setInquirySubmitted] = useState(false);
@@ -62,28 +79,6 @@ export default function Home() {
     setInquirySubmitted(false);
   };
 
-  // Admin copy edits change handlers
-  const handleAdminChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
-    section: "heroTitle" | "heroSubtitle" | "aboutBioText"
-  ) => {
-    if (!editForm) return;
-    setEditForm({
-      ...editForm,
-      [section]: e.target.value,
-    });
-  };
-
-  const handleServicePriceChange = (index: number, newPrice: number) => {
-    if (!editForm) return;
-    const updatedServices = [...editForm.services];
-    updatedServices[index] = { ...updatedServices[index], price: newPrice };
-    setEditForm({
-      ...editForm,
-      services: updatedServices,
-    });
-  };
-
   // Admin image file handlers
   const handleHeroFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0] || null;
@@ -105,7 +100,118 @@ export default function Home() {
     }
   };
 
-  // POST Form Data changes to route
+  // General tab change handler
+  const handleAdminChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
+    section: "heroTitle" | "heroSubtitle" | "aboutBioText"
+  ) => {
+    if (!editForm) return;
+    setEditForm({
+      ...editForm,
+      [section]: e.target.value,
+    });
+  };
+
+  // Offerings CRUD functions
+  const handleOfferingChange = (
+    index: number,
+    field: "title" | "price" | "description",
+    value: string | number
+  ) => {
+    if (!editForm) return;
+    const updated = [...editForm.offerings];
+    updated[index] = { ...updated[index], [field]: value };
+    setEditForm({ ...editForm, offerings: updated });
+  };
+
+  const handleOfferingFileChange = (index: number, file: File | null) => {
+    if (!editForm) return;
+    const item = editForm.offerings[index];
+    if (!file) return;
+
+    setOfferingFiles((prev) => ({ ...prev, [item.id]: file }));
+    setOfferingPreviews((prev) => ({
+      ...prev,
+      [item.id]: URL.createObjectURL(file),
+    }));
+  };
+
+  const handleAddOffering = () => {
+    if (!editForm) return;
+    const newId = `offering-${Date.now()}`;
+    const newOffering: OfferingItem = {
+      id: newId,
+      title: "New Yoga Class",
+      price: 50,
+      description: "Class description...",
+      image: "",
+    };
+    setEditForm({
+      ...editForm,
+      offerings: [...editForm.offerings, newOffering],
+    });
+  };
+
+  const handleDeleteOffering = (id: string) => {
+    if (!editForm) return;
+    setEditForm({
+      ...editForm,
+      offerings: editForm.offerings.filter((o) => o.id !== id),
+    });
+  };
+
+  // Portfolio items CRUD functions
+  const handleNewPortFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0] || null;
+    setNewPortFile(file);
+    if (file) {
+      setNewPortPreview(URL.createObjectURL(file));
+    } else {
+      setNewPortPreview("");
+    }
+  };
+
+  const handleAddPortfolioItem = () => {
+    if (!editForm || !newPortTitle || !newPortFile) return;
+
+    const newId = `port-${Date.now()}`;
+    const newItem: PortfolioItem = {
+      id: newId,
+      title: newPortTitle,
+      category: newPortCategory,
+      image: "", // Uploaded in submit pipeline
+    };
+
+    // Save File state locally
+    setPortfolioFiles((prev) => ({ ...prev, [newId]: newPortFile }));
+    setPortfolioPreviews((prev) => ({ ...prev, [newId]: newPortPreview }));
+
+    setEditForm({
+      ...editForm,
+      portfolio: [...editForm.portfolio, newItem],
+    });
+
+    // Reset inputs
+    setNewPortTitle("");
+    setNewPortFile(null);
+    setNewPortPreview("");
+  };
+
+  const handleDeletePortfolioItem = (id: string) => {
+    if (!editForm) return;
+    setEditForm({
+      ...editForm,
+      portfolio: editForm.portfolio.filter((p) => p.id !== id),
+    });
+    // Clean files if queued
+    if (portfolioFiles[id]) {
+      const updatedFiles = { ...portfolioFiles };
+      delete updatedFiles[id];
+      setPortfolioFiles(updatedFiles);
+    }
+  };
+
+  // Submit FormData payload
   const handleAdminSave = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!editForm) return;
@@ -115,12 +221,24 @@ export default function Home() {
     try {
       const dataPayload = new FormData();
       dataPayload.append("content", JSON.stringify(editForm));
+
+      // Append general image files
       if (heroFile) dataPayload.append("heroImage", heroFile);
       if (aboutFile) dataPayload.append("aboutImage", aboutFile);
 
+      // Append dynamic offering files
+      Object.entries(offeringFiles).forEach(([id, file]) => {
+        dataPayload.append("offeringImage_" + id, file);
+      });
+
+      // Append dynamic portfolio files
+      Object.entries(portfolioFiles).forEach(([id, file]) => {
+        dataPayload.append("portfolioImage_" + id, file);
+      });
+
       const response = await fetch("/api/content", {
         method: "POST",
-        body: dataPayload, // multipart/form-data boundary set by browser
+        body: dataPayload,
       });
 
       const result = await response.json();
@@ -130,28 +248,34 @@ export default function Home() {
         setEditForm(result.content);
         setSaveStatus({
           type: "success",
-          msg: "Database overwrote successfully! Uploaded new assets and generated live URL endpoints.",
+          msg: "Sanctuary configuration saved and synced with Vercel Blob successfully!",
         });
 
-        // Revoke temporary object URLs
+        // Revoke temporary previews
         if (heroPreview) URL.revokeObjectURL(heroPreview);
         if (aboutPreview) URL.revokeObjectURL(aboutPreview);
+        Object.values(offeringPreviews).forEach(URL.revokeObjectURL);
+        Object.values(portfolioPreviews).forEach(URL.revokeObjectURL);
 
-        // Reset local files inputs
+        // Clear local inputs
         setHeroFile(null);
         setAboutFile(null);
         setHeroPreview("");
         setAboutPreview("");
+        setOfferingFiles({});
+        setOfferingPreviews({});
+        setPortfolioFiles({});
+        setPortfolioPreviews({});
       } else {
         setSaveStatus({
           type: "error",
-          msg: result.error || "Failed to commit files to Vercel Blob.",
+          msg: result.error || "Failed to commit database changes.",
         });
       }
     } catch (err: any) {
       setSaveStatus({
         type: "error",
-        msg: "Failed to connect to backend serverless function.",
+        msg: "Failed to establish connection with serverless backend.",
       });
     } finally {
       setIsSaving(false);
@@ -183,6 +307,11 @@ export default function Home() {
     );
   }
 
+  // Portfolio items filter matching category
+  const filteredPortfolio = currentContent.portfolio.filter((item) => {
+    return activePortfolioFilter === "All" || item.category === activePortfolioFilter;
+  });
+
   return (
     <div className="flex-1 flex flex-col font-sans">
       {/* 1. Minimal Navigation Bar */}
@@ -197,7 +326,10 @@ export default function Home() {
               About
             </a>
             <a href="#services" className="text-xs font-semibold uppercase tracking-widest text-brand-text/80 hover:text-brand-text transition-colors">
-              Services
+              Offerings
+            </a>
+            <a href="#portfolio" className="text-xs font-semibold uppercase tracking-widest text-brand-text/80 hover:text-brand-text transition-colors">
+              Portfolio
             </a>
             <a href="#contact" className="text-xs font-semibold uppercase tracking-widest text-brand-text/80 hover:text-brand-text transition-colors">
               Contact
@@ -221,7 +353,7 @@ export default function Home() {
         </div>
       </header>
 
-      {/* 2. Peaceful Hero Section (Supports background image dynamically) */}
+      {/* 2. Peaceful Hero Section */}
       <section
         className="relative py-28 md:py-40 px-6 md:px-12 flex flex-col items-center text-center justify-center overflow-hidden"
         style={{
@@ -230,12 +362,10 @@ export default function Home() {
           backgroundPosition: "center",
         }}
       >
-        {/* Soft overlay when background image is present to maintain text readability */}
         {currentContent.heroImageUrl && (
           <div className="absolute inset-0 bg-[#F4F1EA]/85 -z-10" />
         )}
 
-        {/* Ambient fallback gradient when background image is not present */}
         {!currentContent.heroImageUrl && (
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full bg-[#E5E1D5]/40 blur-3xl -z-10 pointer-events-none" />
         )}
@@ -266,10 +396,9 @@ export default function Home() {
         <div className="w-full h-px bg-brand-sage/10" />
       </div>
 
-      {/* 3. Side-by-Side About Me Section (Supports profile image dynamically) */}
+      {/* 3. About Me Section */}
       <section id="about" className="py-20 md:py-32 px-6 md:px-12 max-w-6xl mx-auto w-full">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-center">
-          {/* Profile Container (Left) */}
           <div className="lg:col-span-5 flex justify-center">
             <div className="w-full max-w-[360px] aspect-[4/5] rounded-3xl bg-brand-sage-light flex flex-col items-center justify-center relative overflow-hidden shadow-sm border border-brand-sage/5">
               {currentContent.aboutImageUrl ? (
@@ -279,7 +408,6 @@ export default function Home() {
                   className="w-full h-full object-cover rounded-3xl"
                 />
               ) : (
-                /* Fallback line-art illustration */
                 <div className="w-full h-full p-8 flex flex-col items-center justify-center">
                   <svg
                     viewBox="0 0 100 120"
@@ -306,7 +434,6 @@ export default function Home() {
             </div>
           </div>
 
-          {/* Profile Details (Right) */}
           <div className="lg:col-span-7 flex flex-col items-start gap-5">
             <span className="text-[10px] uppercase tracking-widest text-brand-sage font-bold">
               The Instructor
@@ -322,7 +449,7 @@ export default function Home() {
                 href="#services"
                 className="text-xs font-bold uppercase tracking-widest text-brand-text hover:text-brand-sage transition-colors border-b border-brand-text pb-1 hover:border-brand-sage"
               >
-                Explore Services
+                Explore Offerings
               </a>
             </div>
           </div>
@@ -334,7 +461,7 @@ export default function Home() {
         <div className="w-full h-px bg-brand-sage/10" />
       </div>
 
-      {/* 4. Responsive Services Grid Section */}
+      {/* 4. Offerings Grid Section */}
       <section id="services" className="py-20 md:py-32 px-6 md:px-12 max-w-6xl mx-auto w-full">
         <div className="text-center flex flex-col items-center gap-4 mb-16">
           <span className="text-[10px] uppercase tracking-widest text-brand-sage font-bold">
@@ -349,34 +476,46 @@ export default function Home() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-12">
-          {currentContent.services.map((service, index) => (
+          {currentContent.offerings.map((offering) => (
             <div
-              key={service.id}
-              className="border border-brand-sage/15 hover:border-brand-sage/30 bg-white/20 hover:bg-white/40 p-8 md:p-10 rounded-3xl flex flex-col justify-between gap-8 transition-all duration-300 group"
+              key={offering.id}
+              className="border border-brand-sage/15 hover:border-brand-sage/30 bg-white/20 hover:bg-white/40 rounded-3xl overflow-hidden flex flex-col justify-between transition-all duration-300 group shadow-xs min-h-[380px]"
             >
-              <div className="flex flex-col gap-4">
-                <div className="flex justify-between items-start">
-                  <span className="text-[10px] font-bold uppercase tracking-widest text-brand-sage">
-                    {index === 0 ? "Deep Alignment" : "Collective Energy"}
-                  </span>
-                  <span className="text-sm font-serif font-bold text-brand-sage font-mono">
-                    ${service.price} / hr
-                  </span>
+              {/* Offering Cover Photo (with fallback gradient if empty) */}
+              <div
+                className="h-44 w-full bg-brand-sage-light shrink-0 relative overflow-hidden"
+                style={{
+                  backgroundImage: offering.image ? `url(${offering.image})` : "none",
+                  backgroundSize: "cover",
+                  backgroundPosition: "center",
+                }}
+              >
+                {!offering.image && (
+                  <div className="absolute inset-0 bg-gradient-to-tr from-brand-sage/10 to-brand-sage-light" />
+                )}
+                <div className="absolute top-4 right-4 bg-[#F4F1EA] border border-brand-sage/10 px-3.5 py-1.5 rounded-full text-xs font-bold text-brand-sage shadow-sm font-mono">
+                  ${offering.price} / hr
                 </div>
-                <h3 className="text-xl md:text-2xl font-serif text-brand-text tracking-wide group-hover:text-brand-sage transition-colors">
-                  {service.name}
-                </h3>
-                <p className="text-xs md:text-sm text-brand-text/75 leading-relaxed font-normal">
-                  {service.description}
-                </p>
               </div>
-              <div>
-                <a
-                  href="#contact"
-                  className="inline-block text-xs font-bold uppercase tracking-widest border-b border-brand-text group-hover:border-brand-sage group-hover:text-brand-sage pb-1 transition-colors"
-                >
-                  {index === 0 ? "Inquire Session" : "View Schedule"}
-                </a>
+
+              {/* Text detail */}
+              <div className="p-6 md:p-8 flex-1 flex flex-col justify-between gap-6">
+                <div className="flex flex-col gap-3">
+                  <h3 className="text-xl md:text-2xl font-serif text-brand-text tracking-wide group-hover:text-brand-sage transition-colors">
+                    {offering.title}
+                  </h3>
+                  <p className="text-xs md:text-sm text-brand-text/75 leading-relaxed font-normal">
+                    {offering.description}
+                  </p>
+                </div>
+                <div>
+                  <a
+                    href="#contact"
+                    className="inline-block text-xs font-bold uppercase tracking-widest border-b border-brand-text group-hover:border-brand-sage group-hover:text-brand-sage pb-1 transition-colors"
+                  >
+                    Inquire Space
+                  </a>
+                </div>
               </div>
             </div>
           ))}
@@ -388,7 +527,89 @@ export default function Home() {
         <div className="w-full h-px bg-brand-sage/10" />
       </div>
 
-      {/* 5. Minimal Contact Form Section */}
+      {/* 5. Portfolio Gallery Section (NEW) */}
+      <section id="portfolio" className="py-20 md:py-32 px-6 md:px-12 max-w-6xl mx-auto w-full">
+        <div className="text-center flex flex-col items-center gap-4 mb-12">
+          <span className="text-[10px] uppercase tracking-widest text-brand-sage font-bold">
+            Visual Sanctuary
+          </span>
+          <h2 className="text-3xl md:text-4xl font-serif text-brand-text tracking-wide font-normal">
+            Portfolio Gallery
+          </h2>
+          <p className="text-xs md:text-sm text-brand-text/65 leading-relaxed max-w-md">
+            Glimpses into our physical studio environments, class alignments, and workshop gatherings.
+          </p>
+        </div>
+
+        {/* Filter Navigation */}
+        <div className="flex justify-center gap-2 mb-10 overflow-x-auto pb-2 scrollbar-none">
+          {["All", "Studio", "Classes", "Workshops"].map((filter) => {
+            const active = activePortfolioFilter === filter;
+            return (
+              <button
+                key={filter}
+                onClick={() => setActivePortfolioFilter(filter)}
+                className={`px-5 py-2.5 rounded-full text-xs font-semibold uppercase tracking-wider transition-colors duration-350 cursor-pointer ${
+                  active
+                    ? "bg-brand-sage text-[#F4F1EA]"
+                    : "bg-white/10 hover:bg-white/30 text-brand-text/70"
+                }`}
+              >
+                {filter}
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Masonry-Style Responsive Gallery Grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
+          {filteredPortfolio.length === 0 ? (
+            <div className="col-span-full py-16 text-center text-brand-text/50 italic text-sm border border-dashed border-brand-sage/20 rounded-3xl">
+              No photos loaded under this category yet.
+            </div>
+          ) : (
+            filteredPortfolio.map((item) => (
+              <div
+                key={item.id}
+                className="group relative aspect-square rounded-3xl overflow-hidden border border-brand-sage/10 bg-brand-sage-light shadow-xs transition-all duration-500 hover:-translate-y-1 hover:shadow-md cursor-pointer"
+              >
+                {/* Photo (with default leaf line-art fallback) */}
+                {item.image ? (
+                  <img
+                    src={item.image}
+                    alt={item.title}
+                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                  />
+                ) : (
+                  <div className="w-full h-full p-12 flex items-center justify-center opacity-40 text-brand-sage bg-gradient-to-tr from-brand-sage/15 to-transparent">
+                    <svg viewBox="0 0 100 120" fill="none" className="w-full h-full stroke-1.5">
+                      <circle cx="50" cy="40" r="12" className="stroke-brand-sage/20" />
+                      <path d="M50 100C50 70 50 45 50 35M50 85C45 80 32 78 35 70C38 62 48 68 50 68" stroke="currentColor" strokeLinecap="round" />
+                    </svg>
+                  </div>
+                )}
+
+                {/* Soft Text Overlay */}
+                <div className="absolute inset-0 bg-[#2B2625]/60 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-6 text-left">
+                  <span className="text-[9px] uppercase tracking-widest text-[#F4F1EA]/80 font-bold mb-1">
+                    {item.category}
+                  </span>
+                  <h4 className="text-lg font-serif text-[#F4F1EA] tracking-wide leading-tight">
+                    {item.title}
+                  </h4>
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+      </section>
+
+      {/* Divider */}
+      <div className="max-w-6xl mx-auto w-full px-6 md:px-12">
+        <div className="w-full h-px bg-brand-sage/10" />
+      </div>
+
+      {/* 6. Minimal Contact Form Section */}
       <section id="contact" className="py-20 md:py-32 px-6 md:px-12 max-w-md mx-auto w-full">
         <div className="text-center flex flex-col items-center gap-4 mb-10">
           <span className="text-[10px] uppercase tracking-widest text-brand-sage font-bold">
@@ -465,15 +686,16 @@ export default function Home() {
         )}
       </section>
 
-      {/* 6. Admin Panel Overlay Modal (Supports Image Upload fields) */}
+      {/* 7. Collapsible Admin Panel Modal */}
       {isAdminOpen && editForm && (
         <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-[#F4F1EA] border border-brand-sage/20 rounded-3xl max-w-xl w-full max-h-[85vh] flex flex-col relative overflow-hidden shadow-2xl">
+          <div className="bg-[#F4F1EA] border border-brand-sage/20 rounded-3xl max-w-2xl w-full h-[85vh] flex flex-col relative overflow-hidden shadow-2xl">
+            
             {/* Header */}
-            <div className="flex justify-between items-center p-6 border-b border-brand-sage/15">
+            <div className="p-6 border-b border-brand-sage/15 flex justify-between items-center shrink-0">
               <div>
-                <span className="text-[9px] uppercase tracking-widest text-brand-sage font-bold">Vercel Blob Pipeline</span>
-                <h4 className="text-xl font-serif text-brand-text mt-0.5">Database Content & Asset Editor</h4>
+                <span className="text-[9px] uppercase tracking-widest text-brand-sage font-bold">Sanctuary Database</span>
+                <h4 className="text-xl font-serif text-brand-text mt-0.5">Control Center Console</h4>
               </div>
               <button
                 onClick={() => {
@@ -486,133 +708,324 @@ export default function Home() {
               </button>
             </div>
 
-            {/* Scrollable Form */}
-            <form onSubmit={handleAdminSave} className="flex-1 overflow-y-auto p-6 flex flex-col gap-5">
-              <div className="flex flex-col gap-1.5">
-                <label className="text-[10px] uppercase tracking-widest font-semibold text-brand-text/70">Hero Title</label>
-                <input
-                  type="text"
-                  required
-                  value={editForm.heroTitle}
-                  onChange={(e) => handleAdminChange(e, "heroTitle")}
-                  className="px-4 py-3 bg-[#E5E1D5]/20 border border-brand-sage/15 focus:border-brand-sage focus:outline-none rounded-xl text-xs md:text-sm text-brand-text"
-                />
-              </div>
-
-              <div className="flex flex-col gap-1.5">
-                <label className="text-[10px] uppercase tracking-widest font-semibold text-brand-text/70">Hero Subtitle</label>
-                <textarea
-                  required
-                  rows={3}
-                  value={editForm.heroSubtitle}
-                  onChange={(e) => handleAdminChange(e, "heroSubtitle")}
-                  className="px-4 py-3 bg-[#E5E1D5]/20 border border-brand-sage/15 focus:border-brand-sage focus:outline-none rounded-xl text-xs md:text-sm text-brand-text resize-none"
-                />
-              </div>
-
-              <div className="flex flex-col gap-1.5">
-                <label className="text-[10px] uppercase tracking-widest font-semibold text-brand-text/70">About Bio Text</label>
-                <textarea
-                  required
-                  rows={6}
-                  value={editForm.aboutBioText}
-                  onChange={(e) => handleAdminChange(e, "aboutBioText")}
-                  className="px-4 py-3 bg-[#E5E1D5]/20 border border-brand-sage/15 focus:border-brand-sage focus:outline-none rounded-xl text-xs md:text-sm text-brand-text resize-none"
-                />
-              </div>
-
-              {/* Dynamic Service Prices */}
-              <div className="flex flex-col gap-2">
-                <label className="text-[10px] uppercase tracking-widest font-semibold text-brand-text/70">Services Hourly Pricing</label>
-                <div className="grid grid-cols-2 gap-4">
-                  {editForm.services.map((service, index) => (
-                    <div key={service.id} className="flex flex-col gap-1">
-                      <span className="text-[10px] text-brand-text/60 truncate">{service.name} ($)</span>
-                      <input
-                        type="number"
-                        required
-                        value={service.price}
-                        onChange={(e) => handleServicePriceChange(index, parseInt(e.target.value) || 0)}
-                        className="px-4 py-2.5 bg-[#E5E1D5]/20 border border-brand-sage/15 focus:border-brand-sage focus:outline-none rounded-xl text-xs md:text-sm text-brand-text"
-                      />
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Upload Image fields */}
-              <div className="flex flex-col gap-4 border-t border-brand-sage/15 pt-4">
-                <span className="text-[10px] uppercase tracking-widest font-bold text-brand-sage">Asset Upload Pipeline</span>
-                
-                {/* Hero BG Image Upload */}
-                <div className="flex flex-col gap-2">
-                  <label className="text-[10px] uppercase tracking-widest font-semibold text-brand-text/70">Hero Background Image</label>
-                  <div className="flex items-center gap-4">
-                    <input
-                      type="file"
-                      accept="image/*"
-                      onChange={handleHeroFileChange}
-                      className="text-xs text-brand-text/60 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-brand-sage file:text-[#F4F1EA] hover:file:bg-brand-sage-hover file:cursor-pointer"
-                    />
-                    {heroPreview && (
-                      <div className="w-12 h-12 rounded-lg border border-brand-sage/10 overflow-hidden shrink-0">
-                        <img src={heroPreview} alt="Preview" className="w-full h-full object-cover" />
-                      </div>
-                    )}
-                    {!heroPreview && currentContent.heroImageUrl && (
-                      <div className="w-12 h-12 rounded-lg border border-brand-sage/10 overflow-hidden shrink-0 opacity-55">
-                        <img src={currentContent.heroImageUrl} alt="Current" className="w-full h-full object-cover" />
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                {/* About Profile Image Upload */}
-                <div className="flex flex-col gap-2">
-                  <label className="text-[10px] uppercase tracking-widest font-semibold text-brand-text/70">About Me Image</label>
-                  <div className="flex items-center gap-4">
-                    <input
-                      type="file"
-                      accept="image/*"
-                      onChange={handleAboutFileChange}
-                      className="text-xs text-brand-text/60 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-brand-sage file:text-[#F4F1EA] hover:file:bg-brand-sage-hover file:cursor-pointer"
-                    />
-                    {aboutPreview && (
-                      <div className="w-12 h-12 rounded-lg border border-brand-sage/10 overflow-hidden shrink-0">
-                        <img src={aboutPreview} alt="Preview" className="w-full h-full object-cover" />
-                      </div>
-                    )}
-                    {!aboutPreview && currentContent.aboutImageUrl && (
-                      <div className="w-12 h-12 rounded-lg border border-brand-sage/10 overflow-hidden shrink-0 opacity-55">
-                        <img src={currentContent.aboutImageUrl} alt="Current" className="w-full h-full object-cover" />
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </div>
-
-              {saveStatus.type && (
-                <div
-                  className={`p-4 rounded-xl text-xs leading-normal ${
-                    saveStatus.type === "success"
-                      ? "bg-emerald-500/10 text-emerald-800 border border-emerald-500/20"
-                      : "bg-rose-500/10 text-rose-800 border border-rose-500/20"
+            {/* Inner Dashboard Navigation tabs */}
+            <div className="flex border-b border-brand-sage/10 bg-brand-sage-light/35 shrink-0 px-6 gap-2">
+              {[
+                { id: "general", label: "General & Copy" },
+                { id: "offerings", label: "Yoga Classes" },
+                { id: "portfolio", label: "Portfolio Gallery" },
+              ].map((tab) => (
+                <button
+                  key={tab.id}
+                  type="button"
+                  onClick={() => setAdminTab(tab.id as any)}
+                  className={`py-3.5 px-4 text-xs font-semibold uppercase tracking-wider border-b-2 transition-all cursor-pointer ${
+                    adminTab === tab.id
+                      ? "border-brand-sage text-brand-text font-bold"
+                      : "border-transparent text-brand-text/50 hover:text-brand-text"
                   }`}
                 >
-                  <span className="font-bold block mb-0.5">
-                    {saveStatus.type === "success" ? "Stream Successful" : "Stream Warning/Failure"}
-                  </span>
-                  {saveStatus.msg}
+                  {tab.label}
+                </button>
+              ))}
+            </div>
+
+            {/* Scrollable Form Body */}
+            <form onSubmit={handleAdminSave} className="flex-1 overflow-y-auto p-6 flex flex-col gap-6">
+              
+              {/* Tab 1: General Copy and Hero */}
+              {adminTab === "general" && (
+                <div className="flex flex-col gap-5">
+                  <div className="flex flex-col gap-1.5">
+                    <label className="text-[10px] uppercase tracking-widest font-semibold text-brand-text/70">Hero Title</label>
+                    <input
+                      type="text"
+                      required
+                      value={editForm.heroTitle}
+                      onChange={(e) => handleAdminChange(e, "heroTitle")}
+                      className="px-4 py-3 bg-[#E5E1D5]/20 border border-brand-sage/15 focus:border-brand-sage focus:outline-none rounded-xl text-xs md:text-sm text-brand-text"
+                    />
+                  </div>
+
+                  <div className="flex flex-col gap-1.5">
+                    <label className="text-[10px] uppercase tracking-widest font-semibold text-brand-text/70">Hero Subtitle</label>
+                    <textarea
+                      required
+                      rows={3}
+                      value={editForm.heroSubtitle}
+                      onChange={(e) => handleAdminChange(e, "heroSubtitle")}
+                      className="px-4 py-3 bg-[#E5E1D5]/20 border border-brand-sage/15 focus:border-brand-sage focus:outline-none rounded-xl text-xs md:text-sm text-brand-text resize-none"
+                    />
+                  </div>
+
+                  <div className="flex flex-col gap-1.5">
+                    <label className="text-[10px] uppercase tracking-widest font-semibold text-brand-text/70">About Bio Text</label>
+                    <textarea
+                      required
+                      rows={6}
+                      value={editForm.aboutBioText}
+                      onChange={(e) => handleAdminChange(e, "aboutBioText")}
+                      className="px-4 py-3 bg-[#E5E1D5]/20 border border-brand-sage/15 focus:border-brand-sage focus:outline-none rounded-xl text-xs md:text-sm text-brand-text resize-none"
+                    />
+                  </div>
+
+                  {/* General Image Uploads */}
+                  <div className="border-t border-brand-sage/15 pt-5 flex flex-col gap-4">
+                    <span className="text-[10px] uppercase tracking-widest font-bold text-brand-sage">Homepage Banner Images</span>
+                    
+                    <div className="flex flex-col gap-2">
+                      <label className="text-[10px] uppercase tracking-widest font-semibold text-brand-text/70">Hero Background</label>
+                      <div className="flex items-center gap-4">
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={handleHeroFileChange}
+                          className="text-xs text-brand-text/65 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-brand-sage file:text-[#F4F1EA] hover:file:bg-brand-sage-hover"
+                        />
+                        {(heroPreview || currentContent.heroImageUrl) && (
+                          <div className="w-12 h-12 rounded-lg border border-brand-sage/10 overflow-hidden shrink-0">
+                            <img src={heroPreview || currentContent.heroImageUrl} alt="Preview" className="w-full h-full object-cover" />
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="flex flex-col gap-2">
+                      <label className="text-[10px] uppercase tracking-widest font-semibold text-brand-text/70">About Profile Picture</label>
+                      <div className="flex items-center gap-4">
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={handleAboutFileChange}
+                          className="text-xs text-brand-text/65 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-brand-sage file:text-[#F4F1EA] hover:file:bg-brand-sage-hover"
+                        />
+                        {(aboutPreview || currentContent.aboutImageUrl) && (
+                          <div className="w-12 h-12 rounded-lg border border-brand-sage/10 overflow-hidden shrink-0">
+                            <img src={aboutPreview || currentContent.aboutImageUrl} alt="Preview" className="w-full h-full object-cover" />
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
                 </div>
               )}
 
-              <button
-                type="submit"
-                disabled={isSaving}
-                className="w-full py-4 bg-brand-sage hover:bg-brand-sage-hover text-[#F4F1EA] text-xs font-bold uppercase tracking-wider transition-colors duration-300 rounded-xl cursor-pointer disabled:opacity-40"
-              >
-                {isSaving ? "Streaming files to Vercel Blob..." : "Overwrites & Save to Blob"}
-              </button>
+              {/* Tab 2: Yoga Classes / Offerings Editor */}
+              {adminTab === "offerings" && (
+                <div className="flex flex-col gap-6">
+                  <div className="flex justify-between items-center">
+                    <span className="text-[10px] uppercase tracking-widest font-bold text-brand-sage">Offerings List ({editForm.offerings.length})</span>
+                    <button
+                      type="button"
+                      onClick={handleAddOffering}
+                      className="px-4 py-2 bg-brand-sage text-[#F4F1EA] text-[10px] font-bold uppercase tracking-widest rounded-full hover:bg-brand-sage-hover cursor-pointer"
+                    >
+                      + Add New Class
+                    </button>
+                  </div>
+
+                  <div className="flex flex-col gap-6">
+                    {editForm.offerings.map((offering, index) => {
+                      const hasLocalPreview = offeringPreviews[offering.id];
+                      return (
+                        <div key={offering.id} className="border border-brand-sage/15 rounded-2xl p-5 bg-[#E5E1D5]/10 flex flex-col gap-4 relative">
+                          <button
+                            type="button"
+                            onClick={() => handleDeleteOffering(offering.id)}
+                            className="absolute top-4 right-4 text-xs font-bold text-rose-600 hover:text-rose-800 uppercase cursor-pointer"
+                          >
+                            ✕ Remove
+                          </button>
+
+                          <div className="grid grid-cols-3 gap-4">
+                            <div className="col-span-2 flex flex-col gap-1">
+                              <span className="text-[9px] uppercase font-bold text-brand-text/50">Class Title</span>
+                              <input
+                                type="text"
+                                required
+                                value={offering.title}
+                                onChange={(e) => handleOfferingChange(index, "title", e.target.value)}
+                                className="px-3 py-2 bg-[#F4F1EA] border border-brand-sage/10 rounded-lg text-xs text-brand-text"
+                              />
+                            </div>
+                            <div className="flex flex-col gap-1">
+                              <span className="text-[9px] uppercase font-bold text-brand-text/50">Hourly Rate ($)</span>
+                              <input
+                                type="number"
+                                required
+                                value={offering.price}
+                                onChange={(e) => handleOfferingChange(index, "price", parseInt(e.target.value) || 0)}
+                                className="px-3 py-2 bg-[#F4F1EA] border border-brand-sage/10 rounded-lg text-xs text-brand-text"
+                              />
+                            </div>
+                          </div>
+
+                          <div className="flex flex-col gap-1">
+                            <span className="text-[9px] uppercase font-bold text-brand-text/50">Description</span>
+                            <textarea
+                              required
+                              rows={2}
+                              value={offering.description}
+                              onChange={(e) => handleOfferingChange(index, "description", e.target.value)}
+                              className="px-3 py-2 bg-[#F4F1EA] border border-brand-sage/10 rounded-lg text-xs text-brand-text resize-none"
+                            />
+                          </div>
+
+                          {/* Image upload for Class Card */}
+                          <div className="flex flex-col gap-1 pt-2">
+                            <span className="text-[9px] uppercase font-bold text-brand-text/50">Class Card Photo</span>
+                            <div className="flex items-center gap-4">
+                              <input
+                                type="file"
+                                accept="image/*"
+                                onChange={(e) => handleOfferingFileChange(index, e.target.files?.[0] || null)}
+                                className="text-[10px] text-brand-text/60 file:mr-3 file:py-1 file:px-3 file:rounded-full file:border-0 file:text-[9px] file:font-semibold file:bg-brand-sage file:text-[#F4F1EA]"
+                              />
+                              {(hasLocalPreview || offering.image) && (
+                                <div className="w-10 h-10 rounded-lg border border-brand-sage/10 overflow-hidden shrink-0">
+                                  <img
+                                    src={hasLocalPreview || offering.image}
+                                    alt="Preview"
+                                    className="w-full h-full object-cover"
+                                  />
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
+              {/* Tab 3: Portfolio Gallery CRUD */}
+              {adminTab === "portfolio" && (
+                <div className="flex flex-col gap-6">
+                  {/* Form to insert a new portfolio item */}
+                  <div className="border border-brand-sage/20 rounded-2xl p-5 bg-[#E5E1D5]/20 flex flex-col gap-4">
+                    <span className="text-[10px] uppercase tracking-widest font-bold text-brand-sage">Add Photo to Gallery</span>
+                    
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="flex flex-col gap-1">
+                        <label className="text-[9px] uppercase font-bold text-brand-text/60">Photo Title</label>
+                        <input
+                          type="text"
+                          value={newPortTitle}
+                          onChange={(e) => setNewPortTitle(e.target.value)}
+                          placeholder="e.g. Lotus Sunset Alignment"
+                          className="px-3 py-2 bg-[#F4F1EA] border border-brand-sage/10 rounded-lg text-xs text-brand-text"
+                        />
+                      </div>
+
+                      <div className="flex flex-col gap-1">
+                        <label className="text-[9px] uppercase font-bold text-brand-text/60">Gallery Tag Category</label>
+                        <select
+                          value={newPortCategory}
+                          onChange={(e) => setNewPortCategory(e.target.value)}
+                          className="px-3 py-2 bg-[#F4F1EA] border border-brand-sage/10 rounded-lg text-xs text-brand-text"
+                        >
+                          <option value="Studio">Studio</option>
+                          <option value="Classes">Classes</option>
+                          <option value="Workshops">Workshops</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    <div className="flex flex-col gap-1.5 pt-2">
+                      <label className="text-[9px] uppercase font-bold text-brand-text/60">Select Image File</label>
+                      <div className="flex items-center gap-4">
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={handleNewPortFileChange}
+                          className="text-[10px] text-brand-text/60 file:mr-3 file:py-1 file:px-3 file:rounded-full file:border-0 file:text-[9px] file:font-semibold file:bg-brand-sage file:text-[#F4F1EA]"
+                        />
+                        {newPortPreview && (
+                          <div className="w-10 h-10 rounded-lg border border-brand-sage/10 overflow-hidden shrink-0">
+                            <img src={newPortPreview} alt="Preview" className="w-full h-full object-cover" />
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    <button
+                      type="button"
+                      disabled={!newPortTitle || !newPortFile}
+                      onClick={handleAddPortfolioItem}
+                      className="mt-2 py-3 bg-brand-sage hover:bg-brand-sage-hover text-[#F4F1EA] text-[10px] font-bold uppercase tracking-wider rounded-xl cursor-pointer disabled:opacity-40"
+                    >
+                      Queue Photo Addition
+                    </button>
+                  </div>
+
+                  {/* List of current portfolio images with delete buttons */}
+                  <div className="flex flex-col gap-4">
+                    <span className="text-[10px] uppercase tracking-widest font-bold text-brand-sage">Existing Gallery Photos</span>
+                    
+                    <div className="grid grid-cols-2 gap-4">
+                      {editForm.portfolio.map((item) => {
+                        const localPreview = portfolioPreviews[item.id];
+                        return (
+                          <div key={item.id} className="border border-brand-sage/10 rounded-xl p-3 bg-[#F4F1EA] flex items-center justify-between gap-3 shadow-2xs">
+                            <div className="flex items-center gap-3 min-w-0">
+                              <div className="w-12 h-12 rounded-lg border border-brand-sage/10 overflow-hidden shrink-0 bg-brand-sage-light">
+                                {(localPreview || item.image) ? (
+                                  <img
+                                    src={localPreview || item.image}
+                                    alt="Thumb"
+                                    className="w-full h-full object-cover"
+                                  />
+                                ) : (
+                                  <div className="w-full h-full flex items-center justify-center text-[10px] opacity-40">Art</div>
+                                )}
+                              </div>
+                              <div className="min-w-0">
+                                <h5 className="text-xs font-semibold text-brand-text truncate leading-tight">{item.title}</h5>
+                                <span className="text-[8px] uppercase tracking-wider font-bold text-brand-sage block mt-0.5">{item.category}</span>
+                              </div>
+                            </div>
+
+                            <button
+                              type="button"
+                              onClick={() => handleDeletePortfolioItem(item.id)}
+                              className="text-[10px] font-bold text-rose-600 hover:text-rose-800 uppercase shrink-0 cursor-pointer"
+                            >
+                              Delete
+                            </button>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Status and Action controls */}
+              <div className="border-t border-brand-sage/15 pt-5 shrink-0">
+                {saveStatus.type && (
+                  <div
+                    className={`p-4 rounded-xl text-xs leading-normal mb-4 ${
+                      saveStatus.type === "success"
+                        ? "bg-emerald-500/10 text-emerald-800 border border-emerald-500/20"
+                        : "bg-rose-500/10 text-rose-800 border border-rose-500/20"
+                    }`}
+                  >
+                    <span className="font-bold block mb-0.5">
+                      {saveStatus.type === "success" ? "Sync Success" : "Sync Error"}
+                    </span>
+                    {saveStatus.msg}
+                  </div>
+                )}
+
+                <button
+                  type="submit"
+                  disabled={isSaving}
+                  className="w-full py-4 bg-brand-text hover:bg-[#1a1716] text-[#F4F1EA] text-xs font-bold uppercase tracking-wider transition-colors duration-300 rounded-xl cursor-pointer disabled:opacity-40 shadow-sm"
+                >
+                  {isSaving ? "Saving & Uploading Assets to Vercel Blob..." : "Commit All Changes & Sync Vercel Blob"}
+                </button>
+              </div>
             </form>
           </div>
         </div>
