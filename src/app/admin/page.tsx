@@ -15,7 +15,7 @@ export default function AdminPage() {
   const [authError, setAuthError] = useState("");
 
   // CMS active sidebar tab
-  const [activeTab, setActiveTab] = useState<"overview" | "heroAbout" | "offerings" | "portfolio" | "testimonials" | "blog" | "leads">("overview");
+  const [activeTab, setActiveTab] = useState<"overview" | "heroAbout" | "offerings" | "portfolio" | "testimonials" | "blog" | "leads" | "customization">("overview");
 
   // Save progress states
   const [isSaving, setIsSaving] = useState(false);
@@ -39,6 +39,10 @@ export default function AdminPage() {
 
   const [blogFiles, setBlogFiles] = useState<Record<string, File>>({});
   const [blogPreviews, setBlogPreviews] = useState<Record<string, string>>({});
+
+  // Contact portrait upload
+  const [contactPortraitFile, setContactPortraitFile] = useState<File | null>(null);
+  const [contactPortraitPreview, setContactPortraitPreview] = useState<string>("");
 
   // New portfolio item input form state
   const [newPortTitle, setNewPortTitle] = useState("");
@@ -142,6 +146,13 @@ export default function AdminPage() {
     setAboutFile(file);
     if (file) setAboutPreview(URL.createObjectURL(file));
     else setAboutPreview("");
+  };
+
+  const handleContactPortraitFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0] || null;
+    setContactPortraitFile(file);
+    if (file) setContactPortraitPreview(URL.createObjectURL(file));
+    else setContactPortraitPreview("");
   };
 
   // Offerings CRUD handlers
@@ -355,6 +366,7 @@ export default function AdminPage() {
       // General images
       if (heroFile) dataPayload.append("heroImage", heroFile);
       if (aboutFile) dataPayload.append("aboutImage", aboutFile);
+      if (contactPortraitFile) dataPayload.append("contactPortraitImage", contactPortraitFile);
 
       // Offerings
       Object.entries(offeringFiles).forEach(([id, file]) => {
@@ -401,8 +413,10 @@ export default function AdminPage() {
         // Reset inputs
         setHeroFile(null);
         setAboutFile(null);
+        setContactPortraitFile(null);
         setHeroPreview("");
         setAboutPreview("");
+        setContactPortraitPreview("");
         setOfferingFiles({});
         setOfferingPreviews({});
         setPortfolioFiles({});
@@ -531,6 +545,7 @@ export default function AdminPage() {
             { id: "testimonials", label: "Testimonials" },
             { id: "blog", label: "Journal Blog" },
             { id: "leads", label: `Inquiries / Leads ${newLeadsCount > 0 ? `(${newLeadsCount})` : ""}` },
+            { id: "customization", label: "Customization" },
           ].map((tab) => {
             const active = activeTab === tab.id;
             return (
@@ -577,6 +592,7 @@ export default function AdminPage() {
             {activeTab === "testimonials" && "Manage Testimonials"}
             {activeTab === "blog" && "Manage Journal Blog"}
             {activeTab === "leads" && "Manage Inquiries / Leads"}
+            {activeTab === "customization" && "Customization"}
           </h2>
 
           <a
@@ -1493,6 +1509,280 @@ export default function AdminPage() {
                   </div>
                 )}
               </div>
+            </div>
+          )}
+
+          {/* ───────────── CUSTOMIZATION TAB ───────────── */}
+          {activeTab === "customization" && editForm && (
+            <div className="flex flex-col gap-8">
+
+              {/* Contact Portrait Uploader */}
+              <div className="bg-white border border-[#dcdcde] rounded-lg p-6 flex flex-col gap-5">
+                <div>
+                  <h3 className="text-base font-semibold text-[#1d2327] mb-1">Contact Section Portrait</h3>
+                  <p className="text-xs text-[#646970]">Upload a photo of Elena that will appear as a portrait column beside the inquiry form on the public website.</p>
+                </div>
+                <div className="flex flex-col sm:flex-row gap-5 items-start">
+                  {(contactPortraitPreview || editForm.contactPortraitUrl) && (
+                    <div className="w-36 h-44 rounded-lg overflow-hidden border border-[#dcdcde] shrink-0">
+                      <img
+                        src={contactPortraitPreview || editForm.contactPortraitUrl}
+                        alt="Contact portrait preview"
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                  )}
+                  <div className="flex flex-col gap-3 flex-1">
+                    <label className="text-xs font-semibold text-[#1d2327]">Upload Portrait Photo</label>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleContactPortraitFileChange}
+                      className="text-xs text-[#2c3338] file:mr-3 file:py-1.5 file:px-4 file:rounded file:border file:border-[#8c8f94] file:bg-white file:text-xs file:font-medium file:cursor-pointer"
+                    />
+                    {editForm.contactPortraitUrl && !contactPortraitFile && (
+                      <button
+                        type="button"
+                        onClick={() => setEditForm({ ...editForm, contactPortraitUrl: "" })}
+                        className="text-[11px] text-rose-600 hover:underline text-left w-max"
+                      >
+                        Remove portrait
+                      </button>
+                    )}
+                    <p className="text-[11px] text-[#646970]">Recommended: portrait orientation (e.g. 600×800px). JPG or PNG.</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Theme Color Scheme */}
+              <div className="bg-white border border-[#dcdcde] rounded-lg p-6 flex flex-col gap-6">
+                <div>
+                  <h3 className="text-base font-semibold text-[#1d2327] mb-1">Theme Color Scheme</h3>
+                  <p className="text-xs text-[#646970]">Set the primary design tokens for the public website. Changes take effect immediately after saving.</p>
+                </div>
+
+                {/* Preset palette quick-select buttons */}
+                <div className="flex flex-col gap-2">
+                  <label className="text-xs font-semibold text-[#1d2327]">Quick Palette Presets</label>
+                  <div className="flex flex-wrap gap-2">
+                    {[
+                      { label: "Dark Espresso", primary: "#8C7A6B", background: "#0B0807", card: "#161210", text: "#E5E0D8", accent: "#6B5D51" },
+                      { label: "Deep Ocean", primary: "#4A90A4", background: "#050F14", card: "#0D1E26", text: "#D8EBF0", accent: "#2E6B7E" },
+                      { label: "Forest Sage", primary: "#6B8F71", background: "#070E08", card: "#101A11", text: "#D8EAD9", accent: "#4A6B4F" },
+                      { label: "Onyx Rose", primary: "#A07080", background: "#0E090B", card: "#1C1014", text: "#EAD8DC", accent: "#7A5060" },
+                      { label: "Warm Stone", primary: "#B09070", background: "#100E0A", card: "#1E1A14", text: "#EDE5D8", accent: "#8A7050" },
+                    ].map((preset) => (
+                      <button
+                        key={preset.label}
+                        type="button"
+                        onClick={() => setEditForm({
+                          ...editForm,
+                          themePrimary: preset.primary,
+                          themeBackground: preset.background,
+                          themeCard: preset.card,
+                          themeText: preset.text,
+                          themeAccent: preset.accent,
+                        })}
+                        className="flex items-center gap-2 px-3 py-1.5 border border-[#dcdcde] rounded bg-white hover:bg-[#f6f7f7] text-xs font-medium text-[#2c3338] cursor-pointer"
+                      >
+                        <span
+                          className="w-3.5 h-3.5 rounded-full border border-[#dcdcde] shrink-0"
+                          style={{ backgroundColor: preset.primary }}
+                        />
+                        {preset.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Individual color token pickers */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+                  {[
+                    { field: "themePrimary", label: "Primary / Accent Color", desc: "Buttons, tags, links" },
+                    { field: "themeBackground", label: "Page Background", desc: "Main body background" },
+                    { field: "themeCard", label: "Card Background", desc: "Post cards, panels" },
+                    { field: "themeText", label: "Primary Text Color", desc: "Headlines, body text" },
+                    { field: "themeAccent", label: "Secondary Accent", desc: "Borders, subtle glows" },
+                  ].map(({ field, label, desc }) => (
+                    <div key={field} className="flex flex-col gap-2">
+                      <label className="text-xs font-semibold text-[#1d2327]">{label}</label>
+                      <p className="text-[11px] text-[#646970] -mt-1">{desc}</p>
+                      <div className="flex items-center gap-3">
+                        <input
+                          type="color"
+                          value={(editForm as any)[field] || "#000000"}
+                          onChange={(e) => setEditForm({ ...editForm, [field]: e.target.value })}
+                          className="w-10 h-10 rounded border border-[#8c8f94] cursor-pointer bg-white p-0.5"
+                        />
+                        <input
+                          type="text"
+                          value={(editForm as any)[field] || ""}
+                          onChange={(e) => setEditForm({ ...editForm, [field]: e.target.value })}
+                          placeholder="#000000"
+                          maxLength={7}
+                          className="px-3 py-2 border border-[#8c8f94] rounded text-xs text-[#2c3338] w-28 font-mono"
+                        />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Ambient Audio Presets */}
+              <div className="bg-white border border-[#dcdcde] rounded-lg p-6 flex flex-col gap-5">
+                <div>
+                  <h3 className="text-base font-semibold text-[#1d2327] mb-1">Ambient Audio</h3>
+                  <p className="text-xs text-[#646970]">When enabled, a subtle ambient sound plays at very low volume on the visitor's first click or interaction with the site.</p>
+                </div>
+
+                {/* On/Off Toggle */}
+                <div className="flex items-center gap-4">
+                  <label className="text-xs font-semibold text-[#1d2327]">Ambient Audio</label>
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setEditForm({ ...editForm, audioEnabled: true })}
+                      className={`px-4 py-1.5 rounded border text-xs font-semibold cursor-pointer transition-colors ${
+                        editForm.audioEnabled
+                          ? "bg-[#2271b1] text-white border-[#2271b1]"
+                          : "bg-white text-[#646970] border-[#dcdcde] hover:bg-[#f6f7f7]"
+                      }`}
+                    >
+                      On
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setEditForm({ ...editForm, audioEnabled: false })}
+                      className={`px-4 py-1.5 rounded border text-xs font-semibold cursor-pointer transition-colors ${
+                        !editForm.audioEnabled
+                          ? "bg-[#2271b1] text-white border-[#2271b1]"
+                          : "bg-white text-[#646970] border-[#dcdcde] hover:bg-[#f6f7f7]"
+                      }`}
+                    >
+                      Off
+                    </button>
+                  </div>
+                </div>
+
+                {/* Preset Selection */}
+                {editForm.audioEnabled && (
+                  <div className="flex flex-col gap-3 pl-1">
+                    <label className="text-xs font-semibold text-[#1d2327]">Audio Preset</label>
+                    <div className="flex flex-col gap-2">
+                      {[
+                        { value: "tibetan-bowl", label: "Tibetan Bowl", desc: "Warm, resonant bowl singing tones" },
+                        { value: "sacred-gong", label: "Sacred Gong", desc: "Deep, expansive gong reverberations" },
+                        { value: "peace-chimes", label: "Peace Chimes", desc: "Gentle wind chime ambience" },
+                      ].map((preset) => (
+                        <label
+                          key={preset.value}
+                          className="flex items-start gap-3 p-3 border rounded cursor-pointer hover:bg-[#f6f7f7] transition-colors"
+                          style={{ borderColor: editForm.audioPreset === preset.value ? "#2271b1" : "#dcdcde", backgroundColor: editForm.audioPreset === preset.value ? "#f0f6fc" : "" }}
+                        >
+                          <input
+                            type="radio"
+                            name="audioPreset"
+                            value={preset.value}
+                            checked={editForm.audioPreset === preset.value}
+                            onChange={() => setEditForm({ ...editForm, audioPreset: preset.value as any })}
+                            className="mt-0.5 accent-[#2271b1]"
+                          />
+                          <div>
+                            <span className="text-xs font-semibold text-[#1d2327]">{preset.label}</span>
+                            <p className="text-[11px] text-[#646970] mt-0.5">{preset.desc}</p>
+                          </div>
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Social Media Footer */}
+              <div className="bg-white border border-[#dcdcde] rounded-lg p-6 flex flex-col gap-5">
+                <div>
+                  <h3 className="text-base font-semibold text-[#1d2327] mb-1">Social Media Footer Icons</h3>
+                  <p className="text-xs text-[#646970]">When enabled, social media icons will appear in the public website footer. Leave a handle blank to hide that platform's icon.</p>
+                </div>
+
+                {/* Master On/Off Toggle */}
+                <div className="flex items-center gap-4">
+                  <label className="text-xs font-semibold text-[#1d2327]">Show Social Icons in Footer</label>
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setEditForm({ ...editForm, socialEnabled: true })}
+                      className={`px-4 py-1.5 rounded border text-xs font-semibold cursor-pointer transition-colors ${
+                        editForm.socialEnabled
+                          ? "bg-[#2271b1] text-white border-[#2271b1]"
+                          : "bg-white text-[#646970] border-[#dcdcde] hover:bg-[#f6f7f7]"
+                      }`}
+                    >
+                      On
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setEditForm({ ...editForm, socialEnabled: false })}
+                      className={`px-4 py-1.5 rounded border text-xs font-semibold cursor-pointer transition-colors ${
+                        !editForm.socialEnabled
+                          ? "bg-[#2271b1] text-white border-[#2271b1]"
+                          : "bg-white text-[#646970] border-[#dcdcde] hover:bg-[#f6f7f7]"
+                      }`}
+                    >
+                      Off
+                    </button>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  <div className="flex flex-col gap-1.5">
+                    <label className="text-xs font-semibold text-[#1d2327] flex items-center gap-1.5">
+                      <svg viewBox="0 0 24 24" fill="currentColor" className="w-3.5 h-3.5 text-[#646970]">
+                        <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z" />
+                      </svg>
+                      Instagram Handle
+                    </label>
+                    <input
+                      type="text"
+                      value={editForm.socialInstagram || ""}
+                      onChange={(e) => setEditForm({ ...editForm, socialInstagram: e.target.value })}
+                      placeholder="@elenayoga"
+                      className="px-3 py-2.5 border border-[#8c8f94] focus:border-[#2271b1] focus:outline-none rounded text-xs text-[#2c3338]"
+                    />
+                  </div>
+                  <div className="flex flex-col gap-1.5">
+                    <label className="text-xs font-semibold text-[#1d2327] flex items-center gap-1.5">
+                      <svg viewBox="0 0 24 24" fill="currentColor" className="w-3.5 h-3.5 text-[#646970]">
+                        <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
+                      </svg>
+                      Facebook Handle
+                    </label>
+                    <input
+                      type="text"
+                      value={editForm.socialFacebook || ""}
+                      onChange={(e) => setEditForm({ ...editForm, socialFacebook: e.target.value })}
+                      placeholder="ElenaMindfulYoga"
+                      className="px-3 py-2.5 border border-[#8c8f94] focus:border-[#2271b1] focus:outline-none rounded text-xs text-[#2c3338]"
+                    />
+                  </div>
+                  <div className="flex flex-col gap-1.5">
+                    <label className="text-xs font-semibold text-[#1d2327] flex items-center gap-1.5">
+                      <svg viewBox="0 0 24 24" fill="currentColor" className="w-3.5 h-3.5 text-[#646970]">
+                        <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z" />
+                      </svg>
+                      YouTube Channel
+                    </label>
+                    <input
+                      type="text"
+                      value={editForm.socialYoutube || ""}
+                      onChange={(e) => setEditForm({ ...editForm, socialYoutube: e.target.value })}
+                      placeholder="@ElenaMindfulYoga"
+                      className="px-3 py-2.5 border border-[#8c8f94] focus:border-[#2271b1] focus:outline-none rounded text-xs text-[#2c3338]"
+                    />
+                  </div>
+                </div>
+              </div>
+
             </div>
           )}
 

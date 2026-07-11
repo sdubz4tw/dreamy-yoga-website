@@ -17,30 +17,30 @@ export interface PortfolioItem {
   id: string;
   title: string;
   image: string;
-  category: string; // 'Studio' | 'Classes' | 'Workshops'
+  category: string;
 }
 
 export interface TestimonialItem {
   id: string;
   clientName: string;
   quote: string;
-  rating: number; // e.g., 1-5
-  source: string; // e.g., '1-on-1 Client', 'Workshop Cohort'
+  rating: number;
+  source: string;
 }
 
 export interface BlogPostItem {
   id: string;
   title: string;
   excerpt: string;
-  content: string; // Main post body
-  featuredImage: string; // Vercel Blob URL or local path
+  content: string;
+  featuredImage: string;
   date: string;
   category?: string;
   readTime?: string;
   likes?: number;
-  status?: "draft" | "published"; // WordPress Post Status
-  tags?: string[]; // WordPress Categories/Tags
-  isFeatured?: boolean; // Featured toggle to pin posts
+  status?: "draft" | "published";
+  tags?: string[];
+  isFeatured?: boolean;
 }
 
 export interface LeadItem {
@@ -63,15 +63,37 @@ export interface YogaContent {
   portfolio: PortfolioItem[];
   testimonials: TestimonialItem[];
   blogPosts: BlogPostItem[];
-  authorName?: string; // WordPress Global Author name
-  authorBio?: string; // WordPress Global Author bio
-  contactEmail?: string; // Email to route leads/inquiries
-  leads?: LeadItem[]; // Lead submissions database
-  studioName?: string; // Custom Studio name (default 'Elena Yoga')
-  hideHero?: boolean; // Toggle for Hero section visibility
-  hideAbout?: boolean; // Toggle for About section visibility
-  hideOfferings?: boolean; // Toggle for Offerings section visibility
-  hidePortfolio?: boolean; // Toggle for Portfolio section visibility
-  hideTestimonials?: boolean; // Toggle for Testimonials section visibility
-  hideBlog?: boolean; // Toggle for Blog section visibility
+  authorName?: string;
+  authorBio?: string;
+  contactEmail?: string;
+  leads?: LeadItem[];
+  studioName?: string;
+
+  // Section visibility toggles
+  hideHero?: boolean;
+  hideAbout?: boolean;
+  hideOfferings?: boolean;
+  hidePortfolio?: boolean;
+  hideTestimonials?: boolean;
+  hideBlog?: boolean;
+
+  // Theme color design tokens
+  themePrimary?: string;    // Primary accent / button color
+  themeBackground?: string; // Main page background
+  themeCard?: string;       // Card/panel background
+  themeText?: string;       // Primary text color
+  themeAccent?: string;     // Sage/accent secondary color
+
+  // Ambient audio settings
+  audioEnabled?: boolean;
+  audioPreset?: "tibetan-bowl" | "sacred-gong" | "peace-chimes";
+
+  // Contact section portrait
+  contactPortraitUrl?: string;
+
+  // Footer social media
+  socialEnabled?: boolean;
+  socialInstagram?: string;
+  socialFacebook?: string;
+  socialYoutube?: string;
 }
