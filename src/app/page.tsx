@@ -8,13 +8,6 @@ export default function Home() {
   const [isLoading, setIsLoading] = useState(true);
   const [isError, setIsError] = useState(false);
 
-  // Authentication State
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [isLoginOpen, setIsLoginOpen] = useState(false);
-  const [authUsername, setAuthUsername] = useState("");
-  const [authPassword, setAuthPassword] = useState("");
-  const [authError, setAuthError] = useState("");
-
   // Admin panel open state
   const [isAdminOpen, setIsAdminOpen] = useState(false);
   const [adminTab, setAdminTab] = useState<"general" | "offerings" | "portfolio" | "testimonials" | "blog">("general");
@@ -76,13 +69,6 @@ export default function Home() {
   const [inquirySubmitted, setInquirySubmitted] = useState(false);
   const [formData, setFormData] = useState({ name: "", email: "", notes: "" });
 
-  // Resolve dynamic session auth state client-side
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      setIsLoggedIn(sessionStorage.getItem("admin_logged_in") === "true");
-    }
-  }, []);
-
   // Fetch content dynamically from Vercel Blob / serverless fallback
   useEffect(() => {
     fetch("/api/content")
@@ -124,34 +110,6 @@ export default function Home() {
   const resetForm = () => {
     setFormData({ name: "", email: "", notes: "" });
     setInquirySubmitted(false);
-  };
-
-  // Secure Auth Submission
-  const handleAuthSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setAuthError("");
-
-    try {
-      const response = await fetch("/api/auth", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username: authUsername, password: authPassword }),
-      });
-
-      if (response.ok) {
-        sessionStorage.setItem("admin_logged_in", "true");
-        setIsLoggedIn(true);
-        setIsLoginOpen(false);
-        setIsAdminOpen(true);
-        setAuthUsername("");
-        setAuthPassword("");
-      } else {
-        const errResult = await response.json();
-        setAuthError(errResult.error || "Credentials invalid.");
-      }
-    } catch (err) {
-      setAuthError("Failed to submit authentication request.");
-    }
   };
 
   // Admin banner change handlers
@@ -515,7 +473,7 @@ export default function Home() {
 
   return (
     <div className="flex-1 flex flex-col font-sans bg-transparent">
-      {/* 1. Navigation Bar (Secured: Content Editor toggle removed) */}
+      {/* 1. Navigation Bar */}
       <header className="w-full border-b border-brand-sage-light/20 py-7 px-8 md:px-16 bg-brand-bg/80 backdrop-blur-md sticky top-0 z-30">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           <a href="#" className="font-serif text-xl md:text-2xl tracking-[0.25em] text-brand-text font-semibold uppercase">
@@ -544,6 +502,12 @@ export default function Home() {
           </nav>
 
           <div className="flex items-center gap-6">
+            <button
+              onClick={() => setIsAdminOpen(!isAdminOpen)}
+              className="text-[10px] font-bold uppercase tracking-widest text-brand-text/60 hover:text-brand-sage transition-colors cursor-pointer"
+            >
+              [Admin Panel]
+            </button>
             <a
               href="#contact"
               className="px-6 py-3 border border-brand-sage text-brand-sage hover:bg-brand-sage hover:text-[#111112] text-xs font-bold uppercase tracking-[0.15em] transition-all duration-300 rounded-full"
@@ -1046,86 +1010,17 @@ export default function Home() {
             <span>Peace • Alignment • Somatic Wisdom</span>
             <span>|</span>
             <button
-              onClick={isLoggedIn ? () => setIsAdminOpen(true) : () => setIsLoginOpen(true)}
+              onClick={() => setIsAdminOpen(true)}
               className="text-brand-sage hover:text-brand-sage-hover transition-colors font-bold uppercase tracking-widest cursor-pointer text-[10px]"
             >
-              {isLoggedIn ? "Admin Panel" : "Admin Login"}
+              Admin Panel
             </button>
           </div>
         </div>
       </footer>
 
-      {/* 9. Secure Login Overlay Modal (NEW) */}
-      {isLoginOpen && (
-        <div className="fixed inset-0 bg-black/85 backdrop-blur-md z-50 flex items-center justify-center p-4">
-          <form
-            onSubmit={handleAuthSubmit}
-            className="bg-[#111112] border border-brand-sage-light/30 rounded-3xl max-w-md w-full p-8 flex flex-col gap-6 shadow-2xl relative"
-          >
-            <button
-              type="button"
-              onClick={() => {
-                setIsLoginOpen(false);
-                setAuthError("");
-              }}
-              className="absolute top-4 right-4 text-brand-text/50 hover:text-brand-text transition-colors text-lg"
-            >
-              ✕
-            </button>
-
-            <div className="text-center">
-              <span className="text-[9px] uppercase tracking-[0.3em] text-brand-sage font-bold">Secure Access</span>
-              <h4 className="text-2xl font-serif text-brand-text mt-1 tracking-wide">Staff Authorization</h4>
-              <p className="text-xs text-brand-text/60 mt-1 leading-normal">
-                Enter your administrative credentials to unlock the database dashboard interfaces.
-              </p>
-            </div>
-
-            <div className="flex flex-col gap-4">
-              <div className="flex flex-col gap-2">
-                <label className="text-[9px] uppercase tracking-[0.25em] font-semibold text-brand-text/75">Admin Username</label>
-                <input
-                  type="text"
-                  required
-                  value={authUsername}
-                  onChange={(e) => setAuthUsername(e.target.value)}
-                  placeholder="Username"
-                  className="px-4 py-3 bg-brand-sage-light/25 border border-brand-sage-light/30 focus:border-brand-sage focus:outline-none rounded-xl text-xs md:text-sm text-brand-text"
-                />
-              </div>
-
-              <div className="flex flex-col gap-2">
-                <label className="text-[9px] uppercase tracking-[0.25em] font-semibold text-brand-text/75">Admin Password</label>
-                <input
-                  type="password"
-                  required
-                  value={authPassword}
-                  onChange={(e) => setAuthPassword(e.target.value)}
-                  placeholder="Password"
-                  className="px-4 py-3 bg-brand-sage-light/25 border border-brand-sage-light/30 focus:border-brand-sage focus:outline-none rounded-xl text-xs md:text-sm text-brand-text"
-                />
-              </div>
-            </div>
-
-            {authError && (
-              <div className="p-3.5 bg-rose-500/10 border border-rose-500/20 text-rose-300 text-xs rounded-xl leading-normal text-left font-normal animate-shake">
-                <span className="font-bold block mb-0.5">Authorization Error</span>
-                {authError}
-              </div>
-            )}
-
-            <button
-              type="submit"
-              className="w-full mt-2 py-4 bg-brand-sage hover:bg-brand-sage-hover text-[#111112] text-xs font-bold uppercase tracking-[0.2em] transition-colors duration-300 rounded-xl cursor-pointer"
-            >
-              Verify Credentials
-            </button>
-          </form>
-        </div>
-      )}
-
       {/* 10. Collapsible Admin Panel Modal */}
-      {isAdminOpen && isLoggedIn && editForm && (
+      {isAdminOpen && editForm && (
         <div className="fixed inset-0 bg-black/70 backdrop-blur-md z-50 flex items-center justify-center p-4">
           <div className="bg-[#111112] border border-brand-sage-light/30 rounded-3xl max-w-2xl w-full h-[85vh] flex flex-col relative overflow-hidden shadow-2xl">
             
@@ -1135,28 +1030,15 @@ export default function Home() {
                 <span className="text-[9px] uppercase tracking-[0.3em] text-brand-sage font-bold">Sanctuary Database</span>
                 <h4 className="text-xl font-serif text-brand-text mt-0.5 tracking-wider">Control Center Console</h4>
               </div>
-              <div className="flex items-center gap-4">
-                <button
-                  type="button"
-                  onClick={() => {
-                    sessionStorage.removeItem("admin_logged_in");
-                    setIsLoggedIn(false);
-                    setIsAdminOpen(false);
-                  }}
-                  className="text-[10px] font-bold text-rose-400 hover:text-rose-600 uppercase cursor-pointer border border-rose-500/25 px-3.5 py-1 rounded-full transition-colors"
-                >
-                  Log Out
-                </button>
-                <button
-                  onClick={() => {
-                    setIsAdminOpen(false);
-                    setSaveStatus({ type: null, msg: "" });
-                  }}
-                  className="text-brand-text/50 hover:text-brand-text transition-colors text-lg cursor-pointer"
-                >
-                  ✕
-                </button>
-              </div>
+              <button
+                onClick={() => {
+                  setIsAdminOpen(false);
+                  setSaveStatus({ type: null, msg: "" });
+                }}
+                className="text-brand-text/50 hover:text-brand-text transition-colors text-lg cursor-pointer"
+              >
+                ✕
+              </button>
             </div>
 
             {/* Inner Dashboard Navigation tabs */}
