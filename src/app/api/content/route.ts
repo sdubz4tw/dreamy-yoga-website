@@ -1,6 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import { put, list } from "@vercel/blob";
 import { YogaContent } from "@/types";
+import fs from "fs";
+import path from "path";
+
+const isLocal = process.env.NODE_ENV === "development" || !process.env.VERCEL;
+const LOCAL_DATA_DIR = path.join(process.cwd(), "public/data");
+const LOCAL_JSON_PATH = path.join(LOCAL_DATA_DIR, "homepage.json");
+const LOCAL_UPLOAD_DIR = path.join(process.cwd(), "public/uploads");
 
 const DEFAULT_CONTENT: YogaContent = {
   heroTitle: "Returning to the wisdom of the body.",
@@ -9,6 +16,8 @@ const DEFAULT_CONTENT: YogaContent = {
   services: [],
   heroImageUrl: "",
   aboutImageUrl: "",
+  authorName: "Elena",
+  authorBio: "Somatic educator, skeleto-tissue alignment specialist, and restorative Yin facilitator with 10+ years holding alignment sanctuaries.",
   offerings: [
     {
       id: "private",
@@ -16,6 +25,7 @@ const DEFAULT_CONTENT: YogaContent = {
       price: 120,
       description: "Bespoke posture assessment, custom somatic adjustives, and individualized breath guidance. These private sessions are customized dynamically around your body's structural history, athletic goals, and specific nervous system needs.",
       image: "",
+      isHourly: true,
     },
     {
       id: "group",
@@ -23,6 +33,7 @@ const DEFAULT_CONTENT: YogaContent = {
       price: 35,
       description: "Shared vinyasa patterns, slow-flowing transitions, and community yin gatherings. Practice inside an airy, light-filled environment alongside a supportive, collective community seeking physical strength, structural ease, and daily grounding.",
       image: "",
+      isHourly: false,
     },
   ],
   portfolio: [
@@ -72,41 +83,55 @@ const DEFAULT_CONTENT: YogaContent = {
       category: "Philosophy",
       readTime: "5 min read",
       likes: 12,
+      status: "published",
+      tags: ["Philosophy", "Restorative"],
+      isFeatured: true,
     },
   ],
 };
 
+function ensureLocalDirsExist() {
+  if (isLocal) {
+    if (!fs.existsSync(LOCAL_DATA_DIR)) {
+      fs.mkdirSync(LOCAL_DATA_DIR, { recursive: true });
+    }
+    if (!fs.existsSync(LOCAL_UPLOAD_DIR)) {
+      fs.mkdirSync(LOCAL_UPLOAD_DIR, { recursive: true });
+    }
+  }
+}
+
 export async function GET() {
   try {
-    const { blobs } = await list();
-    const contentBlob = blobs.find(
-      (b) => b.pathname === "yoga-content.json" || b.pathname.endsWith("/yoga-content.json")
-    );
-
-    if (contentBlob) {
-      const response = await fetch(contentBlob.url);
-      if (response.ok) {
-        const data = (await response.json()) as YogaContent;
-        
-        // Dynamic schema patching: ensure new parameters exist in fetched JSON configurations
-        if (!data.offerings) data.offerings = DEFAULT_CONTENT.offerings;
-        if (!data.portfolio) data.portfolio = DEFAULT_CONTENT.portfolio;
-        if (!data.testimonials) data.testimonials = DEFAULT_CONTENT.testimonials;
-        if (!data.blogPosts) data.blogPosts = DEFAULT_CONTENT.blogPosts;
-
-        // Apply metadata defaults to blog posts
-        data.blogPosts = data.blogPosts.map((post) => ({
-          ...post,
-          category: post.category || "Philosophy",
-          readTime: post.readTime || "5 min read",
-          likes: typeof post.likes === "number" ? post.likes : 0,
-        }));
-
+    if (isLocal) {
+      ensureLocalDirsExist();
+      if (fs.existsSync(LOCAL_JSON_PATH)) {
+        const fileContent = fs.readFileSync(LOCAL_JSON_PATH, "utf-8");
+        const data = JSON.parse(fileContent) as YogaContent;
+        patchContentDataDefaults(data);
         return NextResponse.json(data);
+      } else {
+        // Create baseline file
+        fs.writeFileSync(LOCAL_JSON_PATH, JSON.stringify(DEFAULT_CONTENT, null, 2), "utf-8");
+        return NextResponse.json(DEFAULT_CONTENT);
+      }
+    } else {
+      const { blobs } = await list();
+      const contentBlob = blobs.find(
+        (b) => b.pathname === "yoga-content.json" || b.pathname.endsWith("/yoga-content.json")
+      );
+
+      if (contentBlob) {
+        const response = await fetch(contentBlob.url);
+        if (response.ok) {
+          const data = (await response.json()) as YogaContent;
+          patchContentDataDefaults(data);
+          return NextResponse.json(data);
+        }
       }
     }
   } catch (error) {
-    console.warn("Vercel Blob GET failed. Returning fallback baseline content.", error);
+    console.warn("GET content fetch failed. Returning baseline content fallback.", error);
   }
 
   return NextResponse.json(DEFAULT_CONTENT);
@@ -115,77 +140,115 @@ export async function GET() {
 export async function POST(request: NextRequest) {
   try {
     const formData = await request.formData();
-    
     const contentStr = formData.get("content") as string;
+    
     if (!contentStr) {
       return NextResponse.json({ error: "Missing content payload." }, { status: 400 });
     }
+    
     const contentData = JSON.parse(contentStr) as YogaContent;
-
     const getExtension = (filename: string) => {
       const parts = filename.split(".");
       return parts.length > 1 ? `.${parts.pop()}` : "";
     };
 
-    // Scan files dynamically
+    ensureLocalDirsExist();
+
+    // Process image uploads
     for (const [key, value] of formData.entries()) {
       if (value instanceof File && value.size > 0) {
         const ext = getExtension(value.name);
+        const filename = `${key.replace(/[_\s]/g, "-")}-${Date.now()}${ext}`;
 
+        let imageUrl = "";
+
+        if (isLocal) {
+          // Save to local directory public/uploads
+          const filePath = path.join(LOCAL_UPLOAD_DIR, filename);
+          const buffer = Buffer.from(await value.arrayBuffer());
+          fs.writeFileSync(filePath, buffer);
+          imageUrl = `/uploads/${filename}`;
+        } else {
+          // Stream upload to Vercel Blob
+          const blob = await put(`uploads/${filename}`, value, { access: "public" });
+          imageUrl = blob.url;
+        }
+
+        // Map uploaded image URLs back to our data structures
         if (key === "heroImage") {
-          const blob = await put(`uploads/hero-bg-${Date.now()}${ext}`, value, { access: "public" });
-          contentData.heroImageUrl = blob.url;
+          contentData.heroImageUrl = imageUrl;
         } else if (key === "aboutImage") {
-          const blob = await put(`uploads/about-profile-${Date.now()}${ext}`, value, { access: "public" });
-          contentData.aboutImageUrl = blob.url;
+          contentData.aboutImageUrl = imageUrl;
         } else if (key.startsWith("offeringImage_")) {
           const id = key.substring("offeringImage_".length);
-          const blob = await put(`uploads/offering-${id}-${Date.now()}${ext}`, value, { access: "public" });
-          
           const offering = contentData.offerings.find((o) => o.id === id);
-          if (offering) offering.image = blob.url;
+          if (offering) offering.image = imageUrl;
         } else if (key.startsWith("portfolioImage_")) {
           const id = key.substring("portfolioImage_".length);
-          const blob = await put(`uploads/portfolio-${id}-${Date.now()}${ext}`, value, { access: "public" });
-          
           const portItem = contentData.portfolio.find((p) => p.id === id);
-          if (portItem) portItem.image = blob.url;
+          if (portItem) portItem.image = imageUrl;
         } else if (key.startsWith("blogImage_")) {
           const id = key.substring("blogImage_".length);
-          const blob = await put(`uploads/blog-${id}-${Date.now()}${ext}`, value, { access: "public" });
-          
           const blogPost = contentData.blogPosts.find((b) => b.id === id);
-          if (blogPost) blogPost.featuredImage = blob.url;
+          if (blogPost) blogPost.featuredImage = imageUrl;
         }
       }
     }
 
-    // Force default properties on all blogs before save
-    contentData.blogPosts = contentData.blogPosts.map((post) => ({
-      ...post,
-      category: post.category || "Philosophy",
-      readTime: post.readTime || "5 min read",
-      likes: typeof post.likes === "number" ? post.likes : 0,
-    }));
+    patchContentDataDefaults(contentData);
 
-    const contentBlob = await put("yoga-content.json", JSON.stringify(contentData), {
-      access: "public",
-      allowOverwrite: true,
-    });
+    let savedUrl = "";
+
+    if (isLocal) {
+      fs.writeFileSync(LOCAL_JSON_PATH, JSON.stringify(contentData, null, 2), "utf-8");
+      savedUrl = "/data/homepage.json";
+    } else {
+      const contentBlob = await put("yoga-content.json", JSON.stringify(contentData), {
+        access: "public",
+        allowOverwrite: true,
+      });
+      savedUrl = contentBlob.url;
+    }
 
     return NextResponse.json({
       success: true,
-      url: contentBlob.url,
-      content: contentData
+      url: savedUrl,
+      content: contentData,
     });
   } catch (error: any) {
-    console.error("Vercel Blob POST failed:", error);
+    console.error("Content POST sync failed:", error);
     return NextResponse.json(
       {
-        error: "Failed to write data or images to Vercel Blob.",
-        details: error?.message || "Missing BLOB_READ_WRITE_TOKEN or payload parsing error.",
+        error: "Failed to write data or save uploaded images.",
+        details: error?.message || String(error),
       },
-      { status: 500 }
+      { status: 550 }
     );
   }
+}
+
+// Ensure schema fields default correctly for old JSON configurations
+function patchContentDataDefaults(data: YogaContent) {
+  if (!data.offerings) data.offerings = DEFAULT_CONTENT.offerings;
+  if (!data.portfolio) data.portfolio = DEFAULT_CONTENT.portfolio;
+  if (!data.testimonials) data.testimonials = DEFAULT_CONTENT.testimonials;
+  if (!data.blogPosts) data.blogPosts = DEFAULT_CONTENT.blogPosts;
+  
+  if (!data.authorName) data.authorName = DEFAULT_CONTENT.authorName;
+  if (!data.authorBio) data.authorBio = DEFAULT_CONTENT.authorBio;
+
+  data.offerings = data.offerings.map((offering) => ({
+    ...offering,
+    isHourly: typeof offering.isHourly === "boolean" ? offering.isHourly : false,
+  }));
+
+  data.blogPosts = data.blogPosts.map((post) => ({
+    ...post,
+    category: post.category || "Philosophy",
+    readTime: post.readTime || "5 min read",
+    likes: typeof post.likes === "number" ? post.likes : 0,
+    status: post.status || "published",
+    tags: Array.isArray(post.tags) ? post.tags : (post.category ? [post.category] : []),
+    isFeatured: typeof post.isFeatured === "boolean" ? post.isFeatured : false,
+  }));
 }

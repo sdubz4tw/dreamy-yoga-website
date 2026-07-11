@@ -58,6 +58,9 @@ export default function AdminPage() {
   const [newBlogContent, setNewBlogContent] = useState("");
   const [newBlogCategory, setNewBlogCategory] = useState("Philosophy");
   const [newBlogReadTime, setNewBlogReadTime] = useState("5 min read");
+  const [newBlogStatus, setNewBlogStatus] = useState<"draft" | "published">("published");
+  const [newBlogTags, setNewBlogTags] = useState("");
+  const [newBlogIsFeatured, setNewBlogIsFeatured] = useState(false);
   const [newBlogFile, setNewBlogFile] = useState<File | null>(null);
   const [newBlogPreview, setNewBlogPreview] = useState("");
 
@@ -171,6 +174,7 @@ export default function AdminPage() {
       price: 50,
       description: "Class description...",
       image: "",
+      isHourly: false,
     };
     setEditForm({ ...editForm, offerings: [...editForm.offerings, newOffering] });
   };
@@ -261,6 +265,11 @@ export default function AdminPage() {
       year: "numeric",
     });
 
+    const tagsArray = newBlogTags
+      .split(",")
+      .map((t) => t.trim())
+      .filter(Boolean);
+
     const newPost: BlogPostItem = {
       id: newId,
       title: newBlogTitle,
@@ -271,6 +280,9 @@ export default function AdminPage() {
       category: newBlogCategory || "Philosophy",
       readTime: newBlogReadTime || "5 min read",
       likes: 0,
+      status: newBlogStatus,
+      tags: tagsArray.length > 0 ? tagsArray : [newBlogCategory || "Philosophy"],
+      isFeatured: newBlogIsFeatured,
     };
 
     if (newBlogFile) {
@@ -284,6 +296,9 @@ export default function AdminPage() {
     setNewBlogContent("");
     setNewBlogCategory("Philosophy");
     setNewBlogReadTime("5 min read");
+    setNewBlogStatus("published");
+    setNewBlogTags("");
+    setNewBlogIsFeatured(false);
     setNewBlogFile(null);
     setNewBlogPreview("");
   };
@@ -367,15 +382,18 @@ export default function AdminPage() {
         setBlogFiles({});
         setBlogPreviews({});
       } else {
+        // Show exact error message to user
         setSaveStatus({
           type: "error",
-          msg: result.error || "Failed to commit database modifications.",
+          msg: `Error: ${result.error || "Failed to commit database modifications."}${
+            result.details ? ` (${result.details})` : ""
+          }`,
         });
       }
-    } catch (err) {
+    } catch (err: any) {
       setSaveStatus({
         type: "error",
-        msg: "Failed to connect to dynamic serverless endpoint.",
+        msg: `Error: Failed to connect to dynamic serverless endpoint. Details: ${err?.message || String(err)}`,
       });
     } finally {
       setIsSaving(false);
@@ -436,7 +454,7 @@ export default function AdminPage() {
           </div>
 
           {authError && (
-            <div className="p-3 bg-rose-50 border-l-4 border-rose-500 text-rose-800 text-xs rounded font-normal">
+            <div className="p-3 bg-rose-55 border-l-4 border-rose-500 text-rose-800 text-xs rounded font-normal">
               <span className="font-bold block mb-0.5">Error</span>
               {authError}
             </div>
@@ -476,7 +494,7 @@ export default function AdminPage() {
         <nav className="flex-1 py-3 flex flex-col">
           {[
             { id: "overview", label: "Dashboard" },
-            { id: "heroAbout", label: "Hero & About" },
+            { id: "heroAbout", label: "Hero, About & Author" },
             { id: "offerings", label: "Yoga Classes" },
             { id: "portfolio", label: "Portfolio Gallery" },
             { id: "testimonials", label: "Testimonials" },
@@ -521,7 +539,7 @@ export default function AdminPage() {
         <header className="px-6 py-4 bg-white border-b border-[#dcdcde] flex justify-between items-center shrink-0">
           <h2 className="text-xl font-sans text-[#1d2327] font-semibold tracking-tight">
             {activeTab === "overview" && "Dashboard Overview"}
-            {activeTab === "heroAbout" && "Hero & About Settings"}
+            {activeTab === "heroAbout" && "Hero, About & Author Settings"}
             {activeTab === "offerings" && "Manage Yoga Classes"}
             {activeTab === "portfolio" && "Manage Portfolio Gallery"}
             {activeTab === "testimonials" && "Manage Testimonials"}
@@ -578,13 +596,13 @@ export default function AdminPage() {
               <div className="bg-white border border-[#dcdcde] p-6 rounded shadow-xs col-span-full mt-2">
                 <h4 className="text-base font-bold text-[#1d2327] mb-1">Welcome to Elena Yoga CMS</h4>
                 <p className="text-xs text-[#2c3338] leading-relaxed max-w-3xl">
-                  Use the left vertical navigation menu options to switch dashboard panels. You can upload banner photographs, edit somatic classes and rates, publish blog posts, and preview modifications live. Clicking "Save" instantly commits all changes to Vercel Blob storage.
+                  Use the left vertical navigation menu options to switch dashboard panels. You can upload banner photographs, edit somatic classes and rates, publish blog posts, and preview modifications live. Clicking "Save" instantly commits all changes to local storage or Vercel Blob.
                 </p>
               </div>
             </div>
           )}
 
-          {/* TAB 2: HERO & ABOUT PANEL */}
+          {/* TAB 2: HERO & ABOUT & AUTHOR PANEL */}
           {activeTab === "heroAbout" && (
             <div className="flex flex-col gap-6">
               {/* Hero Settings Card */}
@@ -663,6 +681,37 @@ export default function AdminPage() {
                   </div>
                 </div>
               </div>
+
+              {/* Global Author Settings Card */}
+              <div className="bg-white border border-[#dcdcde] p-6 rounded shadow-xs flex flex-col gap-4">
+                <h3 className="text-base font-bold text-[#1d2327] border-b border-[#f0f0f1] pb-3.5">Global Blog Author Profile</h3>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="flex flex-col gap-1.5">
+                    <label className="text-xs font-bold text-[#1d2327]">Author Display Name</label>
+                    <input
+                      type="text"
+                      value={currentContent.authorName || ""}
+                      onChange={(e) => {
+                        if (!editForm) return;
+                        setEditForm({ ...editForm, authorName: e.target.value });
+                      }}
+                      className="px-3.5 py-2.5 bg-white border border-[#8c8f94] focus:border-[#2271b1] focus:outline-none rounded text-xs md:text-sm text-[#2c3338]"
+                    />
+                  </div>
+                  <div className="md:col-span-2 flex flex-col gap-1.5">
+                    <label className="text-xs font-bold text-[#1d2327]">Author Biography Bio</label>
+                    <input
+                      type="text"
+                      value={currentContent.authorBio || ""}
+                      onChange={(e) => {
+                        if (!editForm) return;
+                        setEditForm({ ...editForm, authorBio: e.target.value });
+                      }}
+                      className="px-3.5 py-2.5 bg-white border border-[#8c8f94] focus:border-[#2271b1] focus:outline-none rounded text-xs md:text-sm text-[#2c3338]"
+                    />
+                  </div>
+                </div>
+              </div>
             </div>
           )}
 
@@ -705,7 +754,7 @@ export default function AdminPage() {
                           />
                         </div>
                         <div className="flex flex-col gap-1.5">
-                          <span className="text-xs font-bold text-[#1d2327]">Hourly Rate ($)</span>
+                          <span className="text-xs font-bold text-[#1d2327]">Hourly Rate / Fee ($)</span>
                           <input
                             type="number"
                             required
@@ -725,6 +774,25 @@ export default function AdminPage() {
                           onChange={(e) => handleOfferingChange(index, "description", e.target.value)}
                           className="px-3.5 py-2.5 bg-white border border-[#8c8f94] focus:border-[#2271b1] focus:outline-none rounded text-xs text-[#2c3338] resize-none"
                         />
+                      </div>
+
+                      {/* Pricing Type toggle */}
+                      <div className="flex items-center gap-2 pt-1">
+                        <input
+                          type="checkbox"
+                          id={`isHourly_${offering.id}`}
+                          checked={offering.isHourly || false}
+                          onChange={(e) => {
+                            if (!editForm) return;
+                            const updated = [...editForm.offerings];
+                            updated[index] = { ...updated[index], isHourly: e.target.checked };
+                            setEditForm({ ...editForm, offerings: updated });
+                          }}
+                          className="w-4 h-4 text-[#2271b1] border-[#8c8f94] rounded focus:ring-[#2271b1] cursor-pointer"
+                        />
+                        <label htmlFor={`isHourly_${offering.id}`} className="text-xs font-bold text-[#1d2327] cursor-pointer select-none">
+                          Hourly Rate pricing (e.g. show as "$120 / hr")
+                        </label>
                       </div>
 
                       <div className="flex flex-col gap-2 pt-3 border-t border-[#f0f0f1]">
@@ -978,6 +1046,45 @@ export default function AdminPage() {
                   </div>
                 </div>
 
+                {/* Status, Tags, and Pin options */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-2 border-t border-[#f0f0f1]">
+                  <div className="flex flex-col gap-1.5">
+                    <label className="text-xs font-bold text-[#1d2327]">Post Status</label>
+                    <select
+                      value={newBlogStatus}
+                      onChange={(e) => setNewBlogStatus(e.target.value as any)}
+                      className="px-3.5 py-2.5 bg-white border border-[#8c8f94] focus:border-[#2271b1] focus:outline-none rounded text-xs text-[#2c3338] cursor-pointer"
+                    >
+                      <option value="published">Published</option>
+                      <option value="draft">Draft</option>
+                    </select>
+                  </div>
+                  <div className="flex flex-col gap-1.5">
+                    <label className="text-xs font-bold text-[#1d2327]">Categories/Tags (comma separated)</label>
+                    <input
+                      type="text"
+                      value={newBlogTags}
+                      onChange={(e) => setNewBlogTags(e.target.value)}
+                      placeholder="e.g. Vinyasa, Meditation"
+                      className="px-3.5 py-2.5 bg-white border border-[#8c8f94] focus:border-[#2271b1] focus:outline-none rounded text-xs text-[#2c3338]"
+                    />
+                  </div>
+                  <div className="flex flex-col gap-1.5 justify-center pt-4">
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="checkbox"
+                        id="newBlogIsFeatured"
+                        checked={newBlogIsFeatured}
+                        onChange={(e) => setNewBlogIsFeatured(e.target.checked)}
+                        className="w-4 h-4 text-[#2271b1] border-[#8c8f94] rounded focus:ring-[#2271b1] cursor-pointer"
+                      />
+                      <label htmlFor="newBlogIsFeatured" className="text-xs font-bold text-[#1d2327] cursor-pointer select-none">
+                        Pin as Featured Post
+                      </label>
+                    </div>
+                  </div>
+                </div>
+
                 <div className="flex flex-col gap-1.5">
                   <label className="text-xs font-bold text-[#1d2327]">Excerpt Outline Summary</label>
                   <input
@@ -1027,34 +1134,105 @@ export default function AdminPage() {
                 </button>
               </div>
 
-              {/* Published Grid */}
+              {/* Published List with Quick inline edits */}
               <div className="flex flex-col gap-4">
-                <span className="text-xs font-bold text-[#1d2327] uppercase tracking-wider">Published Articles</span>
+                <span className="text-xs font-bold text-[#1d2327] uppercase tracking-wider">Published Articles & Drafts</span>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {currentContent.blogPosts.map((post) => {
                     const localPreview = blogPreviews[post.id];
                     return (
-                      <div key={post.id} className="bg-white border border-[#dcdcde] rounded p-4 flex items-center justify-between gap-4 shadow-xs">
-                        <div className="flex items-center gap-3.5 min-w-0">
-                          <div className="w-14 h-14 rounded border border-[#dcdcde] overflow-hidden bg-[#f1f1f1] shrink-0">
-                            {(localPreview || post.featuredImage) ? (
-                              <img src={localPreview || post.featuredImage} alt="Thumbnail preview" className="w-full h-full object-cover" />
-                            ) : (
-                              <div className="w-full h-full flex items-center justify-center text-[10px] opacity-40">Cover</div>
-                            )}
+                      <div key={post.id} className="bg-white border border-[#dcdcde] rounded p-5 flex flex-col gap-3 shadow-xs">
+                        <div className="flex justify-between items-start gap-4">
+                          <div className="flex items-center gap-3.5 min-w-0">
+                            <div className="w-14 h-14 rounded border border-[#dcdcde] overflow-hidden bg-[#f1f1f1] shrink-0">
+                              {(localPreview || post.featuredImage) ? (
+                                  <img src={localPreview || post.featuredImage} alt="Thumbnail preview" className="w-full h-full object-cover" />
+                                ) : (
+                                  <div className="w-full h-full flex items-center justify-center text-[10px] opacity-40">Cover</div>
+                                )}
+                            </div>
+                            <div className="min-w-0">
+                              <h5 className="text-xs font-bold text-[#1d2327] truncate leading-tight">
+                                {post.title} {post.isFeatured && <span className="text-[9px] bg-amber-100 text-amber-800 px-1.5 py-0.5 rounded font-mono ml-1 font-bold">Featured</span>}
+                              </h5>
+                              <div className="flex items-center gap-2 mt-1">
+                                <span className="text-[10px] text-[#2271b1] font-semibold">{post.date}</span>
+                                <span className={`text-[9px] px-1.5 py-0.5 rounded font-bold uppercase font-mono ${
+                                  post.status === "draft" ? "bg-gray-100 text-gray-700" : "bg-emerald-50 text-emerald-700"
+                                }`}>
+                                  {post.status || "published"}
+                                </span>
+                              </div>
+                            </div>
                           </div>
-                          <div className="min-w-0">
-                            <h5 className="text-xs font-bold text-[#1d2327] truncate leading-tight">{post.title}</h5>
-                            <span className="text-[10px] text-[#2271b1] block mt-1">{post.date}</span>
+                          <button
+                            type="button"
+                            onClick={() => handleDeleteBlogPost(post.id)}
+                            className="text-xs font-bold text-rose-600 hover:text-rose-800 uppercase shrink-0 cursor-pointer animate-fade-in"
+                          >
+                            Delete
+                          </button>
+                        </div>
+
+                        {/* Inline editor panel */}
+                        <div className="grid grid-cols-2 gap-3 border-t border-[#f0f0f1] pt-3 text-left">
+                          <div className="flex flex-col gap-1">
+                            <label className="text-[9px] font-bold text-[#1d2327] uppercase">Post Status</label>
+                            <select
+                              value={post.status || "published"}
+                              onChange={(e) => {
+                                if (!editForm) return;
+                                const updated = editForm.blogPosts.map((b) =>
+                                  b.id === post.id ? { ...b, status: e.target.value as any } : b
+                                );
+                                setEditForm({ ...editForm, blogPosts: updated });
+                              }}
+                              className="px-2 py-1 bg-white border border-[#8c8f94] rounded text-[11px] text-[#2c3338]"
+                            >
+                              <option value="published">Published</option>
+                              <option value="draft">Draft</option>
+                            </select>
+                          </div>
+
+                          <div className="flex flex-col gap-1 justify-center pt-2">
+                            <div className="flex items-center gap-1.5">
+                              <input
+                                type="checkbox"
+                                id={`isFeatured_${post.id}`}
+                                checked={post.isFeatured || false}
+                                onChange={(e) => {
+                                  if (!editForm) return;
+                                  const updated = editForm.blogPosts.map((b) =>
+                                    b.id === post.id ? { ...b, isFeatured: e.target.checked } : b
+                                  );
+                                  setEditForm({ ...editForm, blogPosts: updated });
+                                }}
+                                className="w-3.5 h-3.5 text-[#2271b1] border-[#8c8f94] rounded focus:ring-[#2271b1] cursor-pointer"
+                              />
+                              <label htmlFor={`isFeatured_${post.id}`} className="text-[11px] font-bold text-[#1d2327] cursor-pointer select-none">
+                                Featured Pin
+                              </label>
+                            </div>
+                          </div>
+
+                          <div className="col-span-2 flex flex-col gap-1">
+                            <label className="text-[9px] font-bold text-[#1d2327] uppercase">Tags (comma separated)</label>
+                            <input
+                              type="text"
+                              value={Array.isArray(post.tags) ? post.tags.join(", ") : ""}
+                              onChange={(e) => {
+                                if (!editForm) return;
+                                const updated = editForm.blogPosts.map((b) =>
+                                  b.id === post.id
+                                    ? { ...b, tags: e.target.value.split(",").map((t) => t.trim()).filter(Boolean) }
+                                    : b
+                                );
+                                setEditForm({ ...editForm, blogPosts: updated });
+                              }}
+                              className="px-2 py-1 bg-white border border-[#8c8f94] rounded text-[11px] text-[#2c3338]"
+                            />
                           </div>
                         </div>
-                        <button
-                          type="button"
-                          onClick={() => handleDeleteBlogPost(post.id)}
-                          className="text-xs font-bold text-rose-600 hover:text-rose-800 uppercase shrink-0 cursor-pointer"
-                        >
-                          Delete
-                        </button>
                       </div>
                     );
                   })}

@@ -11,6 +11,7 @@ export interface OfferingItem {
   price: number;
   description: string;
   image: string;
+  isHourly?: boolean; // Toggle for hourly rate
 }
 
 export interface PortfolioItem {
@@ -33,11 +34,14 @@ export interface BlogPostItem {
   title: string;
   excerpt: string;
   content: string; // Main post body
-  featuredImage: string; // Vercel Blob URL or empty
+  featuredImage: string; // Vercel Blob URL or local path
   date: string;
-  category?: string;  // NEW
-  readTime?: string;  // NEW
-  likes?: number;     // NEW
+  category?: string;
+  readTime?: string;
+  likes?: number;
+  status?: "draft" | "published"; // WordPress Post Status
+  tags?: string[]; // WordPress Categories/Tags
+  isFeatured?: boolean; // Featured toggle to pin posts
 }
 
 export interface YogaContent {
@@ -51,4 +55,6 @@ export interface YogaContent {
   portfolio: PortfolioItem[];
   testimonials: TestimonialItem[];
   blogPosts: BlogPostItem[];
+  authorName?: string; // WordPress Global Author name
+  authorBio?: string; // WordPress Global Author bio
 }

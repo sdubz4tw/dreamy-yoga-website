@@ -126,6 +126,18 @@ export default function Home() {
     return activePortfolioFilter === "All" || item.category === activePortfolioFilter;
   });
 
+  // Filter out drafts from public view
+  const publishedPosts = currentContent.blogPosts.filter((post) => post.status !== "draft");
+
+  // Sort featured posts to the top
+  const sortedPosts = [...publishedPosts].sort((a, b) => {
+    const aFeatured = !!a.isFeatured;
+    const bFeatured = !!b.isFeatured;
+    if (aFeatured && !bFeatured) return -1;
+    if (!aFeatured && bFeatured) return 1;
+    return 0;
+  });
+
   return (
     <div className="flex-1 flex flex-col font-sans bg-transparent">
       {/* 1. Navigation Bar */}
@@ -306,8 +318,9 @@ export default function Home() {
                 {!offering.image && (
                   <div className="absolute inset-0 bg-gradient-to-tr from-brand-sage/5 to-brand-sage-light/20" />
                 )}
+                {/* Dynamically format flat/hourly rates */}
                 <div className="absolute top-4 right-4 bg-[#0B0807] border border-brand-sage-light/30 px-4 py-2 rounded-full text-xs font-bold text-brand-sage shadow-sm font-mono tracking-wider">
-                  ${offering.price} / hr
+                  ${offering.price} {offering.isHourly ? "/ hr" : "flat"}
                 </div>
               </div>
 
@@ -482,12 +495,12 @@ export default function Home() {
 
         {/* Spacious Rounded card panel wrapping the blog layout */}
         <div className="bg-[#110D0B]/85 border border-[#26201C] p-6 md:p-12 lg:p-16 rounded-3xl flex flex-col gap-10">
-          {currentContent.blogPosts.length === 0 ? (
+          {sortedPosts.length === 0 ? (
             <div className="py-20 text-center text-[#8E847C] italic text-sm">
               No journal articles published yet.
             </div>
           ) : (
-            currentContent.blogPosts.map((post) => {
+            sortedPosts.map((post) => {
               const activeLikes = postLikes[post.id] !== undefined ? postLikes[post.id] : (post.likes || 0);
               const hasLiked = !!likedPosts[post.id];
 
@@ -495,7 +508,9 @@ export default function Home() {
                 /* Full-width Stacked Row card */
                 <div
                   key={post.id}
-                  className="bg-[#161210] border border-[#26201C] p-8 md:p-10 rounded-3xl flex flex-col lg:flex-row gap-8 lg:gap-12 transition-all duration-350 hover:border-brand-sage/40 group shadow-sm items-stretch relative"
+                  className={`bg-[#161210] border p-8 md:p-10 rounded-3xl flex flex-col lg:flex-row gap-8 lg:gap-12 transition-all duration-350 hover:border-brand-sage/40 group shadow-sm items-stretch relative ${
+                    post.isFeatured ? "border-brand-sage/40 ring-1 ring-brand-sage/20" : "border-[#26201C]"
+                  }`}
                 >
                   {/* Left Column: Featured Cover Photo */}
                   <div
@@ -514,13 +529,19 @@ export default function Home() {
                   {/* Right Column: Article Details */}
                   <div className="flex-1 flex flex-col justify-between gap-6 relative text-left">
                     <div className="flex flex-col gap-3.5">
-                      {/* Metadata row (Taupe Color #8E847C) */}
-                      <div className="flex items-center gap-2.5 text-[9px] uppercase tracking-[0.25em] text-[#8E847C] font-semibold font-mono">
+                      {/* Metadata row (Taupe Color #8E847C with Featured tags) */}
+                      <div className="flex flex-wrap items-center gap-2.5 text-[9px] uppercase tracking-[0.25em] text-[#8E847C] font-semibold font-mono">
                         <span>{post.category || "Philosophy"}</span>
                         <span>•</span>
                         <span>{post.date}</span>
                         <span>•</span>
                         <span>{post.readTime || "5 min read"}</span>
+                        {post.isFeatured && (
+                          <>
+                            <span>•</span>
+                            <span className="text-brand-sage font-bold">Featured Pin</span>
+                          </>
+                        )}
                       </div>
 
                       {/* Post Title (Striking Serif Off-White #F3EFEA) */}
@@ -531,6 +552,17 @@ export default function Home() {
                       <p className="text-xs md:text-sm text-brand-text/70 leading-relaxed font-normal tracking-wide">
                         {post.excerpt}
                       </p>
+
+                      {/* Tags listing */}
+                      {post.tags && post.tags.length > 0 && (
+                        <div className="flex flex-wrap gap-2 mt-1">
+                          {post.tags.map((tag, i) => (
+                            <span key={i} className="text-[9px] bg-brand-sage-light/10 border border-brand-sage-light/20 text-[#8E847C] px-2.5 py-0.5 rounded-full font-mono lowercase">
+                              #{tag}
+                            </span>
+                          ))}
+                        </div>
+                      )}
                     </div>
 
                     <div className="flex justify-between items-center pt-4 border-t border-[#26201C]">
@@ -638,7 +670,7 @@ export default function Home() {
               ✓
             </div>
             <h4 className="text-lg font-serif text-brand-text tracking-wide">Request Transmitted</h4>
-            <p className="text-xs text-brand-text/65 max-w-sm leading-relaxed tracking-wide">
+            <p className="text-xs text-[#E5E0D8]/70 max-w-sm leading-relaxed tracking-wide">
               Thank you, **{formData.name}**. Elena has received your request and will reach out to **{formData.email}** soon.
             </p>
             <button
@@ -668,7 +700,7 @@ export default function Home() {
         </div>
       </footer>
 
-      {/* Client Blog Post Reader Modal */}
+      {/* Client Blog Post Reader Modal (Including Author Bio Card) */}
       {activePost && (
         <div className="fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-center justify-center p-4">
           <div className="bg-[#111112] border border-brand-sage-light/35 rounded-3xl max-w-2xl w-full h-[80vh] flex flex-col relative overflow-hidden shadow-2xl">
@@ -700,6 +732,15 @@ export default function Home() {
               <div className="text-sm md:text-base text-brand-text/80 leading-relaxed font-normal whitespace-pre-line flex flex-col gap-5 tracking-wide">
                 {activePost.content}
               </div>
+
+              {/* Author Bio Card */}
+              {(currentContent.authorName || currentContent.authorBio) && (
+                <div className="mt-12 p-6 rounded-2xl bg-brand-sage-light/10 border border-brand-sage-light/20 flex flex-col gap-2">
+                  <span className="text-[9px] uppercase tracking-widest text-brand-sage font-bold font-mono">Written by</span>
+                  <span className="text-sm font-serif font-bold text-[#F3EFEA]">{currentContent.authorName || "Elena"}</span>
+                  <p className="text-xs text-brand-text/70 leading-relaxed font-normal tracking-wide">{currentContent.authorBio}</p>
+                </div>
+              )}
 
               <div className="flex items-center justify-center gap-3 my-12 text-brand-sage/35">
                 <div className="w-10 h-px bg-brand-sage-light/20" />
