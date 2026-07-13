@@ -466,6 +466,43 @@ export default function AdminPage() {
     URL.revokeObjectURL(url);
   };
 
+  // Export live content data to JSON for portability
+  const handleExportAllContent = async () => {
+    try {
+      const res = await fetch("/api/content?t=" + Date.now());
+      if (!res.ok) throw new Error("Failed to retrieve live backup copy.");
+      const data = await res.json();
+      
+      const dateStr = new Date().toISOString().split("T")[0];
+      const fileName = `dreamy-yoga-site-backup-${dateStr}.json`;
+      const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+      const objectUrl = URL.createObjectURL(blob);
+      
+      const downloadAnchor = document.createElement("a");
+      downloadAnchor.href = objectUrl;
+      downloadAnchor.download = fileName;
+      document.body.appendChild(downloadAnchor);
+      downloadAnchor.click();
+      
+      document.body.removeChild(downloadAnchor);
+      URL.revokeObjectURL(objectUrl);
+
+      // Show success alert toast
+      setSaveStatus({
+        type: "success",
+        msg: "Success! Website backup downloaded successfully.",
+      });
+      setTimeout(() => {
+        setSaveStatus({ type: null, msg: "" });
+      }, 3500);
+    } catch (err: any) {
+      setSaveStatus({
+        type: "error",
+        msg: `Error: ${err.message || "Failed to download backup."}`,
+      });
+    }
+  };
+
   // Submit all edits via FormData
   const handleSaveAllChanges = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -849,6 +886,27 @@ export default function AdminPage() {
                     <span className="text-[10px] text-[#E5E0D8]/40 font-semibold uppercase tracking-wider">{stat.tag}</span>
                   </div>
                 ))}
+              </div>
+
+              {/* Data Backup & Portability Section */}
+              <div className="bg-[#161210] border border-[#8C7A6B]/20 p-6 md:p-8 rounded-3xl flex flex-col gap-5 shadow-md text-left">
+                <div>
+                  <h3 className="text-lg font-serif font-light text-[#E5E0D8] border-b border-[#8C7A6B]/20 pb-3 mb-1">Data Backup & Portability</h3>
+                  <p className="text-xs text-[#E5E0D8]/60">Download or export all website content and configurations safely.</p>
+                </div>
+
+                <div className="flex flex-col gap-2 max-w-xl text-left">
+                  <button
+                    type="button"
+                    onClick={handleExportAllContent}
+                    className="w-fit px-6 py-3 bg-[#8C7A6B] hover:bg-[#6B5D51] text-[#0B0807] text-xs font-bold uppercase rounded-full shadow-md cursor-pointer transition-colors"
+                  >
+                    Export All Website Content (JSON)
+                  </button>
+                  <p className="text-[11px] text-[#E5E0D8]/50 mt-1 leading-relaxed">
+                    This downloads a universal master copy of all your custom text, offerings, journal articles, drafts, and settings. You can use this file to fully restore your content or migrate it to another platform at any time.
+                  </p>
+                </div>
               </div>
             </div>
           )}
