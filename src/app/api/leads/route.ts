@@ -11,7 +11,7 @@ const EMAIL_LOGS_PATH = path.join(LOCAL_DATA_DIR, "email_logs.txt");
 
 export async function POST(request: NextRequest) {
   try {
-    const { name, email, message } = await request.json();
+    const { name, email, message, location } = await request.json();
 
     if (!name || !email || !message) {
       return NextResponse.json(
@@ -55,6 +55,7 @@ export async function POST(request: NextRequest) {
       name,
       email,
       message,
+      location: location || "",
       timestamp: new Date().toISOString(),
       status: "New",
     };
@@ -90,6 +91,7 @@ Timestamp: ${newLead.timestamp}
 
 Visitor Name:    ${name}
 Visitor Email:   ${email}
+Visitor Location: ${location || "Not Provided"}
 Visitor Message:
 --------------------------------------------------
 ${message}

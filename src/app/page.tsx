@@ -1,14 +1,7 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import { YogaContent, BlogPostItem } from "@/types";
-
-// Royalty-free audio preset URLs (Freesound CDN / public domain)
-const AUDIO_PRESETS: Record<string, string> = {
-  "tibetan-bowl": "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3",
-  "sacred-gong": "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3",
-  "peace-chimes": "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-9.mp3",
-};
 
 // Preset theme palettes
 const THEME_PRESETS = [
@@ -22,8 +15,6 @@ const THEME_PRESETS = [
 export default function Home() {
   const [content, setContent] = useState<YogaContent | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const audioRef = useRef<HTMLAudioElement | null>(null);
-  const audioPlayedRef = useRef(false);
 
   const [activePost, setActivePost] = useState<BlogPostItem | null>(null);
   const [likedPosts, setLikedPosts] = useState<Record<string, boolean>>({});
@@ -33,7 +24,7 @@ export default function Home() {
   const [inquirySubmitted, setInquirySubmitted] = useState(false);
   const [isInquirySaving, setIsInquirySaving] = useState(false);
   const [inquiryError, setInquiryError] = useState("");
-  const [formData, setFormData] = useState({ name: "", email: "", notes: "" });
+  const [formData, setFormData] = useState({ name: "", email: "", notes: "", location: "" });
 
   useEffect(() => {
     fetch("/api/content")
@@ -64,39 +55,6 @@ export default function Home() {
     document.body.style.backgroundColor = content.themeBackground || "#0B0807";
   }, [content]);
 
-  // Ambient audio: play on first user interaction
-  useEffect(() => {
-    if (!content?.audioEnabled || !content?.audioPreset) return;
-
-    const audioUrl = AUDIO_PRESETS[content.audioPreset];
-    if (!audioUrl) return;
-
-    const audio = new Audio(audioUrl);
-    audio.volume = 0.08;
-    audio.loop = true;
-    audioRef.current = audio;
-
-    const playOnFirstInteraction = () => {
-      if (audioPlayedRef.current) return;
-      audioPlayedRef.current = true;
-      audio.play().catch(() => {});
-      document.removeEventListener("click", playOnFirstInteraction);
-      document.removeEventListener("touchstart", playOnFirstInteraction);
-      document.removeEventListener("keydown", playOnFirstInteraction);
-    };
-
-    document.addEventListener("click", playOnFirstInteraction);
-    document.addEventListener("touchstart", playOnFirstInteraction);
-    document.addEventListener("keydown", playOnFirstInteraction);
-
-    return () => {
-      document.removeEventListener("click", playOnFirstInteraction);
-      document.removeEventListener("touchstart", playOnFirstInteraction);
-      document.removeEventListener("keydown", playOnFirstInteraction);
-      audio.pause();
-    };
-  }, [content?.audioEnabled, content?.audioPreset]);
-
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
@@ -111,7 +69,7 @@ export default function Home() {
       const response = await fetch("/api/leads", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: formData.name, email: formData.email, message: formData.notes }),
+        body: JSON.stringify({ name: formData.name, email: formData.email, message: formData.notes, location: formData.location }),
       });
       const result = await response.json();
       if (response.ok) {
@@ -127,7 +85,7 @@ export default function Home() {
   };
 
   const resetForm = () => {
-    setFormData({ name: "", email: "", notes: "" });
+    setFormData({ name: "", email: "", notes: "", location: "" });
     setInquirySubmitted(false);
     setInquiryError("");
   };
@@ -250,7 +208,7 @@ export default function Home() {
             onMouseOver={(e) => { e.currentTarget.style.backgroundColor = sage; e.currentTarget.style.color = bg; }}
             onMouseOut={(e) => { e.currentTarget.style.backgroundColor = "transparent"; e.currentTarget.style.color = sage; }}
           >
-            Book Session
+            {currentContent.navCtaLabel || "Book Session"}
           </a>
         </div>
       </header>
@@ -277,7 +235,7 @@ export default function Home() {
             )}
             <div className="max-w-4xl flex flex-col items-center gap-8 md:gap-10 z-10">
               <span className="text-xs uppercase tracking-[0.35em] font-bold" style={{ color: sage }}>
-                ✦ Mindful Movement & Somatic Alignment
+                {currentContent.heroTagline || "✦ Mindful Movement & Somatic Alignment"}
               </span>
               <h1 className="text-4xl md:text-6xl lg:text-7xl font-serif tracking-wider leading-[1.2] font-normal" style={{ color: text }}>
                 {currentContent.heroTitle}
@@ -290,7 +248,7 @@ export default function Home() {
                 className="inline-block mt-6 px-10 py-5 text-xs font-bold uppercase tracking-[0.2em] transition-colors duration-300 rounded-full shadow-sm"
                 style={{ backgroundColor: sage, color: bg }}
               >
-                Book a Session
+                {currentContent.heroCtaLabel || "Book a Session"}
               </a>
             </div>
           </section>
@@ -325,14 +283,14 @@ export default function Home() {
                     style={{ backgroundColor: `${bg}99`, borderColor: `${sage}30` }}
                   >
                     <span className="text-[10px] uppercase font-bold tracking-[0.2em]" style={{ color: text }}>
-                      Elena • Founder of {studioBranding}
+                      {currentContent.aboutImageSubtitle || "Elena • Founder of"} {studioBranding}
                     </span>
                   </div>
                 </div>
               </div>
               <div className="lg:col-span-7 flex flex-col items-start gap-6">
-                <span className="text-[10px] uppercase tracking-[0.25em] font-bold" style={{ color: sage }}>The Instructor</span>
-                <h2 className="text-3xl md:text-5xl font-serif tracking-wide font-normal" style={{ color: text }}>Hi, I am Elena</h2>
+                <span className="text-[10px] uppercase tracking-[0.25em] font-bold" style={{ color: sage }}>{currentContent.aboutTagline || "The Instructor"}</span>
+                <h2 className="text-3xl md:text-5xl font-serif tracking-wide font-normal" style={{ color: text }}>{currentContent.aboutHeading || "Hi, I am Elena"}</h2>
                 <div className="flex flex-col gap-5 text-sm leading-relaxed max-w-2xl font-normal whitespace-pre-line tracking-wide" style={{ color: `${text}BF` }}>
                   {currentContent.aboutBioText}
                 </div>
@@ -341,7 +299,7 @@ export default function Home() {
                   className="mt-4 text-xs font-bold uppercase tracking-[0.2em] border-b pb-1 transition-colors"
                   style={{ color: text, borderColor: text }}
                 >
-                  Explore Offerings
+                  {currentContent.aboutCtaLabel || "Explore Offerings"}
                 </a>
               </div>
             </div>
@@ -357,10 +315,10 @@ export default function Home() {
         <>
           <section id="services" className="py-24 md:py-36 px-8 md:px-16 max-w-7xl mx-auto w-full">
             <div className="text-center flex flex-col items-center gap-4 mb-20">
-              <span className="text-[10px] uppercase tracking-[0.25em] font-bold" style={{ color: sage }}>Curated Programs</span>
-              <h2 className="text-3xl md:text-5xl font-serif tracking-wide font-normal" style={{ color: text }}>Bespoke Offerings</h2>
+              <span className="text-[10px] uppercase tracking-[0.25em] font-bold" style={{ color: sage }}>{currentContent.offeringsTagline || "Curated Programs"}</span>
+              <h2 className="text-3xl md:text-5xl font-serif tracking-wide font-normal" style={{ color: text }}>{currentContent.offeringsHeading || "Bespoke Offerings"}</h2>
               <p className="text-xs md:text-sm leading-relaxed max-w-lg tracking-wide" style={{ color: `${text}99` }}>
-                Quiet spaces and custom sequences created to align physical posture, mental pacing, and sensory stillness.
+                {currentContent.offeringsSubtitle || "Quiet spaces and custom sequences created to align physical posture, mental pacing, and sensory stillness."}
               </p>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-10 lg:gap-16">
@@ -378,15 +336,7 @@ export default function Home() {
                       backgroundPosition: "center",
                       backgroundColor: offering.image ? undefined : card,
                     }}
-                  >
-                    {!offering.image && <div className="absolute inset-0 opacity-20" style={{ background: `linear-gradient(135deg, ${sage}20, ${sage}40)` }} />}
-                    <div
-                      className="absolute top-4 right-4 px-4 py-2 rounded-full text-xs font-bold shadow-sm font-mono tracking-wider border"
-                      style={{ backgroundColor: bg, borderColor: `${sage}40`, color: sage }}
-                    >
-                      ${offering.price}
-                    </div>
-                  </div>
+                  />
                   <div className="p-8 md:p-10 flex-1 flex flex-col justify-between gap-8">
                     <div className="flex flex-col gap-4">
                       <h3 className="text-xl md:text-3xl font-serif tracking-wide leading-snug font-normal transition-colors" style={{ color: text }}>
@@ -397,7 +347,7 @@ export default function Home() {
                       </p>
                     </div>
                     <a href="#contact" className="inline-block text-xs font-bold uppercase tracking-[0.2em] border-b pb-1 transition-colors" style={{ color: text, borderColor: text }}>
-                      Inquire Space
+                      {currentContent.offeringsCtaLabel || "Inquire Space"}
                     </a>
                   </div>
                 </div>
@@ -415,8 +365,8 @@ export default function Home() {
         <>
           <section id="portfolio" className="py-24 md:py-36 px-8 md:px-16 max-w-7xl mx-auto w-full">
             <div className="text-center flex flex-col items-center gap-4 mb-16">
-              <span className="text-[10px] uppercase tracking-[0.25em] font-bold" style={{ color: sage }}>Visual Sanctuary</span>
-              <h2 className="text-3xl md:text-5xl font-serif tracking-wide font-normal" style={{ color: text }}>Portfolio Gallery</h2>
+              <span className="text-[10px] uppercase tracking-[0.25em] font-bold" style={{ color: sage }}>{currentContent.portfolioTagline || "Visual Sanctuary"}</span>
+              <h2 className="text-3xl md:text-5xl font-serif tracking-wide font-normal" style={{ color: text }}>{currentContent.portfolioHeading || "Portfolio Gallery"}</h2>
             </div>
             <div className="flex justify-center gap-3 mb-12 flex-wrap">
               {["All", "Studio", "Classes", "Workshops"].map((filter) => {
@@ -481,8 +431,8 @@ export default function Home() {
         <>
           <section id="testimonials" className="py-24 md:py-36 px-8 md:px-16 max-w-7xl mx-auto w-full">
             <div className="text-center flex flex-col items-center gap-4 mb-20">
-              <span className="text-[10px] uppercase tracking-[0.25em] font-bold" style={{ color: sage }}>Resonance</span>
-              <h2 className="text-3xl md:text-5xl font-serif tracking-wide font-normal" style={{ color: text }}>Client Testimonials</h2>
+              <span className="text-[10px] uppercase tracking-[0.25em] font-bold" style={{ color: sage }}>{currentContent.testimonialsTagline || "Resonance"}</span>
+              <h2 className="text-3xl md:text-5xl font-serif tracking-wide font-normal" style={{ color: text }}>{currentContent.testimonialsHeading || "Client Testimonials"}</h2>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-10 lg:gap-16">
               {currentContent.testimonials.map((test) => (
@@ -518,10 +468,10 @@ export default function Home() {
         <>
           <section id="journal" className="py-24 md:py-36 px-8 md:px-16 max-w-7xl mx-auto w-full">
             <div className="text-center flex flex-col items-center gap-4 mb-20">
-              <span className="text-[10px] uppercase tracking-[0.25em] font-bold" style={{ color: sage }}>Insights</span>
-              <h2 className="text-3xl md:text-5xl font-serif tracking-wide font-normal" style={{ color: text }}>The Philosophy Journal</h2>
+              <span className="text-[10px] uppercase tracking-[0.25em] font-bold" style={{ color: sage }}>{currentContent.blogTagline || "Insights"}</span>
+              <h2 className="text-3xl md:text-5xl font-serif tracking-wide font-normal" style={{ color: text }}>{currentContent.blogHeading || "The Philosophy Journal"}</h2>
               <p className="text-xs md:text-sm leading-relaxed max-w-lg tracking-wide" style={{ color: `${text}99` }}>
-                Essays, research notes, and reflections on somatic anatomy and mindful living.
+                {currentContent.blogSubtitle || "Essays, research notes, and reflections on somatic anatomy and mindful living."}
               </p>
             </div>
             <div
@@ -620,39 +570,37 @@ export default function Home() {
       {/* 8. Contact Section — two-column with portrait when available */}
       <section id="contact" className="py-24 md:py-36 px-8 md:px-16 max-w-5xl mx-auto w-full">
         <div className="text-center flex flex-col items-center gap-4 mb-12">
-          <span className="text-[10px] uppercase tracking-[0.25em] font-bold" style={{ color: sage }}>Begin Journey</span>
-          <h2 className="text-2xl md:text-4xl font-serif tracking-wide font-normal" style={{ color: text }}>Book a Session</h2>
+          <span className="text-[10px] uppercase tracking-[0.25em] font-bold" style={{ color: sage }}>{currentContent.contactTagline || "Begin Journey"}</span>
+          <h2 className="text-2xl md:text-4xl font-serif tracking-wide font-normal" style={{ color: text }}>{currentContent.contactHeading || "Book a Session"}</h2>
           <p className="text-xs leading-relaxed tracking-wide" style={{ color: `${text}99` }}>
-            Leave your details below, and Elena will get back to coordinate your custom session within 24 hours.
+            {currentContent.contactSubtitle || "Leave your details below, and Elena will get back to coordinate your custom session within 24 hours."}
           </p>
         </div>
 
-        <div className={`flex flex-col ${currentContent.contactPortraitUrl ? "lg:flex-row gap-0" : ""} rounded-3xl overflow-hidden border`} style={{ borderColor: `${sage}30` }}>
+        <div className="flex flex-col lg:flex-row gap-0 rounded-3xl overflow-hidden border" style={{ borderColor: `${sage}30` }}>
           {/* Portrait column */}
-          {currentContent.contactPortraitUrl && (
-            <div className="w-full lg:w-72 shrink-0 relative overflow-hidden min-h-[340px]" style={{ backgroundColor: `${sage}15` }}>
-              <img
-                src={currentContent.contactPortraitUrl}
-                alt="Elena — Yoga Instructor"
-                className="w-full h-full object-cover object-center absolute inset-0"
-              />
-              {/* Gradient overlay for text legibility */}
-              <div
-                className="absolute inset-0 flex flex-col justify-end p-6"
-                style={{ background: `linear-gradient(to top, ${bg}E6 0%, transparent 50%)` }}
-              >
-                <span className="text-[9px] uppercase tracking-widest font-bold" style={{ color: `${text}99` }}>Your Instructor</span>
-                <span className="text-sm font-serif font-semibold mt-0.5" style={{ color: text }}>Elena</span>
-              </div>
+          <div className="w-full lg:w-72 shrink-0 relative overflow-hidden min-h-[380px]" style={{ backgroundColor: `${sage}15` }}>
+            <img
+              src={currentContent.contactPortraitUrl || "https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?q=80&w=1000&auto=format&fit=crop"}
+              alt="Elena — Yoga Instructor"
+              className="w-full h-full object-cover object-center absolute inset-0"
+            />
+            {/* Gradient overlay for text legibility */}
+            <div
+              className="absolute inset-0 flex flex-col justify-end p-6"
+              style={{ background: `linear-gradient(to top, ${bg}E6 0%, transparent 50%)` }}
+            >
+              <span className="text-[9px] uppercase tracking-widest font-bold" style={{ color: `${text}99` }}>{studioBranding}</span>
+              <span className="text-sm font-serif font-semibold mt-0.5" style={{ color: text }}>Begin Your Alignment</span>
             </div>
-          )}
+          </div>
 
           {/* Form column */}
           <div className="flex-1 p-8 md:p-12" style={{ backgroundColor: `${card}CC` }}>
             {!inquirySubmitted ? (
               <form onSubmit={handleInquirySubmit} className="flex flex-col gap-5 text-left">
                 <div className="flex flex-col gap-2">
-                  <label className="text-[10px] uppercase tracking-[0.25em] font-semibold" style={{ color: `${text}99` }}>Name</label>
+                  <label className="text-[10px] uppercase tracking-[0.25em] font-semibold" style={{ color: `${text}99` }}>{currentContent.contactNameLabel || "Name"}</label>
                   <input
                     type="text" required name="name" value={formData.name} onChange={handleInputChange} disabled={isInquirySaving}
                     className="px-5 py-3.5 border focus:outline-none rounded-xl text-xs md:text-sm tracking-wide disabled:opacity-40"
@@ -661,7 +609,7 @@ export default function Home() {
                   />
                 </div>
                 <div className="flex flex-col gap-2">
-                  <label className="text-[10px] uppercase tracking-[0.25em] font-semibold" style={{ color: `${text}99` }}>Email</label>
+                  <label className="text-[10px] uppercase tracking-[0.25em] font-semibold" style={{ color: `${text}99` }}>{currentContent.contactEmailLabel || "Email"}</label>
                   <input
                     type="email" required name="email" value={formData.email} onChange={handleInputChange} disabled={isInquirySaving}
                     className="px-5 py-3.5 border focus:outline-none rounded-xl text-xs md:text-sm tracking-wide disabled:opacity-40"
@@ -670,7 +618,16 @@ export default function Home() {
                   />
                 </div>
                 <div className="flex flex-col gap-2">
-                  <label className="text-[10px] uppercase tracking-[0.25em] font-semibold" style={{ color: `${text}99` }}>Message or Intentions</label>
+                  <label className="text-[10px] uppercase tracking-[0.25em] font-semibold" style={{ color: `${text}99` }}>{currentContent.contactLocationLabel || "Preferred Location"}</label>
+                  <input
+                    type="text" name="location" value={formData.location} onChange={handleInputChange} disabled={isInquirySaving}
+                    className="px-5 py-3.5 border focus:outline-none rounded-xl text-xs md:text-sm tracking-wide disabled:opacity-40"
+                    style={{ backgroundColor: `${sage}15`, borderColor: `${sage}40`, color: text }}
+                    placeholder="Preferred Location (City, State)"
+                  />
+                </div>
+                <div className="flex flex-col gap-2">
+                  <label className="text-[10px] uppercase tracking-[0.25em] font-semibold" style={{ color: `${text}99` }}>{currentContent.contactMessageLabel || "Message or Intentions"}</label>
                   <textarea
                     name="notes" value={formData.notes} onChange={handleInputChange} disabled={isInquirySaving} rows={4}
                     className="px-5 py-3.5 border focus:outline-none rounded-xl text-xs md:text-sm resize-none tracking-wide disabled:opacity-40"
@@ -689,15 +646,15 @@ export default function Home() {
                   className="w-full mt-2 py-4 text-xs font-bold uppercase tracking-[0.2em] transition-colors duration-300 rounded-xl cursor-pointer disabled:opacity-40"
                   style={{ backgroundColor: sage, color: bg }}
                 >
-                  {isInquirySaving ? "Transmitting..." : "Send Request"}
+                  {isInquirySaving ? "Transmitting..." : (currentContent.contactSubmitLabel || "Send Request")}
                 </button>
               </form>
             ) : (
               <div className="text-center py-12 flex flex-col items-center gap-5">
                 <div className="w-12 h-12 rounded-full border flex items-center justify-center text-sm font-bold" style={{ borderColor: sage, color: sage }}>✓</div>
-                <h4 className="text-lg font-serif tracking-wide" style={{ color: text }}>Request Transmitted</h4>
+                <h4 className="text-lg font-serif tracking-wide" style={{ color: text }}>{currentContent.contactSuccessTitle || "Request Transmitted"}</h4>
                 <p className="text-xs leading-relaxed tracking-wide max-w-sm" style={{ color: `${text}B3` }}>
-                  Thank you, {formData.name}. Elena has received your request and will reach out soon.
+                  Thank you, {formData.name}. {currentContent.contactSuccessMessage || "Elena has received your request and will reach out soon."}
                 </p>
                 <button onClick={resetForm} className="mt-3 text-xs font-bold uppercase tracking-[0.2em] hover:underline cursor-pointer" style={{ color: sage }}>
                   Reset Form
@@ -765,7 +722,7 @@ export default function Home() {
           <div className="flex flex-col md:flex-row justify-between items-center gap-4 w-full">
             <span>© {new Date().getFullYear()} {studioBranding}. All rights reserved.</span>
             <div className="flex items-center gap-4">
-              <span>Peace • Alignment • Somatic Wisdom</span>
+              <span>{currentContent.footerTagline || "Peace • Alignment • Somatic Wisdom"}</span>
               <span>|</span>
               <a href="/admin" className="font-bold uppercase tracking-widest text-[10px] transition-colors" style={{ color: sage }}>
                 Admin Dashboard

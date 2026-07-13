@@ -15,7 +15,7 @@ export default function AdminPage() {
   const [authError, setAuthError] = useState("");
 
   // CMS active sidebar tab
-  const [activeTab, setActiveTab] = useState<"overview" | "heroAbout" | "offerings" | "portfolio" | "testimonials" | "blog" | "leads" | "customization">("overview");
+  const [activeTab, setActiveTab] = useState<"overview" | "heroAbout" | "offerings" | "portfolio" | "testimonials" | "blog" | "bookSession" | "contactMe" | "customization">("overview");
 
   // Save progress states
   const [isSaving, setIsSaving] = useState(false);
@@ -67,6 +67,18 @@ export default function AdminPage() {
   const [newBlogIsFeatured, setNewBlogIsFeatured] = useState(false);
   const [newBlogFile, setNewBlogFile] = useState<File | null>(null);
   const [newBlogPreview, setNewBlogPreview] = useState("");
+
+  // Editing blog post modal states
+  const [editingPost, setEditingPost] = useState<BlogPostItem | null>(null);
+  const [editPostTitle, setEditPostTitle] = useState("");
+  const [editPostExcerpt, setEditPostExcerpt] = useState("");
+  const [editPostContent, setEditPostContent] = useState("");
+  const [editPostCategory, setEditPostCategory] = useState("Philosophy");
+  const [editPostStatus, setEditPostStatus] = useState<"draft" | "published">("published");
+  const [editPostTags, setEditPostTags] = useState("");
+  const [editPostIsFeatured, setEditPostIsFeatured] = useState(false);
+  const [editPostFile, setEditPostFile] = useState<File | null>(null);
+  const [editPostPreview, setEditPostPreview] = useState("");
 
   // Resolve dynamic session state client-side
   useEffect(() => {
@@ -323,6 +335,108 @@ export default function AdminPage() {
     }
   };
 
+  const startEditingPost = (post: BlogPostItem) => {
+    setEditingPost(post);
+    setEditPostTitle(post.title);
+    setEditPostExcerpt(post.excerpt || "");
+    setEditPostContent(post.content);
+    setEditPostCategory(post.category || "Philosophy");
+    setEditPostStatus(post.status || "published");
+    setEditPostTags(Array.isArray(post.tags) ? post.tags.join(", ") : "");
+    setEditPostIsFeatured(post.isFeatured || false);
+    setEditPostFile(null);
+    setEditPostPreview(post.featuredImage || "");
+  };
+
+  const handleEditPostFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0] || null;
+    setEditPostFile(file);
+    if (file) setEditPostPreview(URL.createObjectURL(file));
+  };
+
+  const handleSavePostEdit = async () => {
+    if (!editForm || !editingPost) return;
+
+    const updatedPosts = editForm.blogPosts.map((b) => {
+      if (b.id === editingPost.id) {
+        return {
+          ...b,
+          title: editPostTitle,
+          excerpt: editPostExcerpt,
+          content: editPostContent,
+          category: editPostCategory,
+          status: editPostStatus,
+          tags: editPostTags.split(",").map((t) => t.trim()).filter(Boolean),
+          isFeatured: editPostIsFeatured,
+        };
+      }
+      return b;
+    });
+
+    const newForm = { ...editForm, blogPosts: updatedPosts };
+
+    setIsSaving(true);
+    setSaveStatus({ type: null, msg: "" });
+
+    try {
+      const dataPayload = new FormData();
+      dataPayload.append("content", JSON.stringify(newForm));
+
+      if (editPostFile) {
+        dataPayload.append("blogImage_" + editingPost.id, editPostFile);
+      }
+
+      if (heroFile) dataPayload.append("heroImage", heroFile);
+      if (aboutFile) dataPayload.append("aboutImage", aboutFile);
+      if (contactPortraitFile) dataPayload.append("contactPortraitImage", contactPortraitFile);
+      Object.entries(offeringFiles).forEach(([id, file]) => {
+        dataPayload.append("offeringImage_" + id, file);
+      });
+      Object.entries(portfolioFiles).forEach(([id, file]) => {
+        dataPayload.append("portfolioImage_" + id, file);
+      });
+      Object.entries(blogFiles).forEach(([id, file]) => {
+        if (id !== editingPost.id) {
+          dataPayload.append("blogImage_" + id, file);
+        }
+      });
+
+      const response = await fetch("/api/content", {
+        method: "POST",
+        body: dataPayload,
+      });
+
+      const result = await response.json();
+
+      if (response.ok) {
+        setContent(result.content);
+        setEditForm(result.content);
+        setSaveStatus({
+          type: "success",
+          msg: "Success! Article changes have been saved.",
+        });
+        setTimeout(() => {
+          setSaveStatus({ type: null, msg: "" });
+        }, 3500);
+
+        setEditPostFile(null);
+        setEditingPost(null);
+      } else {
+        setSaveStatus({
+          type: "error",
+          msg: `Error: ${result.error || "Failed to commit article changes."}`,
+        });
+      }
+    } catch (err: any) {
+      setSaveStatus({
+        type: "error",
+        msg: `Error: ${err.message || "Failed to save changes."}`,
+      });
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
   // Compile Leads to structured Excel-compatible CSV Blob & Download
   const handleExportLeadsCSV = () => {
     const leads = editForm?.leads || content?.leads || [];
@@ -457,46 +571,46 @@ export default function AdminPage() {
   // Center Light WordPress Admin Login
   if (!isLoggedIn) {
     return (
-      <div className="flex-1 flex items-center justify-center min-h-screen bg-[#f1f1f1] px-6 py-12">
+      <div className="flex-1 flex items-center justify-center min-h-screen bg-[#0B0807] px-6 py-12 text-[#E5E0D8]">
         <form
           onSubmit={handleAuthSubmit}
-          className="bg-white border border-[#dcdcde] rounded-lg max-w-sm w-full p-8 flex flex-col gap-5 shadow-md text-left"
+          className="bg-[#161210] border border-[#8C7A6B]/20 rounded-3xl max-w-sm w-full p-8 flex flex-col gap-5 shadow-lg text-left"
         >
-          <div className="text-center pb-2 border-b border-[#f0f0f1]">
-            <h4 className="text-xl font-sans text-[#1d2327] font-bold tracking-wide">WordPress CMS Login</h4>
-            <p className="text-xs text-[#2c3338] mt-1">
+          <div className="text-center pb-2 border-b border-[#8C7A6B]/20">
+            <h4 className="text-xl font-serif text-[#E5E0D8] font-normal tracking-wide">Yoga CMS Portal Login</h4>
+            <p className="text-xs text-[#E5E0D8]/60 mt-1">
               Enter your administration login credentials to manage website configs.
             </p>
           </div>
 
           <div className="flex flex-col gap-4">
             <div className="flex flex-col gap-1.5">
-              <label className="text-xs font-semibold text-[#1d2327]">Username or Email Address</label>
+              <label className="text-[10px] uppercase tracking-[0.25em] font-semibold text-[#E5E0D8]/80">Username or Email Address</label>
               <input
                 type="text"
                 required
                 value={authUsername}
                 onChange={(e) => setAuthUsername(e.target.value)}
                 placeholder="Username"
-                className="px-3.5 py-2.5 bg-white border border-[#8c8f94] focus:border-[#2271b1] focus:ring-1 focus:ring-[#2271b1] focus:outline-none rounded text-sm text-[#2c3338]"
+                className="px-4 py-3 bg-[#8C7A6B]/10 border border-[#8C7A6B]/40 focus:border-[#8C7A6B] focus:outline-none rounded-xl text-xs text-[#E5E0D8] tracking-wide placeholder-[#E5E0D8]/30"
               />
             </div>
 
             <div className="flex flex-col gap-1.5">
-              <label className="text-xs font-semibold text-[#1d2327]">Password</label>
+              <label className="text-[10px] uppercase tracking-[0.25em] font-semibold text-[#E5E0D8]/80">Password</label>
               <input
                 type="password"
                 required
                 value={authPassword}
                 onChange={(e) => setAuthPassword(e.target.value)}
                 placeholder="Password"
-                className="px-3.5 py-2.5 bg-white border border-[#8c8f94] focus:border-[#2271b1] focus:ring-1 focus:ring-[#2271b1] focus:outline-none rounded text-sm text-[#2c3338]"
+                className="px-4 py-3 bg-[#8C7A6B]/10 border border-[#8C7A6B]/40 focus:border-[#8C7A6B] focus:outline-none rounded-xl text-xs text-[#E5E0D8] tracking-wide placeholder-[#E5E0D8]/30"
               />
             </div>
           </div>
 
           {authError && (
-            <div className="p-3 bg-rose-50 border-l-4 border-rose-500 text-rose-800 text-xs rounded font-normal">
+            <div className="p-3 bg-rose-955/40 border-l-4 border-rose-500 text-rose-200 text-xs rounded font-normal border border-rose-500/20">
               <span className="font-bold block mb-0.5">Error</span>
               {authError}
             </div>
@@ -504,7 +618,7 @@ export default function AdminPage() {
 
           <button
             type="submit"
-            className="w-full mt-2 py-2.5 bg-[#2271b1] hover:bg-[#135e96] text-white text-xs font-bold uppercase tracking-wider rounded transition-colors cursor-pointer"
+            className="w-full mt-2 py-2.5 bg-[#8C7A6B] hover:bg-[#6B5D51] text-[#0B0807] text-xs font-bold uppercase tracking-wider rounded-full transition-colors cursor-pointer"
           >
             Log In
           </button>
@@ -516,7 +630,7 @@ export default function AdminPage() {
   const currentContent = editForm || content;
   if (!currentContent) {
     return (
-      <div className="flex-1 flex items-center justify-center min-h-screen bg-[#f1f1f1] text-[#1d2327]">
+      <div className="flex-1 flex items-center justify-center min-h-screen bg-[#0B0807] text-[#E5E0D8] font-serif">
         Failed to construct configuration form.
       </div>
     );
@@ -527,24 +641,105 @@ export default function AdminPage() {
 
   return (
     <div className="flex-1 flex flex-col md:flex-row min-h-screen bg-[#f1f1f1] text-[#2c3338] font-sans antialiased">
+      <style dangerouslySetInnerHTML={{
+        __html: `
+          @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+          }
+          .animate-slide-in {
+            animation: slideIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+          }
+          
+          /* Visual Editor Dark Mode overrides */
+          .bg-white {
+            background-color: #161210 !important;
+          }
+          .border-\\[\\#dcdcde\\] {
+            border-color: rgba(140, 122, 107, 0.2) !important;
+          }
+          .text-\\[\\#1d2327\\] {
+            color: #E5E0D8 !important;
+          }
+          .text-\\[\\#2c3338\\] {
+            color: #E5E0D8 !important;
+          }
+          .text-\\[\\#646970\\] {
+            color: rgba(229, 224, 216, 0.6) !important;
+          }
+          .text-\\[\\#8c8f94\\] {
+            color: rgba(229, 224, 216, 0.4) !important;
+          }
+          .border-b-\\[\\#f0f0f1\\] {
+            border-bottom-color: rgba(140, 122, 107, 0.2) !important;
+          }
+          input[type="text"], 
+          input[type="number"], 
+          input[type="email"], 
+          input[type="password"], 
+          textarea, 
+          select {
+            background-color: rgba(140, 122, 107, 0.1) !important;
+            border-color: rgba(140, 122, 107, 0.4) !important;
+            color: #E5E0D8 !important;
+            border-radius: 0.75rem !important;
+            font-family: inherit !important;
+          }
+          input[type="text"]:focus, 
+          input[type="number"]:focus, 
+          input[type="email"]:focus, 
+          input[type="password"]:focus, 
+          textarea:focus, 
+          select:focus {
+            border-color: #8C7A6B !important;
+            outline: none !important;
+          }
+          h3, h4 {
+            font-family: Georgia, Cambria, "Times New Roman", Times, serif !important;
+            font-weight: 300 !important;
+            letter-spacing: 0.05em !important;
+          }
+          .hover\\:bg-\\[\\#fafafa\\]:hover {
+            background-color: rgba(140, 122, 107, 0.05) !important;
+          }
+          .bg-\\[\\#f9f9f9\\] {
+            background-color: #0B0807 !important;
+          }
+          .border-b-\\[\\#f0f0f1\\] {
+            border-bottom-color: rgba(140, 122, 107, 0.2) !important;
+          }
+          .bg-\\[\\#2271b1\\] {
+            background-color: #8C7A6B !important;
+            color: #0B0807 !important;
+          }
+          .hover\\:bg-\\[\\#135e96\\]:hover {
+            background-color: #6B5D51 !important;
+            color: #0B0807 !important;
+          }
+          .border-\\[\\#8c8f94\\] {
+            border-color: rgba(140, 122, 107, 0.4) !important;
+          }
+        `
+      }} />
       
-      {/* LEFT SIDEBAR: traditional WP dark slate drawer */}
-      <aside className="w-full md:w-60 border-r border-[#2c3338]/10 bg-[#23282d] flex flex-col shrink-0">
+      {/* LEFT SIDEBAR: cohesive visual editor dark drawer */}
+      <aside className="w-full md:w-60 border-r border-[#8C7A6B]/20 bg-[#161210] flex flex-col shrink-0">
         {/* Sidebar Brand Header */}
-        <div className="p-4 bg-[#1d2327] flex items-center gap-2 border-b border-[#2c3338]/20 text-white shrink-0">
-          <span className="text-sm font-bold tracking-wide">✦ Elena Yoga CMS</span>
+        <div className="p-4 bg-[#0B0807] flex items-center gap-2 border-b border-[#8C7A6B]/20 text-[#E5E0D8] shrink-0 font-serif">
+          <span className="text-sm font-semibold tracking-wide">✦ Yoga website dashboard</span>
         </div>
 
         {/* Navigation Drawer options */}
-        <nav className="flex-1 py-3 flex flex-col">
+        <nav className="flex-1 py-3 flex flex-col gap-0.5">
           {[
             { id: "overview", label: "Dashboard" },
-            { id: "heroAbout", label: "Hero, About & Author" },
-            { id: "offerings", label: "Yoga Classes" },
+            { id: "heroAbout", label: "Hero & About Me" },
+            { id: "offerings", label: "Offerings" },
             { id: "portfolio", label: "Portfolio Gallery" },
             { id: "testimonials", label: "Testimonials" },
-            { id: "blog", label: "Journal Blog" },
-            { id: "leads", label: `Inquiries / Leads ${newLeadsCount > 0 ? `(${newLeadsCount})` : ""}` },
+            { id: "blog", label: "Philosophy Journal" },
+            { id: "bookSession", label: "Book a Session" },
+            { id: "contactMe", label: `Contact Me ${newLeadsCount > 0 ? `(${newLeadsCount})` : ""}` },
             { id: "customization", label: "Customization" },
           ].map((tab) => {
             const active = activeTab === tab.id;
@@ -558,8 +753,8 @@ export default function AdminPage() {
                 }}
                 className={`w-full text-left py-2.5 px-5 text-[13px] font-medium transition-colors cursor-pointer border-l-4 ${
                   active
-                    ? "bg-[#1d2327] border-[#72aee6] text-white"
-                    : "border-transparent text-[#c3c4c7] hover:bg-[#1d2327] hover:text-[#72aee6]"
+                    ? "bg-[#0B0807] border-[#8C7A6B] text-[#E5E0D8]"
+                    : "border-transparent text-[#E5E0D8]/60 hover:bg-[#0B0807] hover:text-[#E5E0D8]"
                 }`}
               >
                 {tab.label}
@@ -580,18 +775,19 @@ export default function AdminPage() {
       </aside>
 
       {/* MAIN INTERIOR WORKSPACE */}
-      <main className="flex-1 flex flex-col overflow-y-auto">
+      <main className="flex-1 flex flex-col overflow-y-auto bg-[#0B0807] text-[#E5E0D8]">
         
         {/* HEADER NAVIGATION & TOP BAR */}
-        <header className="px-6 py-4 bg-white border-b border-[#dcdcde] flex justify-between items-center shrink-0">
-          <h2 className="text-xl font-sans text-[#1d2327] font-semibold tracking-tight">
+        <header className="px-6 py-4 bg-[#161210] border-b border-[#8C7A6B]/20 flex justify-between items-center shrink-0">
+          <h2 className="text-xl font-serif text-[#E5E0D8] font-light tracking-wide">
             {activeTab === "overview" && "Dashboard Overview"}
-            {activeTab === "heroAbout" && "Hero, About & Author Settings"}
-            {activeTab === "offerings" && "Manage Yoga Classes"}
+            {activeTab === "heroAbout" && "Hero & About Me Settings"}
+            {activeTab === "offerings" && "Manage Offerings"}
             {activeTab === "portfolio" && "Manage Portfolio Gallery"}
             {activeTab === "testimonials" && "Manage Testimonials"}
-            {activeTab === "blog" && "Manage Journal Blog"}
-            {activeTab === "leads" && "Manage Inquiries / Leads"}
+            {activeTab === "blog" && "Manage Philosophy Journal"}
+            {activeTab === "bookSession" && "Manage Booking Form"}
+            {activeTab === "contactMe" && "Contact Me Inbox"}
             {activeTab === "customization" && "Customization"}
           </h2>
 
@@ -599,7 +795,7 @@ export default function AdminPage() {
             href="/"
             target="_blank"
             rel="noopener noreferrer"
-            className="px-4 py-2 bg-[#2271b1] hover:bg-[#135e96] text-white text-xs font-semibold rounded shadow-xs transition-colors"
+            className="px-4 py-2 bg-[#8C7A6B] hover:bg-[#6B5D51] text-[#0B0807] text-xs font-bold uppercase rounded-full tracking-wider transition-colors cursor-pointer"
           >
             View Website
           </a>
@@ -608,21 +804,32 @@ export default function AdminPage() {
         {/* Master CMS Form */}
         <form onSubmit={handleSaveAllChanges} className="p-6 md:p-8 flex flex-col gap-6 max-w-5xl text-left">
           
-          {/* WordPress Success Toast Notification Notice banner */}
+          {/* WordPress Success Toast Notification - Floating popup */}
           {saveStatus.type === "success" && (
-            <div className="bg-white border-l-4 border-[#46b450] p-4 rounded shadow-xs flex items-center justify-between text-xs text-[#2c3338] animate-fade-in shrink-0">
-              <div className="flex items-center gap-2">
-                <span className="text-[#46b450] font-bold text-sm">✓</span>
-                <span>{saveStatus.msg}</span>
+            <div className="fixed top-5 right-5 z-50 bg-[#161210] border border-[#8C7A6B]/30 border-l-4 border-l-[#8C7A6B] p-4 rounded-md shadow-lg flex items-center gap-3 text-sm text-[#E5E0D8] animate-slide-in max-w-sm">
+              <span className="text-[#8C7A6B] bg-[#8C7A6B]/10 w-6 h-6 rounded-full flex items-center justify-center font-bold shrink-0">✓</span>
+              <div>
+                <p className="font-bold text-[#E5E0D8]">System Alert</p>
+                <p className="text-xs text-[#E5E0D8]/60 mt-0.5">{saveStatus.msg}</p>
               </div>
             </div>
           )}
 
           {/* WordPress Error banner */}
           {saveStatus.type === "error" && (
-            <div className="bg-white border-l-4 border-rose-500 p-4 rounded shadow-xs text-xs text-[#2c3338] shrink-0">
-              <span className="font-bold block mb-0.5 text-rose-600">Save Error</span>
-              {saveStatus.msg}
+            <div className="fixed top-5 right-5 z-50 bg-[#161210] border border-rose-500/30 border-l-4 border-l-rose-500 p-4 rounded-md shadow-lg flex items-start gap-3 text-sm text-[#E5E0D8] animate-slide-in max-w-sm">
+              <span className="text-rose-400 bg-rose-500/10 w-6 h-6 rounded-full flex items-center justify-center font-bold shrink-0">✕</span>
+              <div>
+                <p className="font-bold text-rose-400">Save Error</p>
+                <p className="text-xs text-[#E5E0D8]/60 mt-0.5">{saveStatus.msg}</p>
+              </div>
+              <button 
+                type="button" 
+                onClick={() => setSaveStatus({ type: null, msg: "" })}
+                className="text-xs text-[#8c8f94] hover:text-[#E5E0D8] ml-auto cursor-pointer"
+              >
+                ✕
+              </button>
             </div>
           )}
 
@@ -631,43 +838,17 @@ export default function AdminPage() {
             <div className="flex flex-col gap-6">
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
                 {[
-                  { title: "Yoga Classes", count: currentContent.offerings.length, tag: "Offerings" },
+                  { title: "Offerings", count: currentContent.offerings.length, tag: "Offerings" },
                   { title: "Gallery Photos", count: currentContent.portfolio.length, tag: "Portfolio Items" },
                   { title: "Client Reviews", count: currentContent.testimonials.length, tag: "Testimonials" },
                   { title: "Journal Articles", count: currentContent.blogPosts.length, tag: "Blog Posts" },
                 ].map((stat, i) => (
-                  <div key={i} className="bg-white border border-[#dcdcde] p-5 rounded shadow-xs flex flex-col justify-between min-h-[110px]">
-                    <span className="text-xs font-bold text-[#1d2327] uppercase tracking-wider">{stat.title}</span>
-                    <span className="text-3xl font-sans font-bold text-[#2271b1] my-1">{stat.count}</span>
-                    <span className="text-[10px] text-[#8c8f94] font-semibold uppercase">{stat.tag}</span>
+                  <div key={i} className="bg-[#161210] border border-[#8C7A6B]/20 p-5 rounded-3xl flex flex-col justify-between min-h-[110px] shadow-md">
+                    <span className="text-[10px] uppercase tracking-[0.25em] font-semibold text-[#E5E0D8]/80">{stat.title}</span>
+                    <span className="text-3xl font-sans font-bold text-[#8C7A6B] my-1">{stat.count}</span>
+                    <span className="text-[10px] text-[#E5E0D8]/40 font-semibold uppercase tracking-wider">{stat.tag}</span>
                   </div>
                 ))}
-              </div>
-
-              {/* Studio branding configuration */}
-              <div className="bg-white border border-[#dcdcde] p-6 rounded shadow-xs flex flex-col gap-4">
-                <h3 className="text-base font-bold text-[#1d2327] border-b border-[#f0f0f1] pb-3.5">Global Branding Settings</h3>
-                <div className="flex flex-col gap-1.5">
-                  <label className="text-xs font-bold text-[#1d2327]">Studio Business Name (displays globally in headers and footers)</label>
-                  <input
-                    type="text"
-                    required
-                    value={currentContent.studioName || ""}
-                    onChange={(e) => {
-                      if (!editForm) return;
-                      setEditForm({ ...editForm, studioName: e.target.value });
-                    }}
-                    placeholder="Elena Yoga"
-                    className="px-3.5 py-2.5 bg-white border border-[#8c8f94] focus:border-[#2271b1] focus:outline-none rounded text-xs md:text-sm text-[#2c3338] max-w-md"
-                  />
-                </div>
-              </div>
-
-              <div className="bg-white border border-[#dcdcde] p-6 rounded shadow-xs">
-                <h4 className="text-base font-bold text-[#1d2327] mb-1">Welcome to Elena Yoga CMS</h4>
-                <p className="text-xs text-[#2c3338] leading-relaxed max-w-3xl">
-                  Use the left vertical navigation menu options to switch dashboard panels. You can customize studio naming, check leads list, hide main pages blocks, configure class cards, publish articles, and verify layout integrations. Clicking "Save" instantly commits all changes to local storage or Vercel Blob.
-                </p>
               </div>
             </div>
           )}
@@ -753,6 +934,46 @@ export default function AdminPage() {
                     )}
                   </div>
                 </div>
+
+                {/* ── Hero Text Labels ── */}
+                <div className="pt-2 border-t border-[#f0f0f1] flex flex-col gap-3">
+                  <p className="text-[11px] font-bold text-[#646970] uppercase tracking-wider">Hero Section Labels</p>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <div className="flex flex-col gap-1.5">
+                      <label className="text-xs font-bold text-[#1d2327]">Eyebrow Tagline</label>
+                      <p className="text-[10px] text-[#646970] -mt-1">Small label above the main title</p>
+                      <input
+                        type="text"
+                        value={currentContent.heroTagline || ""}
+                        onChange={(e) => { if (!editForm) return; setEditForm({ ...editForm, heroTagline: e.target.value }); }}
+                        placeholder="✦ Mindful Movement & Somatic Alignment"
+                        className="px-3.5 py-2.5 bg-white border border-[#8c8f94] focus:border-[#2271b1] focus:outline-none rounded text-xs text-[#2c3338]"
+                      />
+                    </div>
+                    <div className="flex flex-col gap-1.5">
+                      <label className="text-xs font-bold text-[#1d2327]">Hero CTA Button Label</label>
+                      <p className="text-[10px] text-[#646970] -mt-1">Large button inside the hero banner</p>
+                      <input
+                        type="text"
+                        value={currentContent.heroCtaLabel || ""}
+                        onChange={(e) => { if (!editForm) return; setEditForm({ ...editForm, heroCtaLabel: e.target.value }); }}
+                        placeholder="Book a Session"
+                        className="px-3.5 py-2.5 bg-white border border-[#8c8f94] focus:border-[#2271b1] focus:outline-none rounded text-xs text-[#2c3338]"
+                      />
+                    </div>
+                    <div className="flex flex-col gap-1.5">
+                      <label className="text-xs font-bold text-[#1d2327]">Nav Header Button Label</label>
+                      <p className="text-[10px] text-[#646970] -mt-1">Pill button in the top-right navigation</p>
+                      <input
+                        type="text"
+                        value={currentContent.navCtaLabel || ""}
+                        onChange={(e) => { if (!editForm) return; setEditForm({ ...editForm, navCtaLabel: e.target.value }); }}
+                        placeholder="Book Session"
+                        className="px-3.5 py-2.5 bg-white border border-[#8c8f94] focus:border-[#2271b1] focus:outline-none rounded text-xs text-[#2c3338]"
+                      />
+                    </div>
+                  </div>
+                </div>
               </div>
 
               {/* About Settings Card */}
@@ -784,6 +1005,57 @@ export default function AdminPage() {
                         <img src={aboutPreview || currentContent.aboutImageUrl} alt="Profile Preview" className="w-full h-full object-cover" />
                       </div>
                     )}
+                  </div>
+                </div>
+
+                {/* ── About Section Text Labels ── */}
+                <div className="pt-2 border-t border-[#f0f0f1] flex flex-col gap-3">
+                  <p className="text-[11px] font-bold text-[#646970] uppercase tracking-wider">About Section Labels</p>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <div className="flex flex-col gap-1.5">
+                      <label className="text-xs font-bold text-[#1d2327]">Section Eyebrow Tagline</label>
+                      <p className="text-[10px] text-[#646970] -mt-1">Small label above the heading e.g. 'The Instructor'</p>
+                      <input
+                        type="text"
+                        value={currentContent.aboutTagline || ""}
+                        onChange={(e) => { if (!editForm) return; setEditForm({ ...editForm, aboutTagline: e.target.value }); }}
+                        placeholder="The Instructor"
+                        className="px-3.5 py-2.5 bg-white border border-[#8c8f94] focus:border-[#2271b1] focus:outline-none rounded text-xs text-[#2c3338]"
+                      />
+                    </div>
+                    <div className="flex flex-col gap-1.5">
+                      <label className="text-xs font-bold text-[#1d2327]">Greeting Heading</label>
+                      <p className="text-[10px] text-[#646970] -mt-1">Large serif heading e.g. 'Hi, I am Elena'</p>
+                      <input
+                        type="text"
+                        value={currentContent.aboutHeading || ""}
+                        onChange={(e) => { if (!editForm) return; setEditForm({ ...editForm, aboutHeading: e.target.value }); }}
+                        placeholder="Hi, I am Elena"
+                        className="px-3.5 py-2.5 bg-white border border-[#8c8f94] focus:border-[#2271b1] focus:outline-none rounded text-xs text-[#2c3338]"
+                      />
+                    </div>
+                    <div className="flex flex-col gap-1.5">
+                      <label className="text-xs font-bold text-[#1d2327]">Image Subtitle Overlay</label>
+                      <p className="text-[10px] text-[#646970] -mt-1">Caption overlaid on the about image e.g. 'Elena • Founder of'</p>
+                      <input
+                        type="text"
+                        value={currentContent.aboutImageSubtitle || ""}
+                        onChange={(e) => { if (!editForm) return; setEditForm({ ...editForm, aboutImageSubtitle: e.target.value }); }}
+                        placeholder="Elena • Founder of"
+                        className="px-3.5 py-2.5 bg-white border border-[#8c8f94] focus:border-[#2271b1] focus:outline-none rounded text-xs text-[#2c3338]"
+                      />
+                    </div>
+                    <div className="flex flex-col gap-1.5">
+                      <label className="text-xs font-bold text-[#1d2327]">CTA Link Text</label>
+                      <p className="text-[10px] text-[#646970] -mt-1">Underlined link at bottom of bio e.g. 'Explore Offerings'</p>
+                      <input
+                        type="text"
+                        value={currentContent.aboutCtaLabel || ""}
+                        onChange={(e) => { if (!editForm) return; setEditForm({ ...editForm, aboutCtaLabel: e.target.value }); }}
+                        placeholder="Explore Offerings"
+                        className="px-3.5 py-2.5 bg-white border border-[#8c8f94] focus:border-[#2271b1] focus:outline-none rounded text-xs text-[#2c3338]"
+                      />
+                    </div>
                   </div>
                 </div>
               </div>
@@ -818,6 +1090,25 @@ export default function AdminPage() {
                   </div>
                 </div>
               </div>
+
+              {/* Studio branding configuration */}
+              <div className="bg-white border border-[#dcdcde] p-6 rounded shadow-xs flex flex-col gap-4">
+                <h3 className="text-base font-bold text-[#1d2327] border-b border-[#f0f0f1] pb-3.5">Global Branding Settings</h3>
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-xs font-bold text-[#1d2327]">Studio Business Name (displays globally in headers and footers)</label>
+                  <input
+                    type="text"
+                    required
+                    value={currentContent.studioName || ""}
+                    onChange={(e) => {
+                      if (!editForm) return;
+                      setEditForm({ ...editForm, studioName: e.target.value });
+                    }}
+                    placeholder="Elena Yoga"
+                    className="px-3.5 py-2.5 bg-white border border-[#8c8f94] focus:border-[#2271b1] focus:outline-none rounded text-xs md:text-sm text-[#2c3338] max-w-md"
+                  />
+                </div>
+              </div>
             </div>
           )}
 
@@ -840,6 +1131,57 @@ export default function AdminPage() {
                     <option value="on">On (Visible)</option>
                     <option value="off">Off (Hidden)</option>
                   </select>
+                </div>
+              </div>
+
+              {/* ── Offerings Section Labels ── */}
+              <div className="bg-white border border-[#dcdcde] p-6 rounded shadow-xs flex flex-col gap-4">
+                <h3 className="text-base font-bold text-[#1d2327] border-b border-[#f0f0f1] pb-3.5">Offerings Section Labels</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  <div className="flex flex-col gap-1.5">
+                    <label className="text-xs font-bold text-[#1d2327]">Section Eyebrow Tagline</label>
+                    <p className="text-[10px] text-[#646970] -mt-1">Small label above the heading e.g. 'Curated Programs'</p>
+                    <input
+                      type="text"
+                      value={currentContent.offeringsTagline || ""}
+                      onChange={(e) => { if (!editForm) return; setEditForm({ ...editForm, offeringsTagline: e.target.value }); }}
+                      placeholder="Curated Programs"
+                      className="px-3.5 py-2.5 bg-white border border-[#8c8f94] focus:border-[#2271b1] focus:outline-none rounded text-xs text-[#2c3338]"
+                    />
+                  </div>
+                  <div className="flex flex-col gap-1.5">
+                    <label className="text-xs font-bold text-[#1d2327]">Section Heading</label>
+                    <p className="text-[10px] text-[#646970] -mt-1">Large section title e.g. 'Bespoke Offerings'</p>
+                    <input
+                      type="text"
+                      value={currentContent.offeringsHeading || ""}
+                      onChange={(e) => { if (!editForm) return; setEditForm({ ...editForm, offeringsHeading: e.target.value }); }}
+                      placeholder="Bespoke Offerings"
+                      className="px-3.5 py-2.5 bg-white border border-[#8c8f94] focus:border-[#2271b1] focus:outline-none rounded text-xs text-[#2c3338]"
+                    />
+                  </div>
+                  <div className="flex flex-col gap-1.5 md:col-span-2">
+                    <label className="text-xs font-bold text-[#1d2327]">Section Subtitle Paragraph</label>
+                    <p className="text-[10px] text-[#646970] -mt-1">Descriptive intro paragraph below the heading</p>
+                    <textarea
+                      rows={2}
+                      value={currentContent.offeringsSubtitle || ""}
+                      onChange={(e) => { if (!editForm) return; setEditForm({ ...editForm, offeringsSubtitle: e.target.value }); }}
+                      placeholder="Quiet spaces and custom sequences..."
+                      className="px-3.5 py-2.5 bg-white border border-[#8c8f94] focus:border-[#2271b1] focus:outline-none rounded text-xs text-[#2c3338] resize-none"
+                    />
+                  </div>
+                  <div className="flex flex-col gap-1.5">
+                    <label className="text-xs font-bold text-[#1d2327]">Card CTA Link Text</label>
+                    <p className="text-[10px] text-[#646970] -mt-1">Underlined link on each class card e.g. 'Inquire Space'</p>
+                    <input
+                      type="text"
+                      value={currentContent.offeringsCtaLabel || ""}
+                      onChange={(e) => { if (!editForm) return; setEditForm({ ...editForm, offeringsCtaLabel: e.target.value }); }}
+                      placeholder="Inquire Space"
+                      className="px-3.5 py-2.5 bg-white border border-[#8c8f94] focus:border-[#2271b1] focus:outline-none rounded text-xs text-[#2c3338]"
+                    />
+                  </div>
                 </div>
               </div>
 
@@ -867,27 +1209,15 @@ export default function AdminPage() {
                         ✕ Remove Class
                       </button>
 
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <div className="md:col-span-2 flex flex-col gap-1.5">
-                          <span className="text-xs font-bold text-[#1d2327]">Class Title</span>
-                          <input
-                            type="text"
-                            required
-                            value={offering.title}
-                            onChange={(e) => handleOfferingChange(index, "title", e.target.value)}
-                            className="px-3.5 py-2.5 bg-white border border-[#8c8f94] focus:border-[#2271b1] focus:outline-none rounded text-xs text-[#2c3338]"
-                          />
-                        </div>
-                        <div className="flex flex-col gap-1.5">
-                          <span className="text-xs font-bold text-[#1d2327]">Flat Fee Price ($)</span>
-                          <input
-                            type="number"
-                            required
-                            value={offering.price}
-                            onChange={(e) => handleOfferingChange(index, "price", parseInt(e.target.value) || 0)}
-                            className="px-3.5 py-2.5 bg-white border border-[#8c8f94] focus:border-[#2271b1] focus:outline-none rounded text-xs text-[#2c3338]"
-                          />
-                        </div>
+                      <div className="flex flex-col gap-1.5">
+                        <span className="text-xs font-bold text-[#1d2327]">Class Title</span>
+                        <input
+                          type="text"
+                          required
+                          value={offering.title}
+                          onChange={(e) => handleOfferingChange(index, "title", e.target.value)}
+                          className="px-3.5 py-2.5 bg-white border border-[#8c8f94] focus:border-[#2271b1] focus:outline-none rounded text-xs text-[#2c3338]"
+                        />
                       </div>
 
                       <div className="flex flex-col gap-1.5">
@@ -943,6 +1273,23 @@ export default function AdminPage() {
                     <option value="on">On (Visible)</option>
                     <option value="off">Off (Hidden)</option>
                   </select>
+                </div>
+              </div>
+
+              {/* ── Portfolio Section Labels ── */}
+              <div className="bg-white border border-[#dcdcde] p-6 rounded shadow-xs flex flex-col gap-4">
+                <h3 className="text-base font-bold text-[#1d2327] border-b border-[#f0f0f1] pb-3.5">Gallery Section Labels</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  <div className="flex flex-col gap-1.5">
+                    <label className="text-xs font-bold text-[#1d2327]">Section Eyebrow Tagline</label>
+                    <p className="text-[10px] text-[#646970] -mt-1">Small label e.g. 'Visual Sanctuary'</p>
+                    <input type="text" value={currentContent.portfolioTagline || ""} onChange={(e) => { if (!editForm) return; setEditForm({ ...editForm, portfolioTagline: e.target.value }); }} placeholder="Visual Sanctuary" className="px-3.5 py-2.5 bg-white border border-[#8c8f94] focus:border-[#2271b1] focus:outline-none rounded text-xs text-[#2c3338]" />
+                  </div>
+                  <div className="flex flex-col gap-1.5">
+                    <label className="text-xs font-bold text-[#1d2327]">Section Heading</label>
+                    <p className="text-[10px] text-[#646970] -mt-1">Large section title e.g. 'Portfolio Gallery'</p>
+                    <input type="text" value={currentContent.portfolioHeading || ""} onChange={(e) => { if (!editForm) return; setEditForm({ ...editForm, portfolioHeading: e.target.value }); }} placeholder="Portfolio Gallery" className="px-3.5 py-2.5 bg-white border border-[#8c8f94] focus:border-[#2271b1] focus:outline-none rounded text-xs text-[#2c3338]" />
+                  </div>
                 </div>
               </div>
 
@@ -1061,6 +1408,23 @@ export default function AdminPage() {
                 </div>
               </div>
 
+              {/* ── Testimonials Section Labels ── */}
+              <div className="bg-white border border-[#dcdcde] p-6 rounded shadow-xs flex flex-col gap-4">
+                <h3 className="text-base font-bold text-[#1d2327] border-b border-[#f0f0f1] pb-3.5">Testimonials Section Labels</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  <div className="flex flex-col gap-1.5">
+                    <label className="text-xs font-bold text-[#1d2327]">Section Eyebrow Tagline</label>
+                    <p className="text-[10px] text-[#646970] -mt-1">Small label e.g. 'Resonance'</p>
+                    <input type="text" value={currentContent.testimonialsTagline || ""} onChange={(e) => { if (!editForm) return; setEditForm({ ...editForm, testimonialsTagline: e.target.value }); }} placeholder="Resonance" className="px-3.5 py-2.5 bg-white border border-[#8c8f94] focus:border-[#2271b1] focus:outline-none rounded text-xs text-[#2c3338]" />
+                  </div>
+                  <div className="flex flex-col gap-1.5">
+                    <label className="text-xs font-bold text-[#1d2327]">Section Heading</label>
+                    <p className="text-[10px] text-[#646970] -mt-1">Large section title e.g. 'Client Testimonials'</p>
+                    <input type="text" value={currentContent.testimonialsHeading || ""} onChange={(e) => { if (!editForm) return; setEditForm({ ...editForm, testimonialsHeading: e.target.value }); }} placeholder="Client Testimonials" className="px-3.5 py-2.5 bg-white border border-[#8c8f94] focus:border-[#2271b1] focus:outline-none rounded text-xs text-[#2c3338]" />
+                  </div>
+                </div>
+              </div>
+
               {/* Insert Form */}
               <div className="bg-white border border-[#dcdcde] p-6 rounded shadow-xs flex flex-col gap-4">
                 <span className="text-xs font-bold text-[#1d2327] uppercase tracking-wider">Add Client Testimonial</span>
@@ -1167,6 +1531,28 @@ export default function AdminPage() {
                     <option value="on">On (Visible)</option>
                     <option value="off">Off (Hidden)</option>
                   </select>
+                </div>
+              </div>
+
+              {/* ── Blog Section Labels ── */}
+              <div className="bg-white border border-[#dcdcde] p-6 rounded shadow-xs flex flex-col gap-4">
+                <h3 className="text-base font-bold text-[#1d2327] border-b border-[#f0f0f1] pb-3.5">Journal Section Labels</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  <div className="flex flex-col gap-1.5">
+                    <label className="text-xs font-bold text-[#1d2327]">Section Eyebrow Tagline</label>
+                    <p className="text-[10px] text-[#646970] -mt-1">Small label e.g. 'Insights'</p>
+                    <input type="text" value={currentContent.blogTagline || ""} onChange={(e) => { if (!editForm) return; setEditForm({ ...editForm, blogTagline: e.target.value }); }} placeholder="Insights" className="px-3.5 py-2.5 bg-white border border-[#8c8f94] focus:border-[#2271b1] focus:outline-none rounded text-xs text-[#2c3338]" />
+                  </div>
+                  <div className="flex flex-col gap-1.5">
+                    <label className="text-xs font-bold text-[#1d2327]">Section Heading</label>
+                    <p className="text-[10px] text-[#646970] -mt-1">Large section title e.g. 'The Philosophy Journal'</p>
+                    <input type="text" value={currentContent.blogHeading || ""} onChange={(e) => { if (!editForm) return; setEditForm({ ...editForm, blogHeading: e.target.value }); }} placeholder="The Philosophy Journal" className="px-3.5 py-2.5 bg-white border border-[#8c8f94] focus:border-[#2271b1] focus:outline-none rounded text-xs text-[#2c3338]" />
+                  </div>
+                  <div className="flex flex-col gap-1.5 md:col-span-2">
+                    <label className="text-xs font-bold text-[#1d2327]">Section Subtitle Paragraph</label>
+                    <p className="text-[10px] text-[#646970] -mt-1">Intro copy beneath the blog section heading</p>
+                    <textarea rows={2} value={currentContent.blogSubtitle || ""} onChange={(e) => { if (!editForm) return; setEditForm({ ...editForm, blogSubtitle: e.target.value }); }} placeholder="Essays, research notes, and reflections..." className="px-3.5 py-2.5 bg-white border border-[#8c8f94] focus:border-[#2271b1] focus:outline-none rounded text-xs text-[#2c3338] resize-none" />
+                  </div>
                 </div>
               </div>
 
@@ -1304,10 +1690,10 @@ export default function AdminPage() {
                   {currentContent.blogPosts.map((post) => {
                     const localPreview = blogPreviews[post.id];
                     return (
-                      <div key={post.id} className="bg-white border border-[#dcdcde] rounded p-5 flex flex-col gap-3 shadow-xs">
+                      <div key={post.id} className="bg-white border border-[#dcdcde] rounded-3xl p-5 flex flex-col gap-3 shadow-xs">
                         <div className="flex justify-between items-start gap-4">
                           <div className="flex items-center gap-3.5 min-w-0">
-                            <div className="w-14 h-14 rounded border border-[#dcdcde] overflow-hidden bg-[#f1f1f1] shrink-0">
+                            <div className="w-14 h-14 rounded-xl border border-[#8C7A6B]/20 overflow-hidden bg-[#8C7A6B]/10 shrink-0">
                               {(localPreview || post.featuredImage) ? (
                                   <img src={localPreview || post.featuredImage} alt="Thumbnail preview" className="w-full h-full object-cover" />
                                 ) : (
@@ -1315,87 +1701,55 @@ export default function AdminPage() {
                                 )}
                             </div>
                             <div className="min-w-0">
-                              <h5 className="text-xs font-bold text-[#1d2327] truncate leading-tight">
-                                {post.title} {post.isFeatured && <span className="text-[9px] bg-amber-100 text-amber-800 px-1.5 py-0.5 rounded font-mono ml-1 font-bold">Featured</span>}
+                              <h5 className="text-xs font-serif font-semibold text-[#E5E0D8] truncate leading-tight">
+                                {post.title} {post.isFeatured && <span className="text-[9px] bg-amber-500/10 text-amber-300 border border-amber-500/20 px-1.5 py-0.5 rounded font-mono ml-1 font-bold">Featured</span>}
                               </h5>
-                              <div className="flex items-center gap-2 mt-1">
-                                <span className="text-[10px] text-[#2271b1] font-semibold">{post.date}</span>
+                              <div className="flex items-center gap-2 mt-1 flex-wrap">
+                                <span className="text-[10px] text-[#8C7A6B] font-semibold">{post.date}</span>
+                                <span className="text-[10px] text-[#E5E0D8]/40">•</span>
+                                <span className="text-[10px] text-[#E5E0D8]/60 italic">{post.category || "Philosophy"}</span>
+                                <span className="text-[10px] text-[#E5E0D8]/40">•</span>
                                 <span className={`text-[9px] px-1.5 py-0.5 rounded font-bold uppercase font-mono ${
-                                  post.status === "draft" ? "bg-gray-100 text-gray-700" : "bg-emerald-50 text-emerald-700"
+                                  post.status === "draft" ? "bg-gray-500/10 text-gray-400 border border-gray-500/20" : "bg-emerald-500/10 text-emerald-300 border border-emerald-500/20"
                                 }`}>
                                   {post.status || "published"}
                                 </span>
                               </div>
                             </div>
                           </div>
-                          <button
-                            type="button"
-                            onClick={() => handleDeleteBlogPost(post.id)}
-                            className="text-xs font-bold text-rose-600 hover:text-rose-800 uppercase shrink-0 cursor-pointer animate-fade-in"
-                          >
-                            Delete
-                          </button>
-                        </div>
-
-                        {/* Inline editor panel */}
-                        <div className="grid grid-cols-2 gap-3 border-t border-[#f0f0f1] pt-3 text-left">
-                          <div className="flex flex-col gap-1">
-                            <label className="text-[9px] font-bold text-[#1d2327] uppercase">Post Status</label>
-                            <select
-                              value={post.status || "published"}
-                              onChange={(e) => {
-                                if (!editForm) return;
-                                const updated = editForm.blogPosts.map((b) =>
-                                  b.id === post.id ? { ...b, status: e.target.value as any } : b
-                                );
-                                setEditForm({ ...editForm, blogPosts: updated });
-                              }}
-                              className="px-2 py-1 bg-white border border-[#8c8f94] rounded text-[11px] text-[#2c3338]"
+                          
+                          <div className="flex items-center gap-2 shrink-0">
+                            <button
+                              type="button"
+                              onClick={() => startEditingPost(post)}
+                              className="px-3 py-1 bg-[#8C7A6B]/10 hover:bg-[#8C7A6B]/20 text-[#E5E0D8] border border-[#8C7A6B]/20 rounded-full text-[10px] font-bold uppercase cursor-pointer transition-colors"
                             >
-                              <option value="published">Published</option>
-                              <option value="draft">Draft</option>
-                            </select>
-                          </div>
-
-                          <div className="flex flex-col gap-1 justify-center pt-2">
-                            <div className="flex items-center gap-1.5">
-                              <input
-                                type="checkbox"
-                                id={`isFeatured_${post.id}`}
-                                checked={post.isFeatured || false}
-                                onChange={(e) => {
-                                  if (!editForm) return;
-                                  const updated = editForm.blogPosts.map((b) =>
-                                    b.id === post.id ? { ...b, isFeatured: e.target.checked } : b
-                                  );
-                                  setEditForm({ ...editForm, blogPosts: updated });
-                                }}
-                                className="w-3.5 h-3.5 text-[#2271b1] border-[#8c8f94] rounded focus:ring-[#2271b1] cursor-pointer"
-                              />
-                              <label htmlFor={`isFeatured_${post.id}`} className="text-[11px] font-bold text-[#1d2327] cursor-pointer select-none">
-                                Featured Pin
-                              </label>
-                            </div>
-                          </div>
-
-                          <div className="col-span-2 flex flex-col gap-1">
-                            <label className="text-[9px] font-bold text-[#1d2327] uppercase">Tags (comma separated)</label>
-                            <input
-                              type="text"
-                              value={Array.isArray(post.tags) ? post.tags.join(", ") : ""}
-                              onChange={(e) => {
-                                if (!editForm) return;
-                                const updated = editForm.blogPosts.map((b) =>
-                                  b.id === post.id
-                                    ? { ...b, tags: e.target.value.split(",").map((t) => t.trim()).filter(Boolean) }
-                                    : b
-                                );
-                                setEditForm({ ...editForm, blogPosts: updated });
-                              }}
-                              className="px-2 py-1 bg-white border-[#8c8f94] rounded text-[11px] text-[#2c3338]"
-                            />
+                              Edit
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => handleDeleteBlogPost(post.id)}
+                              className="px-3 py-1 bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 border border-rose-500/20 rounded-full text-[10px] font-bold uppercase cursor-pointer transition-colors"
+                            >
+                              Delete
+                            </button>
                           </div>
                         </div>
+
+                        {post.excerpt && (
+                          <p className="text-[11px] text-[#E5E0D8]/60 line-clamp-2 border-t border-[#8C7A6B]/10 pt-2.5">
+                            {post.excerpt}
+                          </p>
+                        )}
+                        {post.tags && post.tags.length > 0 && (
+                          <div className="flex flex-wrap gap-1 mt-1">
+                            {post.tags.map((t) => (
+                              <span key={t} className="text-[9px] bg-[#8C7A6B]/5 text-[#E5E0D8]/50 border border-[#8C7A6B]/10 px-1.5 py-0.5 rounded-md font-mono">
+                                #{t}
+                              </span>
+                            ))}
+                          </div>
+                        )}
                       </div>
                     );
                   })}
@@ -1404,16 +1758,16 @@ export default function AdminPage() {
             </div>
           )}
 
-          {/* TAB 7: LEADS PANEL */}
-          {activeTab === "leads" && (
+          {/* TAB 7: CONTACT ME PANEL (Leads Inbox) */}
+          {activeTab === "contactMe" && (
             <div className="flex flex-col gap-6 text-left">
               {/* Notification setting & CSV Export Card at the top */}
-              <div className="bg-white border border-[#dcdcde] p-6 rounded shadow-xs flex flex-col gap-4">
-                <h3 className="text-base font-bold text-[#1d2327] border-b border-[#f0f0f1] pb-3.5">Leads Integration & Settings</h3>
+              <div className="bg-[#161210] border border-[#8C7A6B]/20 p-6 rounded-3xl flex flex-col gap-4 shadow-md">
+                <h3 className="text-lg font-serif font-light text-[#E5E0D8] border-b border-[#8C7A6B]/20 pb-3">Inquiry Settings & Integration</h3>
                 
                 <div className="flex flex-col md:flex-row md:items-end gap-5">
                   <div className="flex-1 flex flex-col gap-1.5">
-                    <label className="text-xs font-bold text-[#1d2327]">Notification Email Address</label>
+                    <label className="text-[10px] uppercase tracking-[0.25em] font-semibold text-[#E5E0D8]/80">Notification Email Address</label>
                     <input
                       type="email"
                       required
@@ -1423,61 +1777,65 @@ export default function AdminPage() {
                         setEditForm({ ...editForm, contactEmail: e.target.value });
                       }}
                       placeholder="elena@example.com"
-                      className="px-3.5 py-2 bg-white border border-[#8c8f94] focus:border-[#2271b1] focus:outline-none rounded text-xs text-[#2c3338]"
+                      className="px-5 py-3 bg-[#8C7A6B]/10 border border-[#8C7A6B]/40 focus:border-[#8C7A6B] focus:outline-none rounded-xl text-xs text-[#E5E0D8] tracking-wide placeholder-[#E5E0D8]/30"
                     />
                   </div>
 
                   <button
                     type="button"
                     onClick={handleExportLeadsCSV}
-                    className="h-9 px-4 bg-[#2271b1] hover:bg-[#135e96] text-white text-xs font-semibold rounded cursor-pointer transition-colors shadow-xs"
+                    className="h-10 px-5 bg-[#8C7A6B] hover:bg-[#6B5D51] text-[#0B0807] text-xs font-bold uppercase rounded-full transition-colors cursor-pointer shadow-md"
                   >
-                    Export All Leads (CSV)
+                    Export All Inquiries (CSV)
                   </button>
                 </div>
               </div>
 
               {/* Leads inbox review */}
-              <div className="bg-white border border-[#dcdcde] p-6 rounded shadow-xs flex flex-col gap-4">
-                <h3 className="text-base font-bold text-[#1d2327] border-b border-[#f0f0f1] pb-3.5">Visitor Inquiries Inbox</h3>
+              <div className="bg-[#161210] border border-[#8C7A6B]/20 p-6 rounded-3xl flex flex-col gap-4 shadow-md">
+                <h3 className="text-lg font-serif font-light text-[#E5E0D8] border-b border-[#8C7A6B]/20 pb-3">Visitor Inquiries Inbox</h3>
                 
                 {(!currentContent.leads || currentContent.leads.length === 0) ? (
-                  <div className="p-8 text-center text-[#8c8f94] italic text-sm">
+                  <div className="p-8 text-center text-[#E5E0D8]/40 italic text-sm">
                     No inquiries received yet.
                   </div>
                 ) : (
                   <div className="overflow-x-auto">
                     <table className="w-full text-left border-collapse text-xs">
                       <thead>
-                        <tr className="border-b border-[#dcdcde] bg-[#f9f9f9]">
-                          <th className="p-3 font-bold text-[#1d2327] w-36">Name</th>
-                          <th className="p-3 font-bold text-[#1d2327] w-48">Email</th>
-                          <th className="p-3 font-bold text-[#1d2327] w-44">Date / Time</th>
-                          <th className="p-3 font-bold text-[#1d2327]">Inquiry Message</th>
-                          <th className="p-3 font-bold text-[#1d2327] w-24 text-center">Status</th>
-                          <th className="p-3 font-bold text-[#1d2327] w-48 text-right">Actions</th>
+                        <tr className="border-b border-[#8C7A6B]/20 bg-[#0B0807]">
+                          <th className="p-3 font-semibold text-[#E5E0D8]/80 uppercase tracking-wider text-[10px] w-28">Name</th>
+                          <th className="p-3 font-semibold text-[#E5E0D8]/80 uppercase tracking-wider text-[10px] w-36">Email</th>
+                          <th className="p-3 font-semibold text-[#E5E0D8]/80 uppercase tracking-wider text-[10px] w-28">Location</th>
+                          <th className="p-3 font-semibold text-[#E5E0D8]/80 uppercase tracking-wider text-[10px] w-32">Date / Time</th>
+                          <th className="p-3 font-semibold text-[#E5E0D8]/80 uppercase tracking-wider text-[10px]">Inquiry Message</th>
+                          <th className="p-3 font-semibold text-[#E5E0D8]/80 uppercase tracking-wider text-[10px] w-20 text-center">Status</th>
+                          <th className="p-3 font-semibold text-[#E5E0D8]/80 uppercase tracking-wider text-[10px] w-40 text-right">Actions</th>
                         </tr>
                       </thead>
                       <tbody>
                         {currentContent.leads.map((lead) => (
-                          <tr key={lead.id} className="border-b border-[#f0f0f1] hover:bg-[#fafafa]">
-                            <td className="p-3 font-bold text-[#1d2327]">{lead.name}</td>
+                          <tr key={lead.id} className="border-b border-[#8C7A6B]/10 hover:bg-[#8C7A6B]/5 text-[#E5E0D8] transition-colors">
+                            <td className="p-3 font-semibold">{lead.name}</td>
                             <td className="p-3">
-                              <a href={`mailto:${lead.email}`} className="text-[#2271b1] hover:underline font-mono">{lead.email}</a>
+                              <a href={`mailto:${lead.email}`} className="text-[#8C7A6B] hover:underline font-mono">{lead.email}</a>
                             </td>
-                            <td className="p-3 text-[#8c8f94] font-mono">
+                            <td className="p-3 text-[#E5E0D8]/70 font-serif italic">{lead.location || "Not Provided"}</td>
+                            <td className="p-3 text-[#E5E0D8]/60 font-mono">
                               {new Date(lead.timestamp).toLocaleString()}
                             </td>
-                            <td className="p-3 whitespace-pre-wrap leading-relaxed text-[#2c3338]">{lead.message}</td>
+                            <td className="p-3 whitespace-pre-wrap leading-relaxed text-[#E5E0D8]/90">{lead.message}</td>
                             <td className="p-3 text-center">
-                              <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase font-mono ${
-                                lead.status === "New" ? "bg-blue-100 text-blue-800" : "bg-gray-100 text-gray-700"
+                              <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase font-mono border ${
+                                lead.status === "New" 
+                                  ? "bg-blue-950/40 text-blue-300 border-blue-500/20" 
+                                  : "bg-gray-800/40 text-gray-400 border-gray-700/20"
                               }`}>
                                 {lead.status || "New"}
                               </span>
                             </td>
                             <td className="p-3 text-right">
-                              <div className="flex justify-end gap-2">
+                              <div className="flex justify-end gap-1.5">
                                 <button
                                   type="button"
                                   onClick={() => {
@@ -1485,7 +1843,7 @@ export default function AdminPage() {
                                     const updated = editForm.leads?.map(l => l.id === lead.id ? { ...l, status: (l.status === "New" ? "Read" : "New") as "New" | "Read" } : l) || [];
                                     setEditForm({ ...editForm, leads: updated });
                                   }}
-                                  className="px-2.5 py-1 text-[11px] font-semibold border border-[#8c8f94] rounded bg-white hover:bg-[#f9f9f9] text-[#2c3338] cursor-pointer"
+                                  className="px-2.5 py-1 text-[10px] font-semibold border border-[#8C7A6B]/40 rounded-full bg-[#8C7A6B]/10 hover:bg-[#8C7A6B]/20 text-[#E5E0D8] cursor-pointer transition-colors"
                                 >
                                   {lead.status === "New" ? "Mark Read" : "Mark New"}
                                 </button>
@@ -1496,7 +1854,7 @@ export default function AdminPage() {
                                     const updated = editForm.leads?.filter(l => l.id !== lead.id) || [];
                                     setEditForm({ ...editForm, leads: updated });
                                   }}
-                                  className="px-2.5 py-1 text-[11px] font-semibold border border-rose-300 rounded bg-white hover:bg-rose-50 text-rose-600 cursor-pointer"
+                                  className="px-2.5 py-1 text-[10px] font-semibold border border-rose-500/40 rounded-full bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 cursor-pointer transition-colors"
                                 >
                                   Delete
                                 </button>
@@ -1512,58 +1870,202 @@ export default function AdminPage() {
             </div>
           )}
 
-          {/* ───────────── CUSTOMIZATION TAB ───────────── */}
-          {activeTab === "customization" && editForm && (
-            <div className="flex flex-col gap-8">
-
-              {/* Contact Portrait Uploader */}
-              <div className="bg-white border border-[#dcdcde] rounded-lg p-6 flex flex-col gap-5">
+          {/* TAB 8: BOOK A SESSION IN-CONTEXT VISUAL EDITOR */}
+          {activeTab === "bookSession" && editForm && (
+            <div className="flex flex-col gap-6 text-left">
+              
+              <div className="bg-[#161210] border border-[#8C7A6B]/20 rounded-3xl p-8 flex flex-col gap-8 shadow-md">
                 <div>
-                  <h3 className="text-base font-semibold text-[#1d2327] mb-1">Contact Section Portrait</h3>
-                  <p className="text-xs text-[#646970]">Upload a photo of Elena that will appear as a portrait column beside the inquiry form on the public website.</p>
+                  <h3 className="text-lg font-serif font-light text-[#E5E0D8] border-b border-[#8C7A6B]/20 pb-3 mb-1">Book a Session In-Context Visual Editor</h3>
+                  <p className="text-xs text-[#E5E0D8]/60">Every input field, layout structure, and design matches the live booking component exactly.</p>
                 </div>
-                <div className="flex flex-col sm:flex-row gap-5 items-start">
-                  {(contactPortraitPreview || editForm.contactPortraitUrl) && (
-                    <div className="w-36 h-44 rounded-lg overflow-hidden border border-[#dcdcde] shrink-0">
-                      <img
-                        src={contactPortraitPreview || editForm.contactPortraitUrl}
-                        alt="Contact portrait preview"
-                        className="w-full h-full object-cover"
-                      />
+
+                <div className="flex flex-col lg:flex-row gap-8 items-start">
+                  
+                  {/* Left Column - Simulated Portrait Image Box */}
+                  <div className="w-full lg:w-80 shrink-0 flex flex-col gap-5">
+                    <span className="text-[10px] uppercase tracking-[0.25em] font-semibold text-[#E5E0D8]/80">Form Portrait Column Banner</span>
+                    
+                    <div className="relative overflow-hidden rounded-2xl w-full h-[400px] bg-[#8C7A6B]/10 border border-[#8C7A6B]/20 shadow-inner group">
+                      {(contactPortraitPreview || editForm.contactPortraitUrl) ? (
+                        <img
+                          src={contactPortraitPreview || editForm.contactPortraitUrl}
+                          alt="Book a session image preview"
+                          className="w-full h-full object-cover object-center absolute inset-0"
+                        />
+                      ) : (
+                        <img
+                          src="https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?q=80&w=1000&auto=format&fit=crop"
+                          alt="Book a session fallback"
+                          className="w-full h-full object-cover object-center absolute inset-0 opacity-40"
+                        />
+                      )}
+                      
+                      {/* Gradient overlay */}
+                      <div className="absolute inset-0 flex flex-col justify-end p-6" style={{ background: "linear-gradient(to top, #0B0807E6 0%, transparent 60%)" }}>
+                        <span className="text-[9px] uppercase tracking-widest font-bold text-[#E5E0D8]/60">{currentContent.studioName || "Elena Yoga"}</span>
+                        <span className="text-sm font-serif font-semibold mt-0.5 text-[#E5E0D8]">In-Context Portrait</span>
+                      </div>
                     </div>
-                  )}
-                  <div className="flex flex-col gap-3 flex-1">
-                    <label className="text-xs font-semibold text-[#1d2327]">Upload Portrait Photo</label>
-                    <input
-                      type="file"
-                      accept="image/*"
-                      onChange={handleContactPortraitFileChange}
-                      className="text-xs text-[#2c3338] file:mr-3 file:py-1.5 file:px-4 file:rounded file:border file:border-[#8c8f94] file:bg-white file:text-xs file:font-medium file:cursor-pointer"
-                    />
-                    {editForm.contactPortraitUrl && !contactPortraitFile && (
-                      <button
-                        type="button"
-                        onClick={() => setEditForm({ ...editForm, contactPortraitUrl: "" })}
-                        className="text-[11px] text-rose-600 hover:underline text-left w-max"
-                      >
-                        Remove portrait
-                      </button>
-                    )}
-                    <p className="text-[11px] text-[#646970]">Recommended: portrait orientation (e.g. 600×800px). JPG or PNG.</p>
+
+                    {/* Vercel Blob Image Manager Controls */}
+                    <div className="flex flex-col gap-3 bg-[#0B0807] border border-[#8C7A6B]/20 p-4 rounded-xl">
+                      <label className="text-[10px] uppercase tracking-[0.25em] font-semibold text-[#E5E0D8]/80">Upload Photo</label>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={handleContactPortraitFileChange}
+                        className="text-xs text-[#E5E0D8] file:mr-3 file:py-1.5 file:px-4 file:rounded-full file:border file:border-[#8C7A6B]/40 file:bg-[#8C7A6B]/10 file:text-[#E5E0D8] file:text-xs file:font-semibold file:cursor-pointer hover:file:bg-[#8C7A6B]/20"
+                      />
+                      {editForm.contactPortraitUrl && !contactPortraitFile && (
+                        <button
+                          type="button"
+                          onClick={() => setEditForm({ ...editForm, contactPortraitUrl: "" })}
+                          className="text-[10px] text-rose-400 hover:underline text-left w-max font-semibold uppercase tracking-wider cursor-pointer"
+                        >
+                          Remove Photo
+                        </button>
+                      )}
+                      <p className="text-[10px] text-[#E5E0D8]/40">Recommended: portrait aspect ratio (e.g. 600×800px). JPG or PNG.</p>
+                    </div>
                   </div>
+
+                  {/* Right Column - Simulated Contact Form Editable Fields */}
+                  <div className="flex-1 flex flex-col gap-5 bg-[#0B0807] border border-[#8C7A6B]/20 p-6 md:p-8 rounded-2xl w-full">
+                    <span className="text-[10px] uppercase tracking-[0.25em] font-semibold text-[#E5E0D8]/80">Interactive Labels & Heading Configurator</span>
+                    
+                    {/* Headings */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 border-b border-[#8C7A6B]/20 pb-5">
+                      <div className="flex flex-col gap-1.5">
+                        <label className="text-[10px] uppercase tracking-[0.25em] font-semibold text-[#E5E0D8]/80">Section Eyebrow Tagline</label>
+                        <input
+                          type="text"
+                          value={editForm.contactTagline || ""}
+                          onChange={(e) => setEditForm({ ...editForm, contactTagline: e.target.value })}
+                          placeholder="Begin Journey"
+                          className="px-4 py-3 bg-[#8C7A6B]/10 border border-[#8C7A6B]/40 focus:border-[#8C7A6B] focus:outline-none rounded-xl text-xs text-[#E5E0D8] tracking-wide placeholder-[#E5E0D8]/30"
+                        />
+                      </div>
+                      <div className="flex flex-col gap-1.5">
+                        <label className="text-[10px] uppercase tracking-[0.25em] font-semibold text-[#E5E0D8]/80">Section Heading</label>
+                        <input
+                          type="text"
+                          value={editForm.contactHeading || ""}
+                          onChange={(e) => setEditForm({ ...editForm, contactHeading: e.target.value })}
+                          placeholder="Book a Session"
+                          className="px-4 py-3 bg-[#8C7A6B]/10 border border-[#8C7A6B]/40 focus:border-[#8C7A6B] focus:outline-none rounded-xl text-xs text-[#E5E0D8] tracking-wide placeholder-[#E5E0D8]/30"
+                        />
+                      </div>
+                      <div className="flex flex-col gap-1.5 md:col-span-2">
+                        <label className="text-[10px] uppercase tracking-[0.25em] font-semibold text-[#E5E0D8]/80">Subtitle / Intro Paragraph</label>
+                        <textarea
+                          rows={2}
+                          value={editForm.contactSubtitle || ""}
+                          onChange={(e) => setEditForm({ ...editForm, contactSubtitle: e.target.value })}
+                          placeholder="Leave your details below..."
+                          className="px-4 py-3 bg-[#8C7A6B]/10 border border-[#8C7A6B]/40 focus:border-[#8C7A6B] focus:outline-none rounded-xl text-xs text-[#E5E0D8] tracking-wide resize-none placeholder-[#E5E0D8]/30"
+                        />
+                      </div>
+                    </div>
+
+                    {/* Simulated Fields Configuration */}
+                    <div className="flex flex-col gap-4 border-b border-[#8C7A6B]/20 pb-5">
+                      <div className="flex flex-col gap-1.5">
+                        <label className="text-[10px] uppercase tracking-[0.25em] font-semibold text-[#E5E0D8]/60">Name Input Label</label>
+                        <input
+                          type="text"
+                          value={editForm.contactNameLabel || ""}
+                          onChange={(e) => setEditForm({ ...editForm, contactNameLabel: e.target.value })}
+                          placeholder="Name"
+                          className="px-4 py-3 bg-[#8C7A6B]/10 border border-[#8C7A6B]/40 focus:border-[#8C7A6B] focus:outline-none rounded-xl text-xs text-[#E5E0D8] tracking-wide placeholder-[#E5E0D8]/30"
+                        />
+                      </div>
+                      <div className="flex flex-col gap-1.5">
+                        <label className="text-[10px] uppercase tracking-[0.25em] font-semibold text-[#E5E0D8]/60">Email Input Label</label>
+                        <input
+                          type="text"
+                          value={editForm.contactEmailLabel || ""}
+                          onChange={(e) => setEditForm({ ...editForm, contactEmailLabel: e.target.value })}
+                          placeholder="Email"
+                          className="px-4 py-3 bg-[#8C7A6B]/10 border border-[#8C7A6B]/40 focus:border-[#8C7A6B] focus:outline-none rounded-xl text-xs text-[#E5E0D8] tracking-wide placeholder-[#E5E0D8]/30"
+                        />
+                      </div>
+                      <div className="flex flex-col gap-1.5">
+                        <label className="text-[10px] uppercase tracking-[0.25em] font-semibold text-[#E5E0D8]/60">Location Input Label</label>
+                        <input
+                          type="text"
+                          value={editForm.contactLocationLabel || ""}
+                          onChange={(e) => setEditForm({ ...editForm, contactLocationLabel: e.target.value })}
+                          placeholder="Preferred Location"
+                          className="px-4 py-3 bg-[#8C7A6B]/10 border border-[#8C7A6B]/40 focus:border-[#8C7A6B] focus:outline-none rounded-xl text-xs text-[#E5E0D8] tracking-wide placeholder-[#E5E0D8]/30"
+                        />
+                      </div>
+                      <div className="flex flex-col gap-1.5">
+                        <label className="text-[10px] uppercase tracking-[0.25em] font-semibold text-[#E5E0D8]/60">Message Input Label</label>
+                        <input
+                          type="text"
+                          value={editForm.contactMessageLabel || ""}
+                          onChange={(e) => setEditForm({ ...editForm, contactMessageLabel: e.target.value })}
+                          placeholder="Message or Intentions"
+                          className="px-4 py-3 bg-[#8C7A6B]/10 border border-[#8C7A6B]/40 focus:border-[#8C7A6B] focus:outline-none rounded-xl text-xs text-[#E5E0D8] tracking-wide placeholder-[#E5E0D8]/30"
+                        />
+                      </div>
+                      <div className="flex flex-col gap-1.5">
+                        <label className="text-[10px] uppercase tracking-[0.25em] font-semibold text-[#E5E0D8]/60">Submit Button Label</label>
+                        <input
+                          type="text"
+                          value={editForm.contactSubmitLabel || ""}
+                          onChange={(e) => setEditForm({ ...editForm, contactSubmitLabel: e.target.value })}
+                          placeholder="Send Request"
+                          className="px-4 py-3 bg-[#8C7A6B]/10 border border-[#8C7A6B]/40 focus:border-[#8C7A6B] focus:outline-none rounded-xl text-xs text-[#E5E0D8] tracking-wide placeholder-[#E5E0D8]/30"
+                        />
+                      </div>
+                    </div>
+
+                    {/* Success states */}
+                    <div className="flex flex-col gap-4">
+                      <div className="flex flex-col gap-1.5">
+                        <label className="text-[10px] uppercase tracking-[0.25em] font-semibold text-[#E5E0D8]/80">Success Confirmation Title</label>
+                        <input
+                          type="text"
+                          value={editForm.contactSuccessTitle || ""}
+                          onChange={(e) => setEditForm({ ...editForm, contactSuccessTitle: e.target.value })}
+                          placeholder="Request Transmitted"
+                          className="px-4 py-3 bg-[#8C7A6B]/10 border border-[#8C7A6B]/40 focus:border-[#8C7A6B] focus:outline-none rounded-xl text-xs text-[#E5E0D8] tracking-wide placeholder-[#E5E0D8]/30"
+                        />
+                      </div>
+                      <div className="flex flex-col gap-1.5">
+                        <label className="text-[10px] uppercase tracking-[0.25em] font-semibold text-[#E5E0D8]/80">Success Confirmation Message</label>
+                        <textarea
+                          rows={2}
+                          value={editForm.contactSuccessMessage || ""}
+                          onChange={(e) => setEditForm({ ...editForm, contactSuccessMessage: e.target.value })}
+                          placeholder="Elena has received your request..."
+                          className="px-4 py-3 bg-[#8C7A6B]/10 border border-[#8C7A6B]/40 focus:border-[#8C7A6B] focus:outline-none rounded-xl text-xs text-[#E5E0D8] tracking-wide resize-none placeholder-[#E5E0D8]/30"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
                 </div>
               </div>
+            </div>
+          )}
+
+          {/* ───────────── CUSTOMIZATION TAB ───────────── */}
+          {activeTab === "customization" && editForm && (
+            <div className="flex flex-col gap-6 text-left">
 
               {/* Theme Color Scheme */}
-              <div className="bg-white border border-[#dcdcde] rounded-lg p-6 flex flex-col gap-6">
+              <div className="bg-[#161210] border border-[#8C7A6B]/20 p-6 rounded-3xl flex flex-col gap-6 shadow-md">
                 <div>
-                  <h3 className="text-base font-semibold text-[#1d2327] mb-1">Theme Color Scheme</h3>
-                  <p className="text-xs text-[#646970]">Set the primary design tokens for the public website. Changes take effect immediately after saving.</p>
+                  <h3 className="text-lg font-serif font-light text-[#E5E0D8] border-b border-[#8C7A6B]/20 pb-3 mb-1">Theme Color Scheme</h3>
+                  <p className="text-xs text-[#E5E0D8]/60">Set the design tokens for the public website. Changes apply immediately after saving.</p>
                 </div>
 
-                {/* Preset palette quick-select buttons */}
+                {/* Presets */}
                 <div className="flex flex-col gap-2">
-                  <label className="text-xs font-semibold text-[#1d2327]">Quick Palette Presets</label>
+                  <label className="text-[10px] uppercase tracking-[0.25em] font-semibold text-[#E5E0D8]/80">Quick Palette Presets</label>
                   <div className="flex flex-wrap gap-2">
                     {[
                       { label: "Dark Espresso", primary: "#8C7A6B", background: "#0B0807", card: "#161210", text: "#E5E0D8", accent: "#6B5D51" },
@@ -1583,10 +2085,10 @@ export default function AdminPage() {
                           themeText: preset.text,
                           themeAccent: preset.accent,
                         })}
-                        className="flex items-center gap-2 px-3 py-1.5 border border-[#dcdcde] rounded bg-white hover:bg-[#f6f7f7] text-xs font-medium text-[#2c3338] cursor-pointer"
+                        className="flex items-center gap-2 px-3.5 py-1.5 border border-[#8C7A6B]/40 rounded-full bg-[#8C7A6B]/10 hover:bg-[#8C7A6B]/20 text-xs font-semibold text-[#E5E0D8] cursor-pointer transition-colors"
                       >
                         <span
-                          className="w-3.5 h-3.5 rounded-full border border-[#dcdcde] shrink-0"
+                          className="w-3 h-3 rounded-full border border-[#E5E0D8]/20 shrink-0"
                           style={{ backgroundColor: preset.primary }}
                         />
                         {preset.label}
@@ -1595,7 +2097,7 @@ export default function AdminPage() {
                   </div>
                 </div>
 
-                {/* Individual color token pickers */}
+                {/* Picker grid */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
                   {[
                     { field: "themePrimary", label: "Primary / Accent Color", desc: "Buttons, tags, links" },
@@ -1605,14 +2107,14 @@ export default function AdminPage() {
                     { field: "themeAccent", label: "Secondary Accent", desc: "Borders, subtle glows" },
                   ].map(({ field, label, desc }) => (
                     <div key={field} className="flex flex-col gap-2">
-                      <label className="text-xs font-semibold text-[#1d2327]">{label}</label>
-                      <p className="text-[11px] text-[#646970] -mt-1">{desc}</p>
+                      <label className="text-[10px] uppercase tracking-[0.25em] font-semibold text-[#E5E0D8]/80">{label}</label>
+                      <p className="text-[10px] text-[#E5E0D8]/40 -mt-1">{desc}</p>
                       <div className="flex items-center gap-3">
                         <input
                           type="color"
                           value={(editForm as any)[field] || "#000000"}
                           onChange={(e) => setEditForm({ ...editForm, [field]: e.target.value })}
-                          className="w-10 h-10 rounded border border-[#8c8f94] cursor-pointer bg-white p-0.5"
+                          className="w-10 h-10 rounded border border-[#8C7A6B]/40 cursor-pointer bg-[#0B0807] p-0.5"
                         />
                         <input
                           type="text"
@@ -1620,7 +2122,7 @@ export default function AdminPage() {
                           onChange={(e) => setEditForm({ ...editForm, [field]: e.target.value })}
                           placeholder="#000000"
                           maxLength={7}
-                          className="px-3 py-2 border border-[#8c8f94] rounded text-xs text-[#2c3338] w-28 font-mono"
+                          className="px-3.5 py-2 bg-[#8C7A6B]/10 border border-[#8C7A6B]/40 focus:border-[#8C7A6B] focus:outline-none rounded-xl text-xs text-[#E5E0D8] tracking-wide placeholder-[#E5E0D8]/30 font-mono w-28"
                         />
                       </div>
                     </div>
@@ -1628,94 +2130,34 @@ export default function AdminPage() {
                 </div>
               </div>
 
-              {/* Ambient Audio Presets */}
-              <div className="bg-white border border-[#dcdcde] rounded-lg p-6 flex flex-col gap-5">
-                <div>
-                  <h3 className="text-base font-semibold text-[#1d2327] mb-1">Ambient Audio</h3>
-                  <p className="text-xs text-[#646970]">When enabled, a subtle ambient sound plays at very low volume on the visitor's first click or interaction with the site.</p>
+              {/* ── Footer Tagline ── */}
+              <div className="bg-[#161210] border border-[#8C7A6B]/20 p-6 rounded-3xl flex flex-col gap-4 shadow-md">
+                <h3 className="text-lg font-serif font-light text-[#E5E0D8] border-b border-[#8C7A6B]/20 pb-3 mb-1">Footer Tagline</h3>
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-[10px] uppercase tracking-[0.25em] font-semibold text-[#E5E0D8]/80">Footer Tagline Text</label>
+                  <p className="text-[10px] text-[#E5E0D8]/40 -mt-1">Short motto displayed in the website footer e.g. 'Peace • Alignment • Somatic Wisdom'</p>
+                  <input type="text" value={editForm.footerTagline || ""} onChange={(e) => { if (!editForm) return; setEditForm({ ...editForm, footerTagline: e.target.value }); }} placeholder="Peace • Alignment • Somatic Wisdom" className="px-4 py-3 bg-[#8C7A6B]/10 border border-[#8C7A6B]/40 focus:border-[#8C7A6B] focus:outline-none rounded-xl text-xs text-[#E5E0D8] tracking-wide placeholder-[#E5E0D8]/30 max-w-lg" />
                 </div>
-
-                {/* On/Off Toggle */}
-                <div className="flex items-center gap-4">
-                  <label className="text-xs font-semibold text-[#1d2327]">Ambient Audio</label>
-                  <div className="flex items-center gap-2">
-                    <button
-                      type="button"
-                      onClick={() => setEditForm({ ...editForm, audioEnabled: true })}
-                      className={`px-4 py-1.5 rounded border text-xs font-semibold cursor-pointer transition-colors ${
-                        editForm.audioEnabled
-                          ? "bg-[#2271b1] text-white border-[#2271b1]"
-                          : "bg-white text-[#646970] border-[#dcdcde] hover:bg-[#f6f7f7]"
-                      }`}
-                    >
-                      On
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setEditForm({ ...editForm, audioEnabled: false })}
-                      className={`px-4 py-1.5 rounded border text-xs font-semibold cursor-pointer transition-colors ${
-                        !editForm.audioEnabled
-                          ? "bg-[#2271b1] text-white border-[#2271b1]"
-                          : "bg-white text-[#646970] border-[#dcdcde] hover:bg-[#f6f7f7]"
-                      }`}
-                    >
-                      Off
-                    </button>
-                  </div>
-                </div>
-
-                {/* Preset Selection */}
-                {editForm.audioEnabled && (
-                  <div className="flex flex-col gap-3 pl-1">
-                    <label className="text-xs font-semibold text-[#1d2327]">Audio Preset</label>
-                    <div className="flex flex-col gap-2">
-                      {[
-                        { value: "tibetan-bowl", label: "Tibetan Bowl", desc: "Warm, resonant bowl singing tones" },
-                        { value: "sacred-gong", label: "Sacred Gong", desc: "Deep, expansive gong reverberations" },
-                        { value: "peace-chimes", label: "Peace Chimes", desc: "Gentle wind chime ambience" },
-                      ].map((preset) => (
-                        <label
-                          key={preset.value}
-                          className="flex items-start gap-3 p-3 border rounded cursor-pointer hover:bg-[#f6f7f7] transition-colors"
-                          style={{ borderColor: editForm.audioPreset === preset.value ? "#2271b1" : "#dcdcde", backgroundColor: editForm.audioPreset === preset.value ? "#f0f6fc" : "" }}
-                        >
-                          <input
-                            type="radio"
-                            name="audioPreset"
-                            value={preset.value}
-                            checked={editForm.audioPreset === preset.value}
-                            onChange={() => setEditForm({ ...editForm, audioPreset: preset.value as any })}
-                            className="mt-0.5 accent-[#2271b1]"
-                          />
-                          <div>
-                            <span className="text-xs font-semibold text-[#1d2327]">{preset.label}</span>
-                            <p className="text-[11px] text-[#646970] mt-0.5">{preset.desc}</p>
-                          </div>
-                        </label>
-                      ))}
-                    </div>
-                  </div>
-                )}
               </div>
 
               {/* Social Media Footer */}
-              <div className="bg-white border border-[#dcdcde] rounded-lg p-6 flex flex-col gap-5">
+              <div className="bg-[#161210] border border-[#8C7A6B]/20 p-6 rounded-3xl flex flex-col gap-5 shadow-md">
                 <div>
-                  <h3 className="text-base font-semibold text-[#1d2327] mb-1">Social Media Footer Icons</h3>
-                  <p className="text-xs text-[#646970]">When enabled, social media icons will appear in the public website footer. Leave a handle blank to hide that platform's icon.</p>
+                  <h3 className="text-lg font-serif font-light text-[#E5E0D8] border-b border-[#8C7A6B]/20 pb-3 mb-1">Social Media Footer Icons</h3>
+                  <p className="text-xs text-[#E5E0D8]/60">When enabled, social media icons will appear in the public website footer. Leave blank to hide.</p>
                 </div>
 
-                {/* Master On/Off Toggle */}
+                {/* Toggle */}
                 <div className="flex items-center gap-4">
-                  <label className="text-xs font-semibold text-[#1d2327]">Show Social Icons in Footer</label>
+                  <label className="text-[10px] uppercase tracking-[0.25em] font-semibold text-[#E5E0D8]/80">Show Social Icons in Footer</label>
                   <div className="flex items-center gap-2">
                     <button
                       type="button"
                       onClick={() => setEditForm({ ...editForm, socialEnabled: true })}
-                      className={`px-4 py-1.5 rounded border text-xs font-semibold cursor-pointer transition-colors ${
+                      className={`px-4 py-1.5 rounded-full border text-xs font-semibold cursor-pointer transition-colors ${
                         editForm.socialEnabled
-                          ? "bg-[#2271b1] text-white border-[#2271b1]"
-                          : "bg-white text-[#646970] border-[#dcdcde] hover:bg-[#f6f7f7]"
+                          ? "bg-[#8C7A6B] text-[#0B0807] border-[#8C7A6B]"
+                          : "bg-transparent text-[#E5E0D8]/60 border-[#8C7A6B]/40 hover:bg-[#8C7A6B]/10"
                       }`}
                     >
                       On
@@ -1723,10 +2165,10 @@ export default function AdminPage() {
                     <button
                       type="button"
                       onClick={() => setEditForm({ ...editForm, socialEnabled: false })}
-                      className={`px-4 py-1.5 rounded border text-xs font-semibold cursor-pointer transition-colors ${
+                      className={`px-4 py-1.5 rounded-full border text-xs font-semibold cursor-pointer transition-colors ${
                         !editForm.socialEnabled
-                          ? "bg-[#2271b1] text-white border-[#2271b1]"
-                          : "bg-white text-[#646970] border-[#dcdcde] hover:bg-[#f6f7f7]"
+                          ? "bg-[#8C7A6B] text-[#0B0807] border-[#8C7A6B]"
+                          : "bg-transparent text-[#E5E0D8]/60 border-[#8C7A6B]/40 hover:bg-[#8C7A6B]/10"
                       }`}
                     >
                       Off
@@ -1736,69 +2178,230 @@ export default function AdminPage() {
 
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                   <div className="flex flex-col gap-1.5">
-                    <label className="text-xs font-semibold text-[#1d2327] flex items-center gap-1.5">
-                      <svg viewBox="0 0 24 24" fill="currentColor" className="w-3.5 h-3.5 text-[#646970]">
+                    <label className="text-[10px] uppercase tracking-[0.25em] font-semibold text-[#E5E0D8]/80 flex items-center gap-1.5">
+                      <svg viewBox="0 0 24 24" fill="currentColor" className="w-3.5 h-3.5 text-[#E5E0D8]/60">
                         <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z" />
-                      </svg>
-                      Instagram Handle
-                    </label>
-                    <input
-                      type="text"
-                      value={editForm.socialInstagram || ""}
-                      onChange={(e) => setEditForm({ ...editForm, socialInstagram: e.target.value })}
-                      placeholder="@elenayoga"
-                      className="px-3 py-2.5 border border-[#8c8f94] focus:border-[#2271b1] focus:outline-none rounded text-xs text-[#2c3338]"
-                    />
-                  </div>
-                  <div className="flex flex-col gap-1.5">
-                    <label className="text-xs font-semibold text-[#1d2327] flex items-center gap-1.5">
-                      <svg viewBox="0 0 24 24" fill="currentColor" className="w-3.5 h-3.5 text-[#646970]">
-                        <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
-                      </svg>
-                      Facebook Handle
-                    </label>
-                    <input
-                      type="text"
-                      value={editForm.socialFacebook || ""}
-                      onChange={(e) => setEditForm({ ...editForm, socialFacebook: e.target.value })}
-                      placeholder="ElenaMindfulYoga"
-                      className="px-3 py-2.5 border border-[#8c8f94] focus:border-[#2271b1] focus:outline-none rounded text-xs text-[#2c3338]"
-                    />
-                  </div>
-                  <div className="flex flex-col gap-1.5">
-                    <label className="text-xs font-semibold text-[#1d2327] flex items-center gap-1.5">
-                      <svg viewBox="0 0 24 24" fill="currentColor" className="w-3.5 h-3.5 text-[#646970]">
-                        <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z" />
-                      </svg>
-                      YouTube Channel
-                    </label>
-                    <input
-                      type="text"
-                      value={editForm.socialYoutube || ""}
-                      onChange={(e) => setEditForm({ ...editForm, socialYoutube: e.target.value })}
-                      placeholder="@ElenaMindfulYoga"
-                      className="px-3 py-2.5 border border-[#8c8f94] focus:border-[#2271b1] focus:outline-none rounded text-xs text-[#2c3338]"
-                    />
-                  </div>
+                    </svg>
+                    Instagram Handle
+                  </label>
+                  <input
+                    type="text"
+                    value={editForm.socialInstagram || ""}
+                    onChange={(e) => setEditForm({ ...editForm, socialInstagram: e.target.value })}
+                    placeholder="@elenayoga"
+                    className="px-4 py-3 bg-[#8C7A6B]/10 border border-[#8C7A6B]/40 focus:border-[#8C7A6B] focus:outline-none rounded-xl text-xs text-[#E5E0D8] tracking-wide placeholder-[#E5E0D8]/30"
+                  />
+                </div>
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-[10px] uppercase tracking-[0.25em] font-semibold text-[#E5E0D8]/80 flex items-center gap-1.5">
+                    <svg viewBox="0 0 24 24" fill="currentColor" className="w-3.5 h-3.5 text-[#E5E0D8]/60">
+                      <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
+                    </svg>
+                    Facebook Handle
+                  </label>
+                  <input
+                    type="text"
+                    value={editForm.socialFacebook || ""}
+                    onChange={(e) => setEditForm({ ...editForm, socialFacebook: e.target.value })}
+                    placeholder="ElenaMindfulYoga"
+                    className="px-4 py-3 bg-[#8C7A6B]/10 border border-[#8C7A6B]/40 focus:border-[#8C7A6B] focus:outline-none rounded-xl text-xs text-[#E5E0D8] tracking-wide placeholder-[#E5E0D8]/30"
+                  />
+                </div>
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-[10px] uppercase tracking-[0.25em] font-semibold text-[#E5E0D8]/80 flex items-center gap-1.5">
+                    <svg viewBox="0 0 24 24" fill="currentColor" className="w-3.5 h-3.5 text-[#E5E0D8]/60">
+                      <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z" />
+                    </svg>
+                    YouTube Channel
+                  </label>
+                  <input
+                    type="text"
+                    value={editForm.socialYoutube || ""}
+                    onChange={(e) => setEditForm({ ...editForm, socialYoutube: e.target.value })}
+                    placeholder="@ElenaMindfulYoga"
+                    className="px-4 py-3 bg-[#8C7A6B]/10 border border-[#8C7A6B]/40 focus:border-[#8C7A6B] focus:outline-none rounded-xl text-xs text-[#E5E0D8] tracking-wide placeholder-[#E5E0D8]/30"
+                  />
                 </div>
               </div>
-
             </div>
-          )}
+          </div>
+        )}
 
           {/* SIMPLIFIED Save Action Bar */}
-          <div className="border-t border-[#dcdcde] pt-6 flex flex-col gap-4 text-left">
+          <div className="border-t border-[#8C7A6B]/20 pt-6 flex flex-col gap-4 text-left">
             <button
               type="submit"
               disabled={isSaving}
-              className="w-40 py-2.5 bg-[#2271b1] hover:bg-[#135e96] text-white text-xs font-bold uppercase rounded shadow-xs cursor-pointer disabled:opacity-40 transition-colors"
+              className="w-40 py-2.5 bg-[#8C7A6B] hover:bg-[#6B5D51] text-[#0B0807] text-xs font-bold uppercase rounded-full shadow-md cursor-pointer disabled:opacity-40 transition-colors"
             >
               {isSaving ? "Saving..." : "Save"}
             </button>
           </div>
 
         </form>
-      </main>
-    </div>
-  );
+
+      {/* Article Edit Modal Popup */}
+      {editingPost && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#0B0807]/80 backdrop-blur-sm animate-fade-in">
+          <div className="bg-[#161210] border border-[#8C7A6B]/20 rounded-3xl max-w-2xl w-full max-h-[90vh] overflow-y-auto p-6 md:p-8 flex flex-col gap-6 shadow-2xl animate-scale-up text-left">
+            
+            {/* Modal Header */}
+            <div className="flex justify-between items-center border-b border-[#8C7A6B]/20 pb-4">
+              <h3 className="text-xl font-serif font-light text-[#E5E0D8]">Edit Article Details</h3>
+              <button
+                type="button"
+                onClick={() => setEditingPost(null)}
+                className="text-[#E5E0D8]/60 hover:text-[#E5E0D8] text-sm uppercase tracking-wider font-bold cursor-pointer"
+              >
+                ✕ Close
+              </button>
+            </div>
+
+            {/* Modal Form Content */}
+            <div className="flex flex-col gap-5">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                
+                {/* Title */}
+                <div className="flex flex-col gap-1.5 md:col-span-2">
+                  <label className="text-[10px] uppercase tracking-[0.25em] font-semibold text-[#E5E0D8]/80">Article Title</label>
+                  <input
+                    type="text"
+                    required
+                    value={editPostTitle}
+                    onChange={(e) => setEditPostTitle(e.target.value)}
+                    placeholder="Enter article title..."
+                    className="px-4 py-3 bg-[#8C7A6B]/10 border border-[#8C7A6B]/40 focus:border-[#8C7A6B] focus:outline-none rounded-xl text-xs text-[#E5E0D8] tracking-wide placeholder-[#E5E0D8]/30 w-full"
+                  />
+                </div>
+
+                {/* Category */}
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-[10px] uppercase tracking-[0.25em] font-semibold text-[#E5E0D8]/80">Category</label>
+                  <input
+                    type="text"
+                    required
+                    value={editPostCategory}
+                    onChange={(e) => setEditPostCategory(e.target.value)}
+                    placeholder="e.g. Philosophy, Somatic, Alignment"
+                    className="px-4 py-3 bg-[#8C7A6B]/10 border border-[#8C7A6B]/40 focus:border-[#8C7A6B] focus:outline-none rounded-xl text-xs text-[#E5E0D8] tracking-wide placeholder-[#E5E0D8]/30 w-full"
+                  />
+                </div>
+
+                {/* Status Toggle / Dropdown */}
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-[10px] uppercase tracking-[0.25em] font-semibold text-[#E5E0D8]/80">Article Status</label>
+                  <select
+                    value={editPostStatus}
+                    onChange={(e) => setEditPostStatus(e.target.value as any)}
+                    className="px-4 py-3 bg-[#8C7A6B]/10 border border-[#8C7A6B]/40 focus:border-[#8C7A6B] focus:outline-none rounded-xl text-xs text-[#E5E0D8] tracking-wide"
+                  >
+                    <option value="published" className="bg-[#161210]">Published</option>
+                    <option value="draft" className="bg-[#161210]">Draft</option>
+                  </select>
+                </div>
+
+                {/* Tags */}
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-[10px] uppercase tracking-[0.25em] font-semibold text-[#E5E0D8]/80">Tags (comma separated)</label>
+                  <input
+                    type="text"
+                    value={editPostTags}
+                    onChange={(e) => setEditPostTags(e.target.value)}
+                    placeholder="e.g. yoga, posture, breath"
+                    className="px-4 py-3 bg-[#8C7A6B]/10 border border-[#8C7A6B]/40 focus:border-[#8C7A6B] focus:outline-none rounded-xl text-xs text-[#E5E0D8] tracking-wide placeholder-[#E5E0D8]/30 w-full"
+                  />
+                </div>
+
+                {/* Featured Checkbox */}
+                <div className="flex flex-col gap-1.5 justify-center">
+                  <div className="flex items-center gap-2 mt-4">
+                    <input
+                      type="checkbox"
+                      id="editPostIsFeatured"
+                      checked={editPostIsFeatured}
+                      onChange={(e) => setEditPostIsFeatured(e.target.checked)}
+                      className="w-4 h-4 text-[#8C7A6B] border-[#8C7A6B]/40 rounded focus:ring-[#8C7A6B] cursor-pointer bg-[#8C7A6B]/10"
+                    />
+                    <label htmlFor="editPostIsFeatured" className="text-xs font-semibold text-[#E5E0D8]/80 cursor-pointer select-none">
+                      Pin Article to Featured Section
+                    </label>
+                  </div>
+                </div>
+
+                {/* Cover Photo Uploader & Live Preview */}
+                <div className="flex flex-col gap-1.5 md:col-span-2 border-t border-[#8C7A6B]/10 pt-4 mt-2">
+                  <label className="text-[10px] uppercase tracking-[0.25em] font-semibold text-[#E5E0D8]/80">Cover Photo</label>
+                  <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center mt-1">
+                    <div className="w-24 h-24 rounded-2xl border border-[#8C7A6B]/20 overflow-hidden bg-[#8C7A6B]/10 shrink-0">
+                      {editPostPreview ? (
+                        <img src={editPostPreview} alt="Cover preview" className="w-full h-full object-cover" />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center text-[10px] text-[#E5E0D8]/40">No Cover</div>
+                      )}
+                    </div>
+                    <div className="flex flex-col gap-2">
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={handleEditPostFileChange}
+                        className="text-xs text-[#E5E0D8]/60 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border file:border-[#8C7A6B]/30 file:text-[10px] file:font-semibold file:bg-[#8C7A6B]/10 file:text-[#E5E0D8] hover:file:bg-[#8C7A6B]/20 file:cursor-pointer"
+                      />
+                      <p className="text-[9px] text-[#E5E0D8]/40">Recommended size: 1200x800px. Maximum upload limit is 4.5MB.</p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Excerpt */}
+                <div className="flex flex-col gap-1.5 md:col-span-2 border-t border-[#8C7A6B]/10 pt-4 mt-2">
+                  <label className="text-[10px] uppercase tracking-[0.25em] font-semibold text-[#E5E0D8]/80">Short Excerpt / Summary</label>
+                  <input
+                    type="text"
+                    value={editPostExcerpt}
+                    onChange={(e) => setEditPostExcerpt(e.target.value)}
+                    placeholder="Short description displayed on article cards..."
+                    className="px-4 py-3 bg-[#8C7A6B]/10 border border-[#8C7A6B]/40 focus:border-[#8C7A6B] focus:outline-none rounded-xl text-xs text-[#E5E0D8] tracking-wide placeholder-[#E5E0D8]/30 w-full"
+                  />
+                </div>
+
+                {/* Main Content Body */}
+                <div className="flex flex-col gap-1.5 md:col-span-2">
+                  <label className="text-[10px] uppercase tracking-[0.25em] font-semibold text-[#E5E0D8]/80">Article Content (Main Body)</label>
+                  <textarea
+                    rows={8}
+                    required
+                    value={editPostContent}
+                    onChange={(e) => setEditPostContent(e.target.value)}
+                    placeholder="Write your article body here..."
+                    className="px-4 py-3 bg-[#8C7A6B]/10 border border-[#8C7A6B]/40 focus:border-[#8C7A6B] focus:outline-none rounded-xl text-xs text-[#E5E0D8] tracking-wide placeholder-[#E5E0D8]/30 w-full resize-none font-sans"
+                  />
+                </div>
+
+              </div>
+            </div>
+
+            {/* Modal Actions */}
+            <div className="flex justify-end gap-3 border-t border-[#8C7A6B]/20 pt-5 mt-2">
+              <button
+                type="button"
+                onClick={() => setEditingPost(null)}
+                className="px-5 py-2.5 rounded-full border border-[#8C7A6B]/40 text-[#E5E0D8] hover:bg-[#8C7A6B]/10 text-xs font-bold uppercase transition-colors cursor-pointer animate-fade-in"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                disabled={isSaving || !editPostTitle || !editPostContent}
+                onClick={handleSavePostEdit}
+                className="px-6 py-2.5 bg-[#8C7A6B] hover:bg-[#6B5D51] text-[#0B0807] text-xs font-bold uppercase rounded-full shadow-md cursor-pointer disabled:opacity-40 transition-colors"
+              >
+                {isSaving ? "Saving..." : "Save Changes"}
+              </button>
+            </div>
+
+          </div>
+        </div>
+      )}
+    </main>
+  </div>
+);
 }

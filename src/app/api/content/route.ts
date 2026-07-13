@@ -51,6 +51,37 @@ const DEFAULT_CONTENT: YogaContent = {
   socialFacebook: "",
   socialYoutube: "",
 
+  // ─── Section text labels & copy ───────────────────────────────────────
+  navCtaLabel: "Book Session",
+  heroTagline: "✦ Mindful Movement & Somatic Alignment",
+  heroCtaLabel: "Book a Session",
+  aboutTagline: "The Instructor",
+  aboutHeading: "Hi, I am Elena",
+  aboutImageSubtitle: "Elena • Founder of",
+  aboutCtaLabel: "Explore Offerings",
+  offeringsTagline: "Curated Programs",
+  offeringsHeading: "Bespoke Offerings",
+  offeringsSubtitle: "Quiet spaces and custom sequences created to align physical posture, mental pacing, and sensory stillness.",
+  offeringsCtaLabel: "Inquire Space",
+  portfolioTagline: "Visual Sanctuary",
+  portfolioHeading: "Portfolio Gallery",
+  testimonialsTagline: "Resonance",
+  testimonialsHeading: "Client Testimonials",
+  blogTagline: "Insights",
+  blogHeading: "The Philosophy Journal",
+  blogSubtitle: "Essays, research notes, and reflections on somatic anatomy and mindful living.",
+  contactTagline: "Begin Journey",
+  contactHeading: "Book a Session",
+  contactSubtitle: "Leave your details below, and Elena will get back to coordinate your custom session within 24 hours.",
+  contactNameLabel: "Name",
+  contactEmailLabel: "Email",
+  contactLocationLabel: "Preferred Location",
+  contactMessageLabel: "Message or Intentions",
+  contactSubmitLabel: "Send Request",
+  contactSuccessTitle: "Request Transmitted",
+  contactSuccessMessage: "Elena has received your request and will reach out soon.",
+  footerTagline: "Peace • Alignment • Somatic Wisdom",
+
   offerings: [
     {
       id: "private",
@@ -262,6 +293,37 @@ function patchContentDataDefaults(data: YogaContent) {
   if (data.socialInstagram === undefined) data.socialInstagram = "";
   if (data.socialFacebook === undefined) data.socialFacebook = "";
   if (data.socialYoutube === undefined) data.socialYoutube = "";
+
+  // Section text labels — patch with defaults so old JSON stays fully populated
+  if (!data.navCtaLabel) data.navCtaLabel = DEFAULT_CONTENT.navCtaLabel;
+  if (!data.heroTagline) data.heroTagline = DEFAULT_CONTENT.heroTagline;
+  if (!data.heroCtaLabel) data.heroCtaLabel = DEFAULT_CONTENT.heroCtaLabel;
+  if (!data.aboutTagline) data.aboutTagline = DEFAULT_CONTENT.aboutTagline;
+  if (!data.aboutHeading) data.aboutHeading = DEFAULT_CONTENT.aboutHeading;
+  if (!data.aboutImageSubtitle) data.aboutImageSubtitle = DEFAULT_CONTENT.aboutImageSubtitle;
+  if (!data.aboutCtaLabel) data.aboutCtaLabel = DEFAULT_CONTENT.aboutCtaLabel;
+  if (!data.offeringsTagline) data.offeringsTagline = DEFAULT_CONTENT.offeringsTagline;
+  if (!data.offeringsHeading) data.offeringsHeading = DEFAULT_CONTENT.offeringsHeading;
+  if (!data.offeringsSubtitle) data.offeringsSubtitle = DEFAULT_CONTENT.offeringsSubtitle;
+  if (!data.offeringsCtaLabel) data.offeringsCtaLabel = DEFAULT_CONTENT.offeringsCtaLabel;
+  if (!data.portfolioTagline) data.portfolioTagline = DEFAULT_CONTENT.portfolioTagline;
+  if (!data.portfolioHeading) data.portfolioHeading = DEFAULT_CONTENT.portfolioHeading;
+  if (!data.testimonialsTagline) data.testimonialsTagline = DEFAULT_CONTENT.testimonialsTagline;
+  if (!data.testimonialsHeading) data.testimonialsHeading = DEFAULT_CONTENT.testimonialsHeading;
+  if (!data.blogTagline) data.blogTagline = DEFAULT_CONTENT.blogTagline;
+  if (!data.blogHeading) data.blogHeading = DEFAULT_CONTENT.blogHeading;
+  if (!data.blogSubtitle) data.blogSubtitle = DEFAULT_CONTENT.blogSubtitle;
+  if (!data.contactTagline) data.contactTagline = DEFAULT_CONTENT.contactTagline;
+  if (!data.contactHeading) data.contactHeading = DEFAULT_CONTENT.contactHeading;
+  if (!data.contactSubtitle) data.contactSubtitle = DEFAULT_CONTENT.contactSubtitle;
+  if (!data.contactNameLabel) data.contactNameLabel = DEFAULT_CONTENT.contactNameLabel;
+  if (!data.contactEmailLabel) data.contactEmailLabel = DEFAULT_CONTENT.contactEmailLabel;
+  if (!data.contactLocationLabel) data.contactLocationLabel = DEFAULT_CONTENT.contactLocationLabel;
+  if (!data.contactMessageLabel) data.contactMessageLabel = DEFAULT_CONTENT.contactMessageLabel;
+  if (!data.contactSubmitLabel) data.contactSubmitLabel = DEFAULT_CONTENT.contactSubmitLabel;
+  if (!data.contactSuccessTitle) data.contactSuccessTitle = DEFAULT_CONTENT.contactSuccessTitle;
+  if (!data.contactSuccessMessage) data.contactSuccessMessage = DEFAULT_CONTENT.contactSuccessMessage;
+  if (!data.footerTagline) data.footerTagline = DEFAULT_CONTENT.footerTagline;
 
   data.blogPosts = data.blogPosts.map((post) => ({
     ...post,
