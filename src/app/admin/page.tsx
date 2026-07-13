@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import { signOut } from "next-auth/react";
 import { YogaContent, OfferingItem, PortfolioItem, TestimonialItem, BlogPostItem, LeadItem } from "@/types";
 
 export default function AdminPage() {
@@ -80,11 +81,24 @@ export default function AdminPage() {
   const [editPostFile, setEditPostFile] = useState<File | null>(null);
   const [editPostPreview, setEditPostPreview] = useState("");
 
-  // Resolve dynamic session state client-side
+  // Resolve NextAuth session state client-side
   useEffect(() => {
-    if (typeof window !== "undefined") {
-      setIsLoggedIn(sessionStorage.getItem("admin_logged_in") === "true");
-    }
+    const checkSession = async () => {
+      try {
+        const res = await fetch("/api/auth/session");
+        const session = await res.json();
+        if (session && Object.keys(session).length > 0) {
+          setIsLoggedIn(true);
+        } else {
+          setIsLoggedIn(false);
+          window.location.href = "/admin/login";
+        }
+      } catch (err) {
+        setIsLoggedIn(false);
+        window.location.href = "/admin/login";
+      }
+    };
+    checkSession();
   }, []);
 
   // Fetch content configuration
@@ -105,35 +119,8 @@ export default function AdminPage() {
       });
   }, []);
 
-  // Auth credential submission
-  const handleAuthSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setAuthError("");
-
-    try {
-      const response = await fetch("/api/auth", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username: authUsername, password: authPassword }),
-      });
-
-      if (response.ok) {
-        sessionStorage.setItem("admin_logged_in", "true");
-        setIsLoggedIn(true);
-        setAuthUsername("");
-        setAuthPassword("");
-      } else {
-        const errResult = await response.json();
-        setAuthError(errResult.error || "Credentials invalid.");
-      }
-    } catch (err) {
-      setAuthError("Failed to submit authentication request.");
-    }
-  };
-
-  const handleLogout = () => {
-    sessionStorage.removeItem("admin_logged_in");
-    setIsLoggedIn(false);
+  const handleLogout = async () => {
+    await signOut({ callbackUrl: "/admin/login" });
   };
 
   // General text edits handler
@@ -605,61 +592,12 @@ export default function AdminPage() {
     );
   }
 
-  // Center Light WordPress Admin Login
   if (!isLoggedIn) {
     return (
-      <div className="flex-1 flex items-center justify-center min-h-screen bg-[#0B0807] px-6 py-12 text-[#E5E0D8]">
-        <form
-          onSubmit={handleAuthSubmit}
-          className="bg-[#161210] border border-[#8C7A6B]/20 rounded-3xl max-w-sm w-full p-8 flex flex-col gap-5 shadow-lg text-left"
-        >
-          <div className="text-center pb-2 border-b border-[#8C7A6B]/20">
-            <h4 className="text-xl font-serif text-[#E5E0D8] font-normal tracking-wide">Yoga CMS Portal Login</h4>
-            <p className="text-xs text-[#E5E0D8]/60 mt-1">
-              Enter your administration login credentials to manage website configs.
-            </p>
-          </div>
-
-          <div className="flex flex-col gap-4">
-            <div className="flex flex-col gap-1.5">
-              <label className="text-[10px] uppercase tracking-[0.25em] font-semibold text-[#E5E0D8]/80">Username or Email Address</label>
-              <input
-                type="text"
-                required
-                value={authUsername}
-                onChange={(e) => setAuthUsername(e.target.value)}
-                placeholder="Username"
-                className="px-4 py-3 bg-[#8C7A6B]/10 border border-[#8C7A6B]/40 focus:border-[#8C7A6B] focus:outline-none rounded-xl text-xs text-[#E5E0D8] tracking-wide placeholder-[#E5E0D8]/30"
-              />
-            </div>
-
-            <div className="flex flex-col gap-1.5">
-              <label className="text-[10px] uppercase tracking-[0.25em] font-semibold text-[#E5E0D8]/80">Password</label>
-              <input
-                type="password"
-                required
-                value={authPassword}
-                onChange={(e) => setAuthPassword(e.target.value)}
-                placeholder="Password"
-                className="px-4 py-3 bg-[#8C7A6B]/10 border border-[#8C7A6B]/40 focus:border-[#8C7A6B] focus:outline-none rounded-xl text-xs text-[#E5E0D8] tracking-wide placeholder-[#E5E0D8]/30"
-              />
-            </div>
-          </div>
-
-          {authError && (
-            <div className="p-3 bg-rose-955/40 border-l-4 border-rose-500 text-rose-200 text-xs rounded font-normal border border-rose-500/20">
-              <span className="font-bold block mb-0.5">Error</span>
-              {authError}
-            </div>
-          )}
-
-          <button
-            type="submit"
-            className="w-full mt-2 py-2.5 bg-[#8C7A6B] hover:bg-[#6B5D51] text-[#0B0807] text-xs font-bold uppercase tracking-wider rounded-full transition-colors cursor-pointer"
-          >
-            Log In
-          </button>
-        </form>
+      <div className="flex-1 flex items-center justify-center min-h-screen bg-[#0B0807] text-[#E5E0D8] font-serif">
+        <div className="flex flex-col items-center gap-3">
+          <span className="text-xl font-light tracking-wide animate-pulse">Loading CMS Workspace...</span>
+        </div>
       </div>
     );
   }
