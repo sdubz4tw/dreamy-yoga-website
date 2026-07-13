@@ -33,9 +33,16 @@ const handler = NextAuth({
   callbacks: {
     async signIn({ user, account }) {
       if (account?.provider === "google") {
-        const allowedEmail = process.env.ALLOWED_ADMIN_EMAIL || "";
-        if (!user.email || user.email !== allowedEmail) {
-          return false; // Blocks sign in if email does not match guardrail
+        const allowedEmailsStr = process.env.ALLOWED_ADMIN_EMAIL || "";
+        if (!allowedEmailsStr) return false;
+
+        const allowedEmails = allowedEmailsStr
+          .split(",")
+          .map((e) => e.trim().toLowerCase())
+          .filter(Boolean);
+
+        if (!user.email || !allowedEmails.includes(user.email.toLowerCase())) {
+          return false; // Blocks sign in if email does not match any allowed address
         }
       }
       return true;
