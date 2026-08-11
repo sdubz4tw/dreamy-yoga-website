@@ -110,13 +110,7 @@ export default function Home() {
 
   if (isLoading) {
     return (
-      <div className="flex-1 flex flex-col items-center justify-center min-h-screen bg-[#0B0807]">
-        <div className="flex flex-col items-center gap-6 animate-pulse">
-          <span className="font-serif text-3xl tracking-[0.2em] text-[#F3EFEA] font-light">✦ ELENA</span>
-          <div className="w-16 h-0.5 bg-[#8C7A6B]/40" />
-          <span className="text-[10px] tracking-widest uppercase text-[#8C7A6B]">Entering Sanctuary...</span>
-        </div>
-      </div>
+      <div className="flex-1 min-h-screen bg-[#0B0807]" />
     );
   }
 
@@ -145,7 +139,7 @@ export default function Home() {
     return 0;
   });
 
-  const studioBranding = currentContent.studioName || "Elena Yoga";
+  const studioBranding = currentContent.studioName || "Yoga Sanctuary";
 
   // Read theme-driven CSS variable colors for inline use where Tailwind can't reach
   const sage = currentContent.themePrimary || "#8C7A6B";

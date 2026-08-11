@@ -15,8 +15,8 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "Elena | Premium Yoga Instruction",
-  description: "Bespoke private 1-on-1 yoga alignment, group classes, and somatic breathwork under the guidance of Elena.",
+  title: "Yoga | Premium Yoga Instruction",
+  description: "Bespoke private 1-on-1 yoga alignment, group classes, and somatic breathwork.",
 };
 
 export default function RootLayout({
