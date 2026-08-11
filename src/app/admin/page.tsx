@@ -584,7 +584,7 @@ export default function AdminPage() {
     return (
       <div className="flex-1 flex flex-col items-center justify-center min-h-screen bg-[#f1f1f1]">
         <div className="flex flex-col items-center gap-4 animate-pulse">
-          <span className="font-sans text-xl font-bold tracking-wider text-[#23282d]">Elena Yoga</span>
+          <span className="font-sans text-xl font-bold tracking-wider text-[#23282d]">{editForm?.studioName || "Yoga Studio"}</span>
           <div className="w-12 h-1 bg-[#2271b1]/40" />
           <span className="text-[11px] font-semibold uppercase tracking-wider text-[#23282d]/70">Loading CMS Dashboard...</span>
         </div>
@@ -1772,7 +1772,7 @@ export default function AdminPage() {
                         if (!editForm) return;
                         setEditForm({ ...editForm, contactEmail: e.target.value });
                       }}
-                      placeholder="elena@example.com"
+                      placeholder="contact@kanesunyoga.com"
                       className="px-5 py-3 bg-[#8C7A6B]/10 border border-[#8C7A6B]/40 focus:border-[#8C7A6B] focus:outline-none rounded-xl text-xs text-[#E5E0D8] tracking-wide placeholder-[#E5E0D8]/30"
                     />
                   </div>

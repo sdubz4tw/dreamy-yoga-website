@@ -79,7 +79,7 @@ export async function POST(request: NextRequest) {
     }
 
     // 4. Dispatch Email Routing notification
-    const recipientEmail = contentData.contactEmail || "elena@example.com";
+    const recipientEmail = contentData.contactEmail || "contact@kanesunyoga.com";
     const emailSubject = `✦ New Somatic Inquiry from ${name}`;
     const emailBody = `
 ==================================================
