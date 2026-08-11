@@ -4,6 +4,61 @@ import React, { useState, useEffect } from "react";
 import { signOut } from "next-auth/react";
 import { YogaContent, OfferingItem, PortfolioItem, TestimonialItem, BlogPostItem, LeadItem } from "@/types";
 
+/* ── client-side image compressor ─────────────────────────── */
+async function compressImageFile(file: File, maxDim = 2048, quality = 0.85): Promise<File> {
+  if (!file.type.startsWith("image/") || file.type.includes("svg")) {
+    return file;
+  }
+  return new Promise((resolve) => {
+    const img = document.createElement("img");
+    const url = URL.createObjectURL(file);
+    img.onload = () => {
+      URL.revokeObjectURL(url);
+      let { width, height } = img;
+      if (width > maxDim || height > maxDim) {
+        if (width > height) {
+          height = Math.round((height * maxDim) / width);
+          width = maxDim;
+        } else {
+          width = Math.round((width * maxDim) / height);
+          height = maxDim;
+        }
+      }
+
+      const canvas = document.createElement("canvas");
+      canvas.width = width;
+      canvas.height = height;
+      const ctx = canvas.getContext("2d");
+      if (!ctx) {
+        resolve(file);
+        return;
+      }
+
+      ctx.drawImage(img, 0, 0, width, height);
+      canvas.toBlob(
+        (blob) => {
+          if (blob) {
+            const compressedFile = new File([blob], file.name.replace(/\.[^/.]+$/, ".jpg"), {
+              type: "image/jpeg",
+              lastModified: Date.now(),
+            });
+            resolve(compressedFile);
+          } else {
+            resolve(file);
+          }
+        },
+        "image/jpeg",
+        quality
+      );
+    };
+    img.onerror = () => {
+      URL.revokeObjectURL(url);
+      resolve(file);
+    };
+    img.src = url;
+  });
+}
+
 export default function AdminPage() {
   const [content, setContent] = useState<YogaContent | null>(null);
   const [editForm, setEditForm] = useState<YogaContent | null>(null);
@@ -495,31 +550,43 @@ export default function AdminPage() {
     e.preventDefault();
     if (!editForm) return;
     setIsSaving(true);
-    setSaveStatus({ type: null, msg: "" });
+    setSaveStatus({ type: null, msg: "Optimizing and saving photo assets..." });
 
     try {
       const dataPayload = new FormData();
       dataPayload.append("content", JSON.stringify(editForm));
 
       // General images
-      if (heroFile) dataPayload.append("heroImage", heroFile);
-      if (aboutFile) dataPayload.append("aboutImage", aboutFile);
-      if (contactPortraitFile) dataPayload.append("contactPortraitImage", contactPortraitFile);
+      if (heroFile) {
+        const compressed = await compressImageFile(heroFile);
+        dataPayload.append("heroImage", compressed);
+      }
+      if (aboutFile) {
+        const compressed = await compressImageFile(aboutFile);
+        dataPayload.append("aboutImage", compressed);
+      }
+      if (contactPortraitFile) {
+        const compressed = await compressImageFile(contactPortraitFile);
+        dataPayload.append("contactPortraitImage", compressed);
+      }
 
       // Offerings
-      Object.entries(offeringFiles).forEach(([id, file]) => {
-        dataPayload.append("offeringImage_" + id, file);
-      });
+      for (const [id, file] of Object.entries(offeringFiles)) {
+        const compressed = await compressImageFile(file);
+        dataPayload.append("offeringImage_" + id, compressed);
+      }
 
       // Portfolio
-      Object.entries(portfolioFiles).forEach(([id, file]) => {
-        dataPayload.append("portfolioImage_" + id, file);
-      });
+      for (const [id, file] of Object.entries(portfolioFiles)) {
+        const compressed = await compressImageFile(file);
+        dataPayload.append("portfolioImage_" + id, compressed);
+      }
 
       // Blogs
-      Object.entries(blogFiles).forEach(([id, file]) => {
-        dataPayload.append("blogImage_" + id, file);
-      });
+      for (const [id, file] of Object.entries(blogFiles)) {
+        const compressed = await compressImageFile(file);
+        dataPayload.append("blogImage_" + id, compressed);
+      }
 
       const response = await fetch("/api/content", {
         method: "POST",
