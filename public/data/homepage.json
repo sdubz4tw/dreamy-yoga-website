@@ -1,0 +1,189 @@
+{
+  "heroTitle": "Returning to the wisdom of the body.",
+  "heroSubtitle": "Bespoke somatic practices, restorative alignments, and private mentorship programs designed to cultivate presence, stability, and cellular renewal.",
+  "aboutBioText": "My teaching path is rooted in somatic anatomy, sensory introspection, and traditional Hatha and Yin lineages. I believe that alignment is not a rigid physical ideal, but an intuitive conversation with your own skeleton, tissues, and breathing pathways.\n\nHaving spent over a decade guiding students through deep restorative processes, my goal is to hold a safe space where you can release chronic physical tension and slow down to the frequency of natural expansion.\n\nWhether you are stepping onto the mat to recover from injury, calm your nervous system, or refine your advanced structural alignment, we will cultivate a tailored path suited to your exact somatic geometry.",
+  "services": [],
+  "heroImageUrl": "/uploads/heroImage-1783739297152.JPEG",
+  "aboutImageUrl": "/uploads/aboutImage-1783739312816.JPEG",
+  "authorName": "Jujuba ",
+  "authorBio": "Somatic educator, skeleto-tissue alignment specialist, and restorative Yin facilitator with 10+ years holding alignment sanctuaries.",
+  "offerings": [
+    {
+      "id": "private",
+      "title": "Private 1-on-1 Sessions",
+      "price": 0,
+      "description": "Bespoke posture assessment, custom somatic adjustives, and individualized breath guidance. These private sessions are customized dynamically around your body's structural history, athletic goals, and specific nervous system needs.",
+      "image": "/uploads/offeringImage-private-1783978207581.jpeg",
+      "isHourly": true
+    },
+    {
+      "id": "offering-1783739331569",
+      "title": "Sound Bath ",
+      "price": 50,
+      "description": "Class description...",
+      "image": "/uploads/offeringImage-offering-1783739331569-1783978207578.jpeg",
+      "isHourly": false
+    }
+  ],
+  "portfolio": [
+    {
+      "id": "port-1783979265661",
+      "title": "Lululemon Ambassador ",
+      "category": "Studio",
+      "image": "/uploads/portfolioImage-port-1783979265661-1783979368700.jpeg"
+    },
+    {
+      "id": "port-1783979326626",
+      "title": "Trauma Informed Yoga Therapist ",
+      "category": "Studio",
+      "image": "/uploads/portfolioImage-port-1783979326626-1783979368701.jpeg"
+    },
+    {
+      "id": "port-1783979365682",
+      "title": "Soon to be 500 hour yoga certified ",
+      "category": "Studio",
+      "image": "/uploads/portfolioImage-port-1783979365682-1783979368702.JPEG"
+    },
+    {
+      "id": "port-1783979947566",
+      "title": "Friendly ",
+      "category": "Studio",
+      "image": "/uploads/portfolioImage-port-1783979947566-1783979950030.JPEG"
+    }
+  ],
+  "testimonials": [
+    {
+      "id": "test-1",
+      "clientName": "Claire Miller",
+      "quote": "Kane has a unique ability to read alignment issues. My chronic lower back compression resolved completely in four private sessions.",
+      "rating": 5,
+      "source": "Private Alignment Client"
+    },
+    {
+      "id": "test-2",
+      "clientName": "Marcus Vance",
+      "quote": "The group Yin and Sound bath classes on Sunday have become my non-negotiable mental reset. Peace is immediate.",
+      "rating": 5,
+      "source": "Weekly Group Flow Attendee"
+    }
+  ],
+  "blogPosts": [
+    {
+      "id": "blog-1",
+      "title": "The Fascial System & Involuntary Tension",
+      "excerpt": "An exploration of how long static holds communicate safety directly to the amygdala, releasing emotional holding states.",
+      "content": "In the modern tempo, our bodies are continuously registering micro-signals of threat. The sound of a notification, the haste of a schedule, the posture of sitting—all translate into a persistent sympathetic buzz. Yin Yoga operates as an intentional counter-signal.\n\nBy maintaining static postures for minutes at a time, we bypass the superficial muscle fibers and target the deep fascial nets. Fascia is highly innervated, holding a significant portion of our sensory nerve endings. When we yield into gravity without force, we slowly change the mechanical tension in these tissues.\n\nThis gentle, sustained traction stimulates the mechanoreceptors in our joints and fascia. They transmit signals to the vagus nerve, which in turn commands the amygdala to stand down. Heart rate slows, digestion active, and the body shifts from defensive posture to restorative cellular repair.",
+      "featuredImage": "/uploads/blogImage-blog-1-1783979500369.png",
+      "date": "July 9, 2026",
+      "category": "Philosophy",
+      "readTime": "5 min read",
+      "likes": 12,
+      "status": "published",
+      "tags": [
+        "Philosophy",
+        "Restorative"
+      ],
+      "isFeatured": true
+    },
+    {
+      "id": "blog-1783976521950",
+      "title": "Testing 1,2,3...",
+      "excerpt": "I am thinking about stuff",
+      "content": "Stuff I think about ",
+      "featuredImage": "/uploads/blogImage-blog-1783976521950-1783976527144.png",
+      "date": "July 13, 2026",
+      "category": "Thinking out loud ",
+      "readTime": "5 min read",
+      "likes": 0,
+      "status": "published",
+      "tags": [
+        "Thinking about stuff"
+      ],
+      "isFeatured": false
+    },
+    {
+      "id": "blog-1783979781068",
+      "title": "Check out my new Story with Voyage LA! ",
+      "excerpt": "Check out my interview! ",
+      "content": "https://voyagela.com/interview/check-out-kane-suns-story/",
+      "featuredImage": "/uploads/blogImage-blog-1783979781068-1783979785231.JPEG",
+      "date": "July 13, 2026",
+      "category": "News Coverage",
+      "readTime": "10 Minute Read",
+      "likes": 0,
+      "status": "published",
+      "tags": [
+        "Blog"
+      ],
+      "isFeatured": false
+    }
+  ],
+  "leads": [
+    {
+      "id": "lead-1783739731571",
+      "name": "sdubs",
+      "email": "swong820@gmail.com",
+      "message": "Hello testing",
+      "timestamp": "2026-07-11T03:15:31.571Z",
+      "status": "Read"
+    },
+    {
+      "id": "lead-1783977392185",
+      "name": "John Doe",
+      "email": "john@example.com",
+      "message": "Somatic session request",
+      "location": "Los Angeles, CA",
+      "timestamp": "2026-07-13T21:16:32.185Z",
+      "status": "Read"
+    }
+  ],
+  "contactEmail": "contact@kanesunyoga.com",
+  "studioName": "Kane Sun Yoga",
+  "hideHero": false,
+  "hideAbout": false,
+  "hideOfferings": false,
+  "hidePortfolio": false,
+  "hideTestimonials": false,
+  "hideBlog": false,
+  "themePrimary": "#A07080",
+  "themeBackground": "#0E090B",
+  "themeCard": "#1C1014",
+  "themeText": "#EAD8DC",
+  "themeAccent": "#7A5060",
+  "audioEnabled": true,
+  "audioPreset": "tibetan-bowl",
+  "contactPortraitUrl": "/uploads/contactPortraitImage-1783978013592.jpeg",
+  "socialEnabled": true,
+  "socialInstagram": "@kanejsun",
+  "socialFacebook": "",
+  "socialYoutube": "youtube.com",
+  "navCtaLabel": "Book Session",
+  "heroTagline": "✦ Mindful Movement & Somatic Alignment",
+  "heroCtaLabel": "Book a Session",
+  "aboutTagline": "The Instructor",
+  "aboutHeading": "Hi, I am Kane ",
+  "aboutImageSubtitle": "Kane Sun • Founder of Jujuba ",
+  "aboutCtaLabel": "Explore Offerings",
+  "offeringsTagline": "Curated Programs",
+  "offeringsHeading": "Bespoke Offerings",
+  "offeringsSubtitle": "Quiet spaces and custom sequences created to align physical posture, mental pacing, and sensory stillness.",
+  "offeringsCtaLabel": "Inquire Space",
+  "portfolioTagline": "My Portfolio or Photo Gallery ",
+  "portfolioHeading": "My Portfolio",
+  "testimonialsTagline": "Resonance",
+  "testimonialsHeading": "Client Testimonials",
+  "blogTagline": "Tagline of your header ",
+  "blogHeading": "This is where you blog",
+  "blogSubtitle": "Essays, research notes, and reflections on somatic anatomy and mindful living.",
+  "contactTagline": "Begin Journey",
+  "contactHeading": "Book a Session",
+  "contactSubtitle": "Leave your details below, and I will get back to coordinate your custom session within 24 hours.",
+  "contactNameLabel": "Name",
+  "contactEmailLabel": "Email",
+  "contactMessageLabel": "Message or Intentions",
+  "contactSubmitLabel": "Send Request",
+  "contactSuccessTitle": "Request Transmitted",
+  "contactSuccessMessage": "Your request has been received and we will reach out soon.",
+  "footerTagline": "Peace • Alignment • Somatic Wisdom",
+  "contactLocationLabel": "Preferred Location"
+}
