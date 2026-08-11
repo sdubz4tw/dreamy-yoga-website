@@ -1930,7 +1930,7 @@ export default function AdminPage() {
                   <div className="flex-1 flex flex-col gap-5 bg-[#0B0807] border border-[#8C7A6B]/20 p-6 md:p-8 rounded-2xl w-full">
                     <span className="text-[10px] uppercase tracking-[0.25em] font-semibold text-[#E5E0D8]/80">Interactive Labels & Heading Configurator</span>
                     
-                    {/* Headings */}
+                    {/* Headings & Intro Paragraph */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 border-b border-[#8C7A6B]/20 pb-5">
                       <div className="flex flex-col gap-1.5">
                         <label className="text-[10px] uppercase tracking-[0.25em] font-semibold text-[#E5E0D8]/80">Section Eyebrow Tagline</label>
@@ -1964,50 +1964,148 @@ export default function AdminPage() {
                       </div>
                     </div>
 
-                    {/* Simulated Fields Configuration */}
+                    {/* Side Contact Card Customization */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 border-b border-[#8C7A6B]/20 pb-5">
+                      <div className="flex flex-col gap-1.5">
+                        <label className="text-[10px] uppercase tracking-[0.25em] font-semibold text-[#E5E0D8]/80">Side Card Tagline</label>
+                        <input
+                          type="text"
+                          value={editForm.contactSideCardTagline || ""}
+                          onChange={(e) => setEditForm({ ...editForm, contactSideCardTagline: e.target.value })}
+                          placeholder="Direct Contact"
+                          className="px-4 py-3 bg-[#8C7A6B]/10 border border-[#8C7A6B]/40 focus:border-[#8C7A6B] focus:outline-none rounded-xl text-xs text-[#E5E0D8] tracking-wide placeholder-[#E5E0D8]/30"
+                        />
+                      </div>
+                      <div className="flex flex-col gap-1.5">
+                        <label className="text-[10px] uppercase tracking-[0.25em] font-semibold text-[#E5E0D8]/80">Side Card Heading</label>
+                        <input
+                          type="text"
+                          value={editForm.contactSideCardHeading || ""}
+                          onChange={(e) => setEditForm({ ...editForm, contactSideCardHeading: e.target.value })}
+                          placeholder="Somatic Sanctuary & Private Practice"
+                          className="px-4 py-3 bg-[#8C7A6B]/10 border border-[#8C7A6B]/40 focus:border-[#8C7A6B] focus:outline-none rounded-xl text-xs text-[#E5E0D8] tracking-wide placeholder-[#E5E0D8]/30"
+                        />
+                      </div>
+                      <div className="flex flex-col gap-1.5 md:col-span-2">
+                        <label className="text-[10px] uppercase tracking-[0.25em] font-semibold text-[#E5E0D8]/80">Side Card Description Text</label>
+                        <textarea
+                          rows={2}
+                          value={editForm.contactSideCardDescription || ""}
+                          onChange={(e) => setEditForm({ ...editForm, contactSideCardDescription: e.target.value })}
+                          placeholder="Whether you wish to discuss private alignment mentorship..."
+                          className="px-4 py-3 bg-[#8C7A6B]/10 border border-[#8C7A6B]/40 focus:border-[#8C7A6B] focus:outline-none rounded-xl text-xs text-[#E5E0D8] tracking-wide resize-none placeholder-[#E5E0D8]/30"
+                        />
+                      </div>
+                      <div className="flex flex-col gap-1.5 md:col-span-2">
+                        <label className="text-[10px] uppercase tracking-[0.25em] font-semibold text-[#E5E0D8]/80">Side Card Email Header Label</label>
+                        <input
+                          type="text"
+                          value={editForm.contactEmailLabelText || ""}
+                          onChange={(e) => setEditForm({ ...editForm, contactEmailLabelText: e.target.value })}
+                          placeholder="Email Address"
+                          className="px-4 py-3 bg-[#8C7A6B]/10 border border-[#8C7A6B]/40 focus:border-[#8C7A6B] focus:outline-none rounded-xl text-xs text-[#E5E0D8] tracking-wide placeholder-[#E5E0D8]/30"
+                        />
+                      </div>
+                    </div>
+
+                    {/* Form Input Labels & Placeholders */}
                     <div className="flex flex-col gap-4 border-b border-[#8C7A6B]/20 pb-5">
-                      <div className="flex flex-col gap-1.5">
-                        <label className="text-[10px] uppercase tracking-[0.25em] font-semibold text-[#E5E0D8]/60">Name Input Label</label>
-                        <input
-                          type="text"
-                          value={editForm.contactNameLabel || ""}
-                          onChange={(e) => setEditForm({ ...editForm, contactNameLabel: e.target.value })}
-                          placeholder="Name"
-                          className="px-4 py-3 bg-[#8C7A6B]/10 border border-[#8C7A6B]/40 focus:border-[#8C7A6B] focus:outline-none rounded-xl text-xs text-[#E5E0D8] tracking-wide placeholder-[#E5E0D8]/30"
-                        />
+                      <span className="text-[10px] uppercase tracking-[0.25em] font-semibold text-[#E5E0D8]/80">Form Input Labels & Placeholder Text</span>
+                      
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="flex flex-col gap-1.5">
+                          <label className="text-[10px] uppercase tracking-[0.25em] font-semibold text-[#E5E0D8]/60">Name Input Label</label>
+                          <input
+                            type="text"
+                            value={editForm.contactNameLabel || ""}
+                            onChange={(e) => setEditForm({ ...editForm, contactNameLabel: e.target.value })}
+                            placeholder="Name"
+                            className="px-4 py-3 bg-[#8C7A6B]/10 border border-[#8C7A6B]/40 focus:border-[#8C7A6B] focus:outline-none rounded-xl text-xs text-[#E5E0D8] tracking-wide placeholder-[#E5E0D8]/30"
+                          />
+                        </div>
+                        <div className="flex flex-col gap-1.5">
+                          <label className="text-[10px] uppercase tracking-[0.25em] font-semibold text-[#E5E0D8]/60">Name Placeholder</label>
+                          <input
+                            type="text"
+                            value={editForm.contactNamePlaceholder || ""}
+                            onChange={(e) => setEditForm({ ...editForm, contactNamePlaceholder: e.target.value })}
+                            placeholder="Your full name"
+                            className="px-4 py-3 bg-[#8C7A6B]/10 border border-[#8C7A6B]/40 focus:border-[#8C7A6B] focus:outline-none rounded-xl text-xs text-[#E5E0D8] tracking-wide placeholder-[#E5E0D8]/30"
+                          />
+                        </div>
                       </div>
-                      <div className="flex flex-col gap-1.5">
-                        <label className="text-[10px] uppercase tracking-[0.25em] font-semibold text-[#E5E0D8]/60">Email Input Label</label>
-                        <input
-                          type="text"
-                          value={editForm.contactEmailLabel || ""}
-                          onChange={(e) => setEditForm({ ...editForm, contactEmailLabel: e.target.value })}
-                          placeholder="Email"
-                          className="px-4 py-3 bg-[#8C7A6B]/10 border border-[#8C7A6B]/40 focus:border-[#8C7A6B] focus:outline-none rounded-xl text-xs text-[#E5E0D8] tracking-wide placeholder-[#E5E0D8]/30"
-                        />
+
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="flex flex-col gap-1.5">
+                          <label className="text-[10px] uppercase tracking-[0.25em] font-semibold text-[#E5E0D8]/60">Email Input Label</label>
+                          <input
+                            type="text"
+                            value={editForm.contactEmailLabel || ""}
+                            onChange={(e) => setEditForm({ ...editForm, contactEmailLabel: e.target.value })}
+                            placeholder="Email"
+                            className="px-4 py-3 bg-[#8C7A6B]/10 border border-[#8C7A6B]/40 focus:border-[#8C7A6B] focus:outline-none rounded-xl text-xs text-[#E5E0D8] tracking-wide placeholder-[#E5E0D8]/30"
+                          />
+                        </div>
+                        <div className="flex flex-col gap-1.5">
+                          <label className="text-[10px] uppercase tracking-[0.25em] font-semibold text-[#E5E0D8]/60">Email Placeholder</label>
+                          <input
+                            type="text"
+                            value={editForm.contactEmailPlaceholder || ""}
+                            onChange={(e) => setEditForm({ ...editForm, contactEmailPlaceholder: e.target.value })}
+                            placeholder="your.email@example.com"
+                            className="px-4 py-3 bg-[#8C7A6B]/10 border border-[#8C7A6B]/40 focus:border-[#8C7A6B] focus:outline-none rounded-xl text-xs text-[#E5E0D8] tracking-wide placeholder-[#E5E0D8]/30"
+                          />
+                        </div>
                       </div>
-                      <div className="flex flex-col gap-1.5">
-                        <label className="text-[10px] uppercase tracking-[0.25em] font-semibold text-[#E5E0D8]/60">Location Input Label</label>
-                        <input
-                          type="text"
-                          value={editForm.contactLocationLabel || ""}
-                          onChange={(e) => setEditForm({ ...editForm, contactLocationLabel: e.target.value })}
-                          placeholder="Preferred Location"
-                          className="px-4 py-3 bg-[#8C7A6B]/10 border border-[#8C7A6B]/40 focus:border-[#8C7A6B] focus:outline-none rounded-xl text-xs text-[#E5E0D8] tracking-wide placeholder-[#E5E0D8]/30"
-                        />
+
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="flex flex-col gap-1.5">
+                          <label className="text-[10px] uppercase tracking-[0.25em] font-semibold text-[#E5E0D8]/60">Location Input Label</label>
+                          <input
+                            type="text"
+                            value={editForm.contactLocationLabel || ""}
+                            onChange={(e) => setEditForm({ ...editForm, contactLocationLabel: e.target.value })}
+                            placeholder="Preferred Location"
+                            className="px-4 py-3 bg-[#8C7A6B]/10 border border-[#8C7A6B]/40 focus:border-[#8C7A6B] focus:outline-none rounded-xl text-xs text-[#E5E0D8] tracking-wide placeholder-[#E5E0D8]/30"
+                          />
+                        </div>
+                        <div className="flex flex-col gap-1.5">
+                          <label className="text-[10px] uppercase tracking-[0.25em] font-semibold text-[#E5E0D8]/60">Location Placeholder</label>
+                          <input
+                            type="text"
+                            value={editForm.contactLocationPlaceholder || ""}
+                            onChange={(e) => setEditForm({ ...editForm, contactLocationPlaceholder: e.target.value })}
+                            placeholder="e.g. Private Studio, Home, or Virtual"
+                            className="px-4 py-3 bg-[#8C7A6B]/10 border border-[#8C7A6B]/40 focus:border-[#8C7A6B] focus:outline-none rounded-xl text-xs text-[#E5E0D8] tracking-wide placeholder-[#E5E0D8]/30"
+                          />
+                        </div>
                       </div>
-                      <div className="flex flex-col gap-1.5">
-                        <label className="text-[10px] uppercase tracking-[0.25em] font-semibold text-[#E5E0D8]/60">Message Input Label</label>
-                        <input
-                          type="text"
-                          value={editForm.contactMessageLabel || ""}
-                          onChange={(e) => setEditForm({ ...editForm, contactMessageLabel: e.target.value })}
-                          placeholder="Message or Intentions"
-                          className="px-4 py-3 bg-[#8C7A6B]/10 border border-[#8C7A6B]/40 focus:border-[#8C7A6B] focus:outline-none rounded-xl text-xs text-[#E5E0D8] tracking-wide placeholder-[#E5E0D8]/30"
-                        />
+
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="flex flex-col gap-1.5">
+                          <label className="text-[10px] uppercase tracking-[0.25em] font-semibold text-[#E5E0D8]/60">Message Input Label</label>
+                          <input
+                            type="text"
+                            value={editForm.contactMessageLabel || ""}
+                            onChange={(e) => setEditForm({ ...editForm, contactMessageLabel: e.target.value })}
+                            placeholder="Message or Intentions"
+                            className="px-4 py-3 bg-[#8C7A6B]/10 border border-[#8C7A6B]/40 focus:border-[#8C7A6B] focus:outline-none rounded-xl text-xs text-[#E5E0D8] tracking-wide placeholder-[#E5E0D8]/30"
+                          />
+                        </div>
+                        <div className="flex flex-col gap-1.5">
+                          <label className="text-[10px] uppercase tracking-[0.25em] font-semibold text-[#E5E0D8]/60">Message Placeholder</label>
+                          <input
+                            type="text"
+                            value={editForm.contactMessagePlaceholder || ""}
+                            onChange={(e) => setEditForm({ ...editForm, contactMessagePlaceholder: e.target.value })}
+                            placeholder="Share your somatic history or questions..."
+                            className="px-4 py-3 bg-[#8C7A6B]/10 border border-[#8C7A6B]/40 focus:border-[#8C7A6B] focus:outline-none rounded-xl text-xs text-[#E5E0D8] tracking-wide placeholder-[#E5E0D8]/30"
+                          />
+                        </div>
                       </div>
+
                       <div className="flex flex-col gap-1.5">
-                        <label className="text-[10px] uppercase tracking-[0.25em] font-semibold text-[#E5E0D8]/60">Submit Button Label</label>
+                        <label className="text-[10px] uppercase tracking-[0.25em] font-semibold text-[#E5E0D8]/60">Submit Button Text</label>
                         <input
                           type="text"
                           value={editForm.contactSubmitLabel || ""}
@@ -2036,7 +2134,7 @@ export default function AdminPage() {
                           rows={2}
                           value={editForm.contactSuccessMessage || ""}
                           onChange={(e) => setEditForm({ ...editForm, contactSuccessMessage: e.target.value })}
-                          placeholder="Elena has received your request..."
+                          placeholder="Your request has been received..."
                           className="px-4 py-3 bg-[#8C7A6B]/10 border border-[#8C7A6B]/40 focus:border-[#8C7A6B] focus:outline-none rounded-xl text-xs text-[#E5E0D8] tracking-wide resize-none placeholder-[#E5E0D8]/30"
                         />
                       </div>

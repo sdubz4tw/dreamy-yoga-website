@@ -79,19 +79,21 @@ export default function ContactPage() {
 
               <div className="relative z-10 space-y-6">
                 <span className="text-[10px] uppercase font-bold tracking-[0.25em]" style={{ color: sage }}>
-                  Direct Contact
+                  {content?.contactSideCardTagline || "Direct Contact"}
                 </span>
                 <h2 className="font-serif text-3xl tracking-wide font-normal" style={{ color: text }}>
-                  Somatic Sanctuary & Private Practice
+                  {content?.contactSideCardHeading || "Somatic Sanctuary & Private Practice"}
                 </h2>
                 <p className="text-xs leading-relaxed tracking-wide opacity-80">
-                  Whether you wish to discuss private alignment mentorship, group sound baths, or somatic consulting, reach out directly.
+                  {content?.contactSideCardDescription || "Whether you wish to discuss private alignment mentorship, group sound baths, or somatic consulting, reach out directly."}
                 </p>
               </div>
 
               {content?.contactEmail && (
                 <div className="relative z-10 mt-8 pt-6 border-t" style={{ borderColor: `${sage}20` }}>
-                  <span className="text-[10px] uppercase font-bold tracking-widest block mb-1 opacity-60">Email Address</span>
+                  <span className="text-[10px] uppercase font-bold tracking-widest block mb-1 opacity-60">
+                    {content?.contactEmailLabelText || "Email Address"}
+                  </span>
                   <a href={`mailto:${content.contactEmail}`} className="text-sm font-semibold tracking-wide hover:underline" style={{ color: sage }}>
                     {content.contactEmail}
                   </a>
@@ -114,7 +116,7 @@ export default function ContactPage() {
                   </p>
                   <button
                     onClick={() => { setInquirySubmitted(false); setFormData({ name: "", email: "", notes: "", location: "" }); }}
-                    className="mt-4 px-6 py-2.5 border text-xs font-bold uppercase tracking-widest rounded-full"
+                    className="mt-4 px-6 py-2.5 border text-xs font-bold uppercase tracking-widest rounded-full cursor-pointer"
                     style={{ borderColor: sage, color: sage }}
                   >
                     Submit Another Request
@@ -141,7 +143,7 @@ export default function ContactPage() {
                         onChange={handleInputChange}
                         className="w-full px-5 py-3.5 rounded-2xl border text-xs font-normal tracking-wide transition-all focus:outline-none"
                         style={{ backgroundColor: `${bg}80`, borderColor: `${sage}30`, color: text }}
-                        placeholder="Your full name"
+                        placeholder={content?.contactNamePlaceholder || "Your full name"}
                       />
                     </div>
 
@@ -157,7 +159,7 @@ export default function ContactPage() {
                         onChange={handleInputChange}
                         className="w-full px-5 py-3.5 rounded-2xl border text-xs font-normal tracking-wide transition-all focus:outline-none"
                         style={{ backgroundColor: `${bg}80`, borderColor: `${sage}30`, color: text }}
-                        placeholder="your.email@example.com"
+                        placeholder={content?.contactEmailPlaceholder || "your.email@example.com"}
                       />
                     </div>
                   </div>
@@ -173,7 +175,7 @@ export default function ContactPage() {
                       onChange={handleInputChange}
                       className="w-full px-5 py-3.5 rounded-2xl border text-xs font-normal tracking-wide transition-all focus:outline-none"
                       style={{ backgroundColor: `${bg}80`, borderColor: `${sage}30`, color: text }}
-                      placeholder="e.g. Private Studio, Home, or Virtual"
+                      placeholder={content?.contactLocationPlaceholder || "e.g. Private Studio, Home, or Virtual"}
                     />
                   </div>
 
@@ -188,7 +190,7 @@ export default function ContactPage() {
                       onChange={handleInputChange}
                       className="w-full px-5 py-3.5 rounded-2xl border text-xs font-normal tracking-wide transition-all focus:outline-none resize-none"
                       style={{ backgroundColor: `${bg}80`, borderColor: `${sage}30`, color: text }}
-                      placeholder="Share your somatic history or questions..."
+                      placeholder={content?.contactMessagePlaceholder || "Share your somatic history or questions..."}
                     />
                   </div>
 

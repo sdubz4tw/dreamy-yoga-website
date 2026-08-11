@@ -133,16 +133,24 @@ export interface YogaContent {
   blogSubtitle?: string;          // Intro paragraph under heading
 
   // Contact / Inquiry section
-  contactTagline?: string;        // Eyebrow label "Begin Journey"
-  contactHeading?: string;        // Section heading "Book a Session"
-  contactSubtitle?: string;       // Intro paragraph under heading
-  contactNameLabel?: string;      // Form label "Name"
-  contactEmailLabel?: string;     // Form label "Email"
-  contactLocationLabel?: string;  // Form label "Location"
-  contactMessageLabel?: string;   // Form label "Message or Intentions"
-  contactSubmitLabel?: string;    // Submit button text "Send Request"
-  contactSuccessTitle?: string;   // Success state heading "Request Transmitted"
-  contactSuccessMessage?: string; // Success state body copy
+  contactTagline?: string;           // Eyebrow label "Begin Journey"
+  contactHeading?: string;           // Section heading "Book a Session"
+  contactSubtitle?: string;          // Intro paragraph under heading
+  contactSideCardTagline?: string;    // Side card eyebrow "Direct Contact"
+  contactSideCardHeading?: string;    // Side card title "Somatic Sanctuary & Private Practice"
+  contactSideCardDescription?: string;// Side card body text
+  contactEmailLabelText?: string;     // Side card email label "Email Address"
+  contactNameLabel?: string;         // Form label "Name"
+  contactNamePlaceholder?: string;   // Form placeholder "Your full name"
+  contactEmailLabel?: string;        // Form label "Email"
+  contactEmailPlaceholder?: string;  // Form placeholder "your.email@example.com"
+  contactLocationLabel?: string;     // Form label "Location"
+  contactLocationPlaceholder?: string;// Form placeholder "e.g. Private Studio, Home, or Virtual"
+  contactMessageLabel?: string;      // Form label "Message or Intentions"
+  contactMessagePlaceholder?: string;// Form placeholder "Share your somatic history or questions..."
+  contactSubmitLabel?: string;       // Submit button text "Send Request"
+  contactSuccessTitle?: string;      // Success state heading "Request Transmitted"
+  contactSuccessMessage?: string;    // Success state body copy
 
   // Footer
   footerTagline?: string;         // Tagline "Peace • Alignment • Somatic Wisdom"
